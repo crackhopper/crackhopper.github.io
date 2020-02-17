@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://localhost:4000').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.7.1',
+    exturl: false,
+    sidebar: {"position":"left","width":240,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="一个做算法的技术宅">
+<meta property="og:type" content="website">
+<meta property="og:title" content="crackhopper的博客">
+<meta property="og:url" content="http://localhost:4000/index.html">
+<meta property="og:site_name" content="crackhopper的博客">
+<meta property="og:description" content="一个做算法的技术宅">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:author" content="crackhopper">
+<meta property="article:tag" content="shadoc">
+<meta property="article:tag" content=" hoppe">
+<meta property="article:tag" content=" crackhopper">
+<meta property="article:tag" content=" developer">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://localhost:4000/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: true,
+    isPost: false
+  };
+</script>
+
+  <title>crackhopper的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">crackhopper的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">分享，积累，进步</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-cn">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/2020/02/15/cmake-tutorial/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="crackhopper">
+      <meta itemprop="description" content="一个做算法的技术宅">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="crackhopper的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/15/cmake-tutorial/" class="post-title-link" itemprop="url">cmake简明教程</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-02-15 20:48:22" itemprop="dateCreated datePublished" datetime="2020-02-15T20:48:22+08:00">2020-02-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-02-17 21:14:03" itemprop="dateModified" datetime="2020-02-17T21:14:03+08:00">2020-02-17</time>
+              </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2020/02/15/cmake-tutorial/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/02/15/cmake-tutorial/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <!-- toc -->
+
+
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>CMake是一个主要用来管理C++项目的工具。主要特点是：更好的解决C++项目跨平台编译带<br>来的配置问题。</p>
+<p>CMake提供很多实用的功能，本文简单介绍我项目里常用的一些特性。</p>
+<p>如何安装CMake这里就不介绍了，可以自行搜索。安装好后要确保在命令行可以执行cmake命<br>令。</p>
+<h1 id="编译一个可执行文件"><a href="#编译一个可执行文件" class="headerlink" title="编译一个可执行文件"></a>编译一个可执行文件</h1><h2 id="Hello-World项目"><a href="#Hello-World项目" class="headerlink" title="Hello World项目"></a>Hello World项目</h2><p>CMake通过找寻目录下的 <code>CMakeLists.txt</code> 文件，读取文件里的内容对项目进行构建。使<br>用方式是</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake &lt;project_dir&gt;</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>&lt;project_dir&gt;</code> 是 <code>CMakeLists.txt</code> 所在的文件夹。cmake的工作流程如下：</p>
+<ol>
+<li>cmake读取 <code>&lt;project_dir&gt;</code> 文件夹下面的 <code>CMakeLists.txt</code> 文件。</li>
+<li>执行平台解析，基础库解析，依赖库查找。如果有错误则暴露错误，如果成功则生成一<br>系列用来构建的文件。其中最重要的一个文件叫 <code>Makefile</code> 。</li>
+<li>用户通过执行 make ，读取  <code>Makefile</code> 对项目进行构建。</li>
+</ol>
+<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>看一个简单的例子，目录层级如下：<br><img src="/images/cmake-tutorial/hello-world.png" alt="最简单的cmake"></p>
+<p>其中，两个文件的内容：</p>
+<p><strong>helloworld.cpp</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span>&#123;</span><br><span class="line">   <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Hello World!"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>CMakeLists</strong></p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>.<span class="number">9</span>)</span><br><span class="line"><span class="keyword">project</span> (hello)</span><br><span class="line"><span class="keyword">add_executable</span>(hello helloworld.cpp)</span><br></pre></td></tr></table></figure>
+
+<p>这里解释一下 <code>CMakeLists.txt</code> 的内容。</p>
+<ul>
+<li>第1行指定最低的cmake版本</li>
+<li>第2行指定项目名称</li>
+<li>第3方添加一个任务，生成可执行文件 <code>hello</code> 。生成这个文件需要用到<br><code>helloworld.cpp</code> 。</li>
+<li>cmake不区分命令的大小写 。</li>
+</ul>
+<h3 id="构建helloworld"><a href="#构建helloworld" class="headerlink" title="构建helloworld"></a>构建helloworld</h3><p><img src="/images/cmake-tutorial/make-hello-world-s.png" alt="最简单的cmake"></p>
+<p>解释一下： </p>
+<ul>
+<li><code>cmake .</code> 运行cmake命令，查找目录为 <code>.</code> (即当前目录) 。这个命令会生成一系列文<br>件。包括一个重要的 <code>Makefile</code> 文件</li>
+<li><code>make</code> 会在当前文件夹查找 <code>Makefile</code> 文件 ，然后对项目进行编译，最终产生了二进<br>制 <code>hello</code></li>
+<li><code>./hello</code> 运行这个编译好的二进制文件</li>
+</ul>
+<h2 id="项目外构建"><a href="#项目外构建" class="headerlink" title="项目外构建"></a>项目外构建</h2><p>cmake提供了一个非常好用的特性，就是 <strong>项目外构建</strong> 。简单来说，cmake支持在自定义<br>的位置对项目进行构建。这样就避免了构建时生成的临时文件把原本的项目弄的非常混乱。</p>
+<p>比如说刚才的例子，我们在项目里创建一个build文件夹，在里面构建。</p>
+<p><img src="/images/cmake-tutorial/out-build.png" alt="外部构建"></p>
+<p>构建好了之后:<br><img src="/images/cmake-tutorial/out-build-res.png" alt="外部构建结果"></p>
+<p>我们可以看到生成的文件都在build文件夹中。进入到里面，进行make即可编译。</p>
+<p><img src="/images/cmake-tutorial/out-build-make.png" alt="外部构建make过程"></p>
+<h1 id="编译一个静态库文件"><a href="#编译一个静态库文件" class="headerlink" title="编译一个静态库文件"></a>编译一个静态库文件</h1><h2 id="静态库机制"><a href="#静态库机制" class="headerlink" title="静态库机制"></a>静态库机制</h2><p>说静态库首先要说什么是编译。</p>
+<p>编译就是把 <strong>源代码</strong> 转化为 <strong>目标代码</strong> 的过程。而什么是 <strong>目标代码</strong> 呢？就是<br>机器可以执行的二进制代码，一般来说都是要符合某种规范的，比如linux下的elf格式，<br>windows下的pe格式。这里就不细展开了。</p>
+<p>有的代码具备很强的通用性，比如计算绝对值的函数。我们希望在多个项目里都使用这个函<br>数。那么一个方式就是把你的源代码编译成库文件 （也是一种二进制格式），当你写程序<br>需要的时候，链接器可以 <strong>链接</strong> 到这个库文件中，找到对应函数的二进制，“注入”到你<br>写的程序中。</p>
+<p>因此我们通常常见的项目构建都分两步：编译、链接。</p>
+<ul>
+<li>编译：负责源代码转换为目标代码</li>
+<li>链接：负责找到程序的入口（main函数），并把二进制组装起来，生成可执行格式（elf<br>或pe）</li>
+</ul>
+<p>那么如何把代码构建成一个静态库呢？</p>
+<h2 id="静态库项目"><a href="#静态库项目" class="headerlink" title="静态库项目"></a>静态库项目</h2><p>我们先看一下 <code>CMakeLists.txt</code> 的写法：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(abs)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_library</span>(abs STATIC abs.cpp)</span><br></pre></td></tr></table></figure>
+
+<p>对应的cpp文件如下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">abs</span><span class="params">(<span class="keyword">double</span> v)</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> v&gt;<span class="number">0</span> ? v : -v;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们尝试构建一下：<br><img src="/images/cmake-tutorial/static-lib-s.png" alt="静态库构建"></p>
+<p>构建后的结果：<br><img src="/images/cmake-tutorial/static-lib-res.png" alt="静态库构建结果"></p>
+<p>注意到，libabs.a文件，即为我们构造出的静态库文件。</p>
+<h1 id="编译一个动态库文件"><a href="#编译一个动态库文件" class="headerlink" title="编译一个动态库文件"></a>编译一个动态库文件</h1><h2 id="动态库机制"><a href="#动态库机制" class="headerlink" title="动态库机制"></a>动态库机制</h2><p>静态库引入代码复用的能力后，有一个新的问题出现了：比如abs代码，在多个程序里都有<br>使用，而且这多个程序可能都在系统上执行，这样abs的代码就被系统内存加载了多次。这<br>无疑是一种浪费。</p>
+<p>动态库提供了一种机制：库的代码并不会“注入”到编译产出的二进制文件中，而是由操作系<br>统加载对应的库，在程序加载到内存的过程中，操作系统自动把对应的动态库调用进行重定<br>向。这样abs的代码只会在内存中出现一次。</p>
+<p>动态库技术是一个非常广泛使用的技术，操作系统大部分的api都是通过动态库提供的。</p>
+<p>构建动态库和构建静态库一样简单。我们看一下例子：</p>
+<h2 id="动态库项目"><a href="#动态库项目" class="headerlink" title="动态库项目"></a>动态库项目</h2><p>延用静态库的例子，我们只需要把 <code>CMakeLists.txt</code> 修改一下即可。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(abs)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_library</span>(abs SHARED abs.cpp)</span><br></pre></td></tr></table></figure>
+<p>构造的结果会产生一个 <code>libabs.so</code> 文件。读者可以自行尝试一下。</p>
+<p>如果要同时构建静态库和动态库，cmake的写法需要一点技巧：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"><span class="keyword">project</span>(abs)</span><br><span class="line"><span class="keyword">add_library</span>(abs SHARED abs.cpp)</span><br><span class="line"><span class="keyword">add_library</span>(abs_static STATIC abs.cpp)</span><br><span class="line"><span class="keyword">set_target_properties</span>(abs_static PROPERTIES OUTPUT_NAME <span class="string">"abs"</span>)</span><br></pre></td></tr></table></figure>
+<p>这是因为cmake中不允许target有相同的名字，所以我们需要用不同的名字，同时修改target的输出。</p>
+<h1 id="引入库文件"><a href="#引入库文件" class="headerlink" title="引入库文件"></a>引入库文件</h1><h2 id="引入子模块"><a href="#引入子模块" class="headerlink" title="引入子模块"></a>引入子模块</h2><p>使用 <code>add_subdirectory</code> 函数，可以把子文件夹中的 <code>CMakeLists.txt</code> 引入到当前<br><code>CMakeLists.txt</code> 中。</p>
+<p>举个例子：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"><span class="keyword">project</span>(helloworld)</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_directories</span>(./ ./hello ./world)<span class="comment">#添加多目录的路径</span></span><br><span class="line"><span class="comment"># Add block directories</span></span><br><span class="line"><span class="keyword">add_subdirectory</span>(hello)<span class="comment">#添加hello文件夹中的hello库</span></span><br><span class="line"><span class="keyword">add_subdirectory</span>(world)<span class="comment">#添加world文件夹中的world库</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(helloworld main.cpp)</span><br><span class="line"><span class="comment">#将多目录下的hello库和world库链接上可执行文件</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>(helloworld hello world)</span><br></pre></td></tr></table></figure>
+
+<p>解释：</p>
+<ul>
+<li><code>add_subdirectory</code> 会把对应文件夹中的 <code>CMakeLists.txt</code> 引入进来，包括内部的<br>target。这里假定了 <code>hello</code> 文件夹的target是 <code>hello</code> ， 这里假定了 <code>world</code> 文件<br>夹的target是 <code>world</code> 。</li>
+<li><code>target_link_libraries</code> 用来对 <code>helloworld</code> 这个target进行更多的描述：描述这个<br>target完成过程中，需要对 <code>hello</code> 以及 <code>world</code> 两个target进行链接（这两个target<br>必须是库）</li>
+</ul>
+<p>完整的目录结构：<br><img src="/images/cmake-tutorial/multi-cmake.png" alt="多目录CMake结构"></p>
+<h2 id="引入第三方库"><a href="#引入第三方库" class="headerlink" title="引入第三方库"></a>引入第三方库</h2><p>由于大量开源模块都是使用cmake进行构建的，因此存在大量的开源脚本方便你快速把第三<br>方库引入到你的项目里。</p>
+<p>我们这里以引入opencv为例。</p>
+<p>编写一个使用opencv的程序， <code>hello_cv.cpp</code> 。</p>
+<ul>
+<li>复制官方文档的代码：<br><a href="https://docs.opencv.org/3.2.0/d0/d2a/contours2_8cpp-example.html">https://docs.opencv.org/3.2.0/d0/d2a/contours2_8cpp-example.html</a></li>
+</ul>
+<p>想要让这个程序运行起来，有以下几个条件：</p>
+<ul>
+<li>本地需要安装opencv开发环境。使用命令 <code>sudo apt-get install libopencv-dev</code></li>
+<li>检测opencv是否安装成功 <code>dpkg -L libopencv-dev</code> 。这个命令会显示上面安装的包里<br>的文件都被安装到什么位置了。在我的系统里，文件主要被安装在 <code>/usr/bin</code> ,<br><code>/usr/include</code> , <code>/usr/lib/x86_64-linux-gnu</code>, <code>/usr/share/OpenCV</code> 这几个文件夹<br>中。</li>
+</ul>
+<p>接着，我们创建cmake配置文件：</p>
+<ul>
+<li>告诉cmake去那里找头文件，显然是要在 <code>/usr/include</code> 里找</li>
+<li>告诉cmake去那里找库文件，显然是要在 <code>/usr/lib/x86_64-linux-gnu</code> 里找</li>
+<li>告诉cmake应该链接哪些库文件，显然是 <code>libopencv_core.so</code> 、<br><code>libopencv_highgui.so</code> 和 <code>libopencv_imgproc.so</code> </li>
+</ul>
+<p>于是我们的 <code>CMakeLists.txt</code> 如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"><span class="keyword">project</span>(hellocv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定查找头文件的目录                                                                                                                                 </span></span><br><span class="line"><span class="keyword">include_directories</span>(/usr/<span class="keyword">include</span>)</span><br><span class="line"><span class="comment"># 指定查找库文件的目录                                                                                                                                 </span></span><br><span class="line"><span class="keyword">link_directories</span>(/usr/lib/x86_64-linux)</span><br><span class="line"><span class="comment"># 指定项目的target，产生一个二进制                                                                                                                     </span></span><br><span class="line"><span class="keyword">add_executable</span>(hellocv hello_cv.cpp)</span><br><span class="line"><span class="comment"># 指定链接库，优先链接动态库                                                                                                                           </span></span><br><span class="line"><span class="keyword">target_link_libraries</span>(hellocv opencv_core opencv_highgui opencv_imgproc)</span><br></pre></td></tr></table></figure>
+
+<p>最后得到的结果：<br><img src="/images/cmake-tutorial/opencv.png" alt="opencv编译"></p>
+<p>运行结果：<br><img src="/images/cmake-tutorial/opencv-demo.png" alt="opencv demo"></p>
+<h2 id="使用find-package"><a href="#使用find-package" class="headerlink" title="使用find_package"></a>使用find_package</h2><p>引入opencv非常容易，但有一个新问题。不同的平台上，opencv的安装地址可能不一样。如<br>何才能更加通用的探测各个平台的opencv，并正确的链接呢？</p>
+<p>cmake为了解决这个问题，要求所有兼容cmake的包，都编写对应的cmake模块。比如opencv<br>包安装文件，就包含了对应的cmake模块：<br><img src="/images/cmake-tutorial/opencv-cmake-s.png" alt="opencv cmake"></p>
+<p>这里的.cmake文件被安装到 <code>/usr/share</code> 文件夹下。这个是cmake会搜索模块的路径之一。</p>
+<ul>
+<li>具体参见：<a href="https://cmake.org/cmake/help/v3.0/command/find_package.html">https://cmake.org/cmake/help/v3.0/command/find_package.html</a></li>
+</ul>
+<p>因此，我们只需要很简单的修改我们的cmake文件：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">2.8</span>)</span><br><span class="line"><span class="keyword">project</span>(hellocv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根据 OpenCVConfig.cmake 里面的注释，可以知道用法：</span></span><br><span class="line"><span class="keyword">find_package</span>(OpenCV REQUIRED)</span><br><span class="line"><span class="keyword">include_directories</span>(<span class="variable">$&#123;OpenCV_INCLUDE_DIRS&#125;</span>) </span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定二进制和链接库</span></span><br><span class="line"><span class="keyword">add_executable</span>(hellocv hello_cv.cpp)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(hellocv <span class="variable">$&#123;OpenCV_LIBS&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样即保证了跨平台，又很简单。赶快试一下吧！</p>
+<h1 id="高级用法"><a href="#高级用法" class="headerlink" title="高级用法"></a>高级用法</h1><h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>cmake使用 <code>${}</code> 进行变量的引用。例如：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$&#123;PROJECT_NAME&#125;</span> <span class="comment">#返回项目名称，由project命令定义的</span></span><br></pre></td></tr></table></figure>
+
+<p>关于变量的知识：</p>
+<ul>
+<li>虽然cmake不区分命令的大小写，但区分变量的大小写</li>
+<li>使用 <code>set</code> 命令，自定义变量</li>
+<li>使用 <code>$ENV{NAME}</code> 命令，调用系统的环境变量了。</li>
+<li>使用 <code>message</code> 命令可以打印内容。类似shell，双引号引用的内容内部的变量会展开。<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span>(HELLO_SRC main.c)</span><br><span class="line"><span class="keyword">MESSAGE</span>(STATUS <span class="string">"HOME dir: $ENV&#123;HOME&#125;"</span>)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>cmake的变量作用域：</p>
+<ul>
+<li>函数作用域</li>
+<li>目录作用域</li>
+<li>保存在全局Cache中<br>使用的时候要额外注意。</li>
+</ul>
+<h3 id="常用变量"><a href="#常用变量" class="headerlink" title="常用变量"></a>常用变量</h3><table>
+<thead>
+<tr>
+<th>变量名</th>
+<th>变量说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PROJECT_NAME</code></td>
+<td>返回通过PROJECT指令定义的项目名称</td>
+</tr>
+<tr>
+<td><code>PROJECT_SOURCE_DIR</code></td>
+<td>CMake源码地址，即cmake命令后指定的地址</td>
+</tr>
+<tr>
+<td><code>PROJECT_BINARY_DIR</code></td>
+<td>运行cmake命令的目录</td>
+</tr>
+<tr>
+<td><code>CMAKE_CURRENT_SOURCE_DIR</code></td>
+<td>当前处理的CMakeLists.txt所在的路径</td>
+</tr>
+<tr>
+<td><code>CMAKE_CURRENT_LIST_DIR</code></td>
+<td>当前文件夹</td>
+</tr>
+<tr>
+<td><code>CMAKE_CURRENT_LIST_FILE</code></td>
+<td>当前文件</td>
+</tr>
+<tr>
+<td><code>CMAKE_CURRENT_LIST_LINE</code></td>
+<td>当前行</td>
+</tr>
+<tr>
+<td><code>CMAKE_RUNTIME_OUTPUT_DIRECTORY</code></td>
+<td>生成可执行文件路径</td>
+</tr>
+<tr>
+<td><code>CMAKE_LIBRARY_OUTPUT_DIRECTORY</code></td>
+<td>生成库的文件夹路径</td>
+</tr>
+<tr>
+<td><code>CMAKE_BUILD_TYPE</code></td>
+<td>指定基于make的产生器的构建类型（Release，Debug）</td>
+</tr>
+<tr>
+<td><code>CMAKE_C_FLAGS</code></td>
+<td>.C文件编译选项，如 <code>-std=c99 -O3 -march=native*</code></td>
+</tr>
+<tr>
+<td><code>CMAKE_CXX_FLAGS</code></td>
+<td>.CPP文件编译选项，如 <code>-std=c++11 -O3 -march=native*</code></td>
+</tr>
+<tr>
+<td><code>CMAKE_CURRENT_BINARY_DIR</code></td>
+<td>target编译目录</td>
+</tr>
+<tr>
+<td><code>CMAKE_INCLUDE_PATH</code></td>
+<td>查找头文件的目录</td>
+</tr>
+<tr>
+<td><code>CMAKE_LIBRARY_PATH</code></td>
+<td>查找库文件的目录</td>
+</tr>
+<tr>
+<td><code>CMAKE_INSTALL_PREFIX</code></td>
+<td>配置安装路径，默认为 <code>/usr/local</code></td>
+</tr>
+<tr>
+<td><code>CMAKE_MAJOR_VERSION</code></td>
+<td>CMAKE 主版本号,比如 2.4.6 中的 2</td>
+</tr>
+<tr>
+<td><code>CMAKE_MINOR_VERSION</code></td>
+<td>CMAKE 次版本号,比如 2.4.6 中的 4</td>
+</tr>
+<tr>
+<td><code>CMAKE_PATCH_VERSION</code></td>
+<td>CMAKE 补丁等级,比如 2.4.6 中的 6</td>
+</tr>
+<tr>
+<td><code>CMAKE_SYSTEM_NAME</code></td>
+<td>不包含版本的系统名,比如 Linux</td>
+</tr>
+<tr>
+<td><code>CMAKE_SYSTEM_PROCESSOR</code></td>
+<td>处理器名称,比如 i686</td>
+</tr>
+</tbody></table>
+<h2 id="批量查找文件"><a href="#批量查找文件" class="headerlink" title="批量查找文件"></a>批量查找文件</h2><p>批量查找可以按照规则查找对应的文件。常用两个命令：</p>
+<ul>
+<li><code>file(GLOB &lt;variable&gt; &lt;pattern&gt;)</code> : 这个命令按照模式查找文件，并保存在变量中</li>
+<li><code>aux_source_directory(&lt;dir&gt; &lt;variable&gt;)</code> ：将文件夹下所有文件找到，并保存在变<br>量中。</li>
+</ul>
+<p>注意：不推荐使用这个方式管理源文件。大型项目手动逐个管理源文件会更加不容易出错误。</p>
+<h2 id="管理源文件"><a href="#管理源文件" class="headerlink" title="管理源文件"></a>管理源文件</h2><p>最佳实践：</p>
+<ul>
+<li>使用变量保存源文件</li>
+<li>增加源文件时，更新 <code>CMakeLists.txt</code> 。这样cmake知道项目需要重新初始化。</li>
+</ul>
+<p>注意：不要用批量查找文件的功能管理源文件。</p>
+<h2 id="设置编译器选项"><a href="#设置编译器选项" class="headerlink" title="设置编译器选项"></a>设置编译器选项</h2><p>有部分变量，比如： <code>CMAKE_CXX_FLAGS</code> 不需要手动设置，可以使用命令：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_compile_options</span>(-std=c++<span class="number">0</span>x) <span class="comment"># CMake 2.8.12 or newer</span></span><br></pre></td></tr></table></figure>
+<p>一般这个命令用来开启优化或者C++新特性。</p>
+<p>如果要设定预处理的宏：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_definitions</span>(-DFOO -DBAR ...)</span><br></pre></td></tr></table></figure>
+<p>借助这个命令可以实现不同平台的条件编译</p>
+<h2 id="自定义target"><a href="#自定义target" class="headerlink" title="自定义target"></a>自定义target</h2><p>有时候，我们需要在编译前或后，调用一些命令来生成一些文件。</p>
+<h3 id="生成文件"><a href="#生成文件" class="headerlink" title="生成文件"></a>生成文件</h3><p>如果想要在cmake生成的Makefile里，定义一个生成文件的规则，可以使用<br><code>add_custom_command</code> 命令：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_custom_command</span>(</span><br><span class="line">  OUTPUT &lt;output...&gt;</span><br><span class="line">  <span class="keyword">COMMAND</span> &lt;<span class="keyword">command</span>...&gt;</span><br><span class="line">  DEPENDS &lt;depends...&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>最终生成的 <code>Makefile</code> 里的内容是：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">OUTPUT: DEPENDS</span></span><br><span class="line">        COMMAND</span><br></pre></td></tr></table></figure>
+
+<h3 id="给现有的target增加hook钩子"><a href="#给现有的target增加hook钩子" class="headerlink" title="给现有的target增加hook钩子"></a>给现有的target增加hook钩子</h3><p>此外，如果想要在已有的target的流程前后，增加命令 (即，增加hook钩子)，也可以使用<br><code>add_custom_command</code> ：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_custom_command</span>(</span><br><span class="line">  <span class="keyword">TARGET</span> &lt;<span class="keyword">target</span>&gt;</span><br><span class="line">  PRE_BUILD | PRE_LINK | POST_BUILD</span><br><span class="line">  <span class="keyword">COMMAND</span> &lt;<span class="keyword">command</span>&gt;</span><br><span class="line">  WORKING_DIRECTORY &lt;dir&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="增加一个没有输出的target"><a href="#增加一个没有输出的target" class="headerlink" title="增加一个没有输出的target"></a>增加一个没有输出的target</h3><p>使用 <code>add_custom_target</code> 可以新建一个没有输出的target。只要依赖变更，它总是会触<br>发构建。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_custom_target</span>(</span><br><span class="line">  &lt;name&gt; ALL </span><br><span class="line">  <span class="keyword">COMMAND</span> &lt;commands...&gt;</span><br><span class="line">  DEPENDS &lt;depends...&gt;</span><br><span class="line">  WORKING_DIRECTORY &lt;dir&gt;</span><br><span class="line">  SOURCES &lt;srcs..&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="调试CMake"><a href="#调试CMake" class="headerlink" title="调试CMake"></a>调试CMake</h2><p>当项目很大很复杂的时候，往往cmake文件也需要调试。最常见的调试办法就是打log。在<br>cmake中，就是使用 <code>message</code> 命令：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message</span>([&lt;mode&gt;] <span class="string">"message to display"</span> ...)</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
+
+<p>其中mode可以选择：</p>
+<ul>
+<li>STATUS ： 普通打印状态</li>
+<li>WARNING ： 打印警告，cmake继续执行，并生成构建文件</li>
+<li>SEND_ERROR ： 打印错误，cmake继续执行，但不生成构建文件</li>
+<li>FATAL_ERROR ： 打印错误，cmake停止执行。</li>
+</ul>
+<p>如果你的cmake过于复杂，且有bug，通过打印log来进行调试吧！</p>
+<h2 id="集成单元测试"><a href="#集成单元测试" class="headerlink" title="集成单元测试"></a>集成单元测试</h2><h2 id="安装和打包"><a href="#安装和打包" class="headerlink" title="安装和打包"></a>安装和打包</h2><h3 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h3><h3 id="打包成deb"><a href="#打包成deb" class="headerlink" title="打包成deb"></a>打包成deb</h3><h3 id="使用dpkg安装"><a href="#使用dpkg安装" class="headerlink" title="使用dpkg安装"></a>使用dpkg安装</h3><h1 id="案例：真实的项目"><a href="#案例：真实的项目" class="headerlink" title="案例：真实的项目"></a>案例：真实的项目</h1><h2 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h2><h1 id="其他补充-放入动态库专题"><a href="#其他补充-放入动态库专题" class="headerlink" title="其他补充(放入动态库专题)"></a>其他补充(放入动态库专题)</h1><h2 id="动态库的加载问题"><a href="#动态库的加载问题" class="headerlink" title="动态库的加载问题"></a>动态库的加载问题</h2><h3 id="LD-LIBRARY"><a href="#LD-LIBRARY" class="headerlink" title="LD_LIBRARY"></a>LD_LIBRARY</h3><h3 id="–rpath-–rpath-link"><a href="#–rpath-–rpath-link" class="headerlink" title="–rpath, –rpath-link"></a>–rpath, –rpath-link</h3>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+  </div>
+
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">crackhopper</p>
+  <div class="site-description" itemprop="description">一个做算法的技术宅</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">crackhopper</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el: '#valine-comments',
+      verify: false,
+      notify: false,
+      appId: 'CgYmCkO7FRljeD1Y1MRPlOnN-gzGzoHsz',
+      appKey: 'Dufr6C96FrKMfcvai8LqRTNt',
+      placeholder: "Just go go",
+      avatar: 'mm',
+      meta: guest,
+      pageSize: '10' || 10,
+      visitor: false,
+      lang: 'zh-cn' || 'zh-cn',
+      path: location.pathname,
+      recordIP: false,
+      serverURLs: ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
