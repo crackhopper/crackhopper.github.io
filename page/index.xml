@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pages on crackhopper的技术博客</title><link>https://crackhopper.github.io/page/</link><description>Recent content in Pages on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Mon, 01 Jan 2024 10:00:00 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/page/index.xml" rel="self" type="application/rss+xml"/><item><title>关于我</title><link>https://crackhopper.github.io/about/</link><pubDate>Mon, 01 Jan 2024 10:00:00 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/about/</guid><description>&lt;h2 id="关于我"&gt;关于我
+&lt;/h2&gt;&lt;p&gt;我是 crackhopper，一名热爱技术的开发者。&lt;/p&gt;
+&lt;h3 id="技术栈"&gt;技术栈
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;编程语言&lt;/strong&gt;: C++, Python, JavaScript&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;图形学&lt;/strong&gt;: OpenGL, 游戏引擎开发&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;机器学习&lt;/strong&gt;: 计算机视觉, 深度学习&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Web开发&lt;/strong&gt;: 全栈开发&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="兴趣领域"&gt;兴趣领域
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;C++, Graphics, Game, AI/ML&lt;/li&gt;
+&lt;li&gt;游戏引擎开发&lt;/li&gt;
+&lt;li&gt;编译器技术&lt;/li&gt;
+&lt;li&gt;独立游戏开发&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="联系方式"&gt;联系方式
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Email: &lt;a class="link" href="mailto:crackhopper@gmail.com" &gt;crackhopper@gmail.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;GitHub: &lt;a class="link" href="https://github.com/crackhopper" target="_blank" rel="noopener"
+&gt;crackhopper&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;em&gt;爱游戏的技术宅&lt;/em&gt;&lt;/p&gt;</description></item><item><title>归档</title><link>https://crackhopper.github.io/archives/</link><pubDate>Mon, 01 Jan 2024 10:00:00 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/archives/</guid><description>&lt;p&gt;这里会显示所有文章的归档列表。&lt;/p&gt;
+&lt;p&gt;Hugo 会自动生成按时间排序的文章列表。&lt;/p&gt;</description></item></channel></rss>

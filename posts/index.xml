@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Sat, 01 Jan 2022 10:26:07 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>起点从这里开始</title><link>https://crackhopper.github.io/2022/01/01/%E8%B5%B7%E7%82%B9%E4%BB%8E%E8%BF%99%E9%87%8C%E5%BC%80%E5%A7%8B/</link><pubDate>Sat, 01 Jan 2022 10:26:07 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2022/01/01/%E8%B5%B7%E7%82%B9%E4%BB%8E%E8%BF%99%E9%87%8C%E5%BC%80%E5%A7%8B/</guid><description>&lt;h2 id="始从辞职"&gt;始从辞职
+&lt;/h2&gt;&lt;p&gt;我从去年4月份从公司辞职，到现在在家创业已有大半年了。对我来说，做出了辞职的这个决定，过程是艰难的，心情是忐忑的。我其实并没有信心真的能做好，能赚到钱养家。但去公司工作，目前的我已经到了瓶颈期。回顾过去7年，零零碎碎的若干份工作：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在中小型公司：做过两三年；钱少，活多，技术内容少，成长有限仅适合初级技术人员。公司成长与自己没半毛钱关系，公司失败自己找下家也没什么优势。&lt;/li&gt;
+&lt;li&gt;在初创公司：做过两年；钱少，活多，技术内容面广但没有精力深入，成长速度快但更多是公司管理方面的能力。选好合伙人太难，初期聊还可以，后期合作过程中会发现很多事情基本没法磨合。公司大股东的能力和人品也至关重要。&lt;/li&gt;
+&lt;li&gt;在大型公司：做过两年；钱多，活一般，技术面窄，深入程度一般，成长速度低，适合各个级别的技术人员。可能由于我选择做了业务算法，业务压力大导致的。但整体来说，如果涉及到管理，那么向上管理和技术上选择if-else更加容易混的好，大量的会议和大量的跟各种人的沟通严重降低个人提升的效率，有提升的就是办公室政治的水平。&lt;/li&gt;
+&lt;li&gt;大型公司纯技术岗，比如MSRA：没做过，岗位少，我的技术水平也没有达标；获取这样的岗位对我来说还需要积累。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;想了又想，我最终还是决定自己辞职用自己的积蓄创业，做一个开发独立游戏的工作室。在做游戏的同时，追求自己的技术进步。&lt;/p&gt;
+&lt;h2 id="关于geek和技术"&gt;关于geek和技术
+&lt;/h2&gt;&lt;p&gt;有时候有的朋友会说我是geek。对geek，我的理解是genius+freak。但长期以来，我并不觉得自己是geek，只觉得自己就是个比较喜欢技术的工程师罢了，谈不上genius，也谈不上freak。因此说我是geek的，对我来说更是一种褒奖。geek其实更像是我的一种追求和态度，并不是我已经达到的状态。&lt;/p&gt;
+&lt;p&gt;回首当初，我跟技术的缘分，源自于C++，源于OpenGL。在2010年我还在读大三的时候，自己到图书馆扫书的时候，发现了C++，以及MFC编程的书。我本身是数学专业的，这种东西按理说跟我关系不大，我只需要搞明白matlab就足够了。所以一切的一切就是从我拿起了这本书开始的。随后，通过互联网检索，我拜读了《C++ Primer(4th edition)》，并选修了《数据结构》。跟数据结构的老师混熟了，从而参与了老师的项目：基于OpenGL的虚拟植物研究。那个的项目对我影响巨大：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;首先是自己解析文件格式，让我理解了文件原来是一种包含格式的数据，后缀标识了格式，让我有种不明觉厉的感觉。毕竟在那之前，我对文件的理解就是双击打开。&lt;/li&gt;
+&lt;li&gt;其次是学习OpenGL，看到一个个熟悉的数学公式，各种变换带来各种效果、着色渲染的公式、最终呈现出一个个栅格化的像素。我没想到数学原来可以这么有意思。（数学系的课程反而太过枯燥）&lt;/li&gt;
+&lt;li&gt;最后，自己写程序，设计数据结构、算法，利用OpenGL，最终把一个三维扫描的植物真实的呈现在计算机系统里。我大受震撼，并且对编程的兴趣前所未有的激发了起来。那个画面至今回想起来仍令我感到兴奋。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以，图形学是我的本命。只不过我后来跑骗了……除了刚毕业两三年我还在游戏公司做了游戏开发工作，算是和图形有点沾边。后续考研，我的方向变成了机器学习（虽然我考的是计算数学，而且听说有实验室研究计算几何的，但那个老师招生早就满了，我就不得不去了隔壁研究神经网络的实验室了）。后来参与创业公司，又变成了全栈Web工程师。具体细节就不一一表明，总之我广泛的学习了各类技术，较为深入学习了ML/CV。并一直在Web和ML领域切换，从事相关工作。&lt;/p&gt;
+&lt;p&gt;其实很难说，ML/CV没意思，甚至很难说Web开发没意思，因此我其实都挺沉迷的。这就导致了我乱七八糟的技术栈，而没有真正专家级别的能力（好像ML/CV也差不多达到专家了，至少面试问题不大；但我自己仍然觉得不够专家）。业余时间，我还更加广泛的阅读，对编译器技术也有很大的兴趣，操作系统也读了一些。&lt;/p&gt;
+&lt;p&gt;然而我的这种行为无疑会带来一些弊端，毕竟人的精力是有限的。所以首先，我应该抛弃的就是管理方面的岗位，低效的与人沟通会浪费大量的精力（管理能力是需要的，往往学习起来并没有多复杂，但是实践管理确是一个繁琐的活，如果不是自己的公司，我实在想不出为啥我要花费这么多宝贵的精力给资本家奉献）。其次，我的技术栈也应该更加收敛，要论本心，我个人最喜欢的仍然是图形学。最后，我做的事情要能养家，或者提升养家的能力。&lt;/p&gt;
+&lt;h2 id="游戏制作计划"&gt;游戏制作计划
+&lt;/h2&gt;&lt;p&gt;要说除了技术，还有什么是我着迷的，大概就是ACGN了，因此我也是B站和起点的资深用户。但我又相对不那么资深，毕竟还要分出来大部分精力来搞技术，所以也就每个季度追3-5个新番、漫画偶尔看、小说追若干个更新、游戏则是“云”的多一些（毕竟自己玩更费时间，但有时候也会自己玩）。&lt;/p&gt;
+&lt;p&gt;制作一款好的游戏无疑是艰难的，涉及到剧情、美术、技术三大方面。在我内心里，真正的好游戏肯定要求剧情好，其他两个其实相对可以妥协，比如《undetale》、《我在七年后等你》等等游戏。所以按照游戏玩家四象限的分类，我应该属于探索型玩家。而我的内心也真的很想做一个剧情很好，能在玩家心头回响的游戏。&lt;/p&gt;
+&lt;p&gt;跟制作独立游戏相比，开发独立游戏是简单的。因为我本身就是个做技术的。不管是用Unity还是Unreal，对我都不会是多大的负担。而独立游戏往往又不需要非常深入的引擎特性。但身为追求geek的人，如果这么简单的堆逻辑就制作出一款游戏，对我来说无疑是难以接受的。&lt;/p&gt;
+&lt;p&gt;因此我打算自己开发个游戏引擎，用自己的游戏引擎做个游戏。我知道，会有N个人语重心长的劝我：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;用现有的游戏引擎可以节约精力，毕竟游戏开发的工作量还是很大的&lt;/li&gt;
+&lt;li&gt;自己写的游戏引擎肯定没商业游戏引擎好，至少自己很难做硬件指令层面上的多平台优化&lt;/li&gt;
+&lt;li&gt;商业游戏引擎也更容易招人，对工作室后续的发展也有好处&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我自己也总是被上面这些原因打动，但同时也被自己想做引擎的想法打动，毕竟，这次不做那么永远也不会做引擎了。用理智分析，在商业引擎便宜可用的情况下，做引擎无论何时都只会对公司经营带来负向压力。&lt;/p&gt;
+&lt;p&gt;但我不仅仅希望自己坚持geek的追求，我也希望自己的公司工作室也坚持geek的追求。有的事情，并不追求更大的经济效益，而是追求更加前沿的可能性。另一个反对的声音则是：有钱了再做，先赚钱；但往往不从一开始就贯彻愿景的组织，也很难后续树立自己的愿景。因此，即使艰难，那么在有可能选择的时候，我仍然会坚持选择the-hard-way。当前开发独立游戏的场景，自研引擎仍然可以作为一个选择，毕竟独立游戏需要的特性较少、往往以2D为主、性能又没那么敏感。而我对于图形学，有着无止境的追求，我一定可以完成一款支持独立游戏的引擎。&lt;/p&gt;
+&lt;p&gt;为什么不用开源？原因是开源不等于免费，同时开源也不等于简单。基于开源框架做确实有可能是我的一种选择，但如果不能做到对源码掌握的深度到位、对源码设计上的trade-off有深入的理解，那么我还是会选择自己开发。毕竟选择自研的目的是为了不受束缚，有追求极致的可能性；但选择开源又不深入理解开源，那如何追求极致呢？&lt;/p&gt;
+&lt;h2 id="尾声"&gt;尾声
+&lt;/h2&gt;&lt;p&gt;如果我的计划执行完成后，游戏没有盈利，或者赚钱压力很大。那么我可能不得不再找个公司工作了，这次我会选择纯技术的岗位，而游戏引擎研发的经验想必对我找工作是会有帮助的。&lt;/p&gt;
+&lt;p&gt;最后的最后，祝我一切顺利。&lt;/p&gt;</description></item><item><title>小白学写编译器：1.编译基础概念</title><link>https://crackhopper.github.io/2020/06/14/%E5%B0%8F%E7%99%BD%E5%AD%A6%E5%86%99%E7%BC%96%E8%AF%91%E5%99%A81.%E7%BC%96%E8%AF%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5/</link><pubDate>Sun, 14 Jun 2020 21:49:51 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2020/06/14/%E5%B0%8F%E7%99%BD%E5%AD%A6%E5%86%99%E7%BC%96%E8%AF%91%E5%99%A81.%E7%BC%96%E8%AF%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5/</guid><description>&lt;h1 id="机器指令"&gt;机器指令
+&lt;/h1&gt;&lt;p&gt;我们知道CPU是计算机的大脑，也知道计算机只认识由0和1组成的二进制码，比如&amp;quot;1001010110101010&amp;quot; 这样的。具体来说，当计算机的CPU遇到一个这样的二进制码时，会做出相应的动作：读取内存、写入内存、执行加法、执行乘法、向其他设备发送IO指令(读取键盘、写入显示器)等等。每个CPU都有自己所识别的二进制码，我们称之为 &lt;strong&gt;机器指令&lt;/strong&gt; (machine code) 。将一系列机器指令组合成一个集合，那么计算机就可以完成很多复杂的计算和行为，这种机器指令的集合，我们称呼为 &lt;strong&gt;程序&lt;/strong&gt; (program)。当计算机运行一个程序的时候，我们会说计算机正在执行一个 &lt;strong&gt;任务&lt;/strong&gt; (task) 或 &lt;strong&gt;进程&lt;/strong&gt; (process) 。&lt;/p&gt;
+&lt;p&gt;最早的程序员是使用机器语言编写程序的。比如早期的大家用纸带编写程序，通过对纸带上是否打孔来区分是0还是1，从而识别出机器指令，让CPU执行计算。而如今随着技术的发展，开发程序的工作即被便利化也被复杂化了。大家不再使用二进制开发程序，而是使用编程语言(programming language)。&lt;/p&gt;
+&lt;p&gt;机器指令插图&lt;/p&gt;
+&lt;h1 id="编程语言和编译器"&gt;编程语言和编译器
+&lt;/h1&gt;&lt;p&gt;二进制代码太难以记忆，并且编写的程序很难阅读。因此人们首先开发了叫做 &lt;strong&gt;汇编&lt;/strong&gt; (assembly) 的 &lt;strong&gt;编程语言&lt;/strong&gt; (programming language)，用英文字母来代替机器指令。汇编语言是比机器指令更容易理解的指令集，也更容易开发程序。但英文字母并不能被CPU理解，因此需要由 &lt;strong&gt;汇编器&lt;/strong&gt; (assembler) 把汇编代码翻译成机器指令。&lt;/p&gt;
+&lt;p&gt;后来人们发现这种方式非常有效果。因此发明了更多好用的编程语言，也更加接近自然语言的表达方式，比如Fortran，Lisp，C语言等等。由编程语言编写的代码称为 &lt;strong&gt;源代码&lt;/strong&gt; (source code) ，机器指令的集合称为 &lt;strong&gt;目标代码&lt;/strong&gt; (object code) 。而把源代码翻译成目标代码的工具，称为 &lt;strong&gt;编译器&lt;/strong&gt; (compiler)&lt;/p&gt;
+&lt;p&gt;编译器的图示&lt;/p&gt;
+&lt;p&gt;编译器本身是一个非常复杂的程序。而开发编译器也是一个非常复杂的工程。编译器的作用是生产程序，而编译器本身也是程序。因此编译器也是由编程语言开发的。那么困惑的点来了，如果编译器是由编程语言开发的，那么编译器的源代码由谁来翻译？实际上，第一版编译器是由机器指令开发的，实现了简单的汇编语言；随后用汇编语言再次开发了最初版本的C语言；随后由C语言本身开发C语言的编译器。当一个语言可以用自己开发自己的编译器，这种语言我们说它实现了 &lt;strong&gt;自举&lt;/strong&gt; (bootstrap)。和编译器工程特别相似的就是机械领域的大部分机床，第一代机床都是手工制作的；随后各代机床利用前代机床生产的零件，提升自己的性能。大部分发达国家的技术垄断都是这种需要多轮迭代的技术。&lt;/p&gt;
+&lt;p&gt;和编译器相似的一个概念叫做 &lt;strong&gt;解释器(interpreter)&lt;/strong&gt; 。解释器并不会产生目标程序，而是直接将源代码一句一句的转化为机器指令进行执行。&lt;/p&gt;
+&lt;p&gt;解释器的图示&lt;/p&gt;
+&lt;p&gt;举两个例子：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C语言由它的编译器——gcc进行编译，生成机器二进制码组成的程序，由CPU直接执行。类似C语言这种编译生成由CPU直接执行的机器指令的语言，我们叫做 &lt;strong&gt;编译型语言&lt;/strong&gt; 。&lt;/li&gt;
+&lt;li&gt;javascript语言由它的解释器——浏览器进行解释执行。javascript语言并不会生成程序，真正被CPU执行的程序仍然是浏览器。而浏览器将javascript代码动态的转化为机器指令。这种由其他程序(解释器)作为宿主，解释执行的语言，我们叫做 &lt;strong&gt;解释型语言&lt;/strong&gt; 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;实际上，很多现代的编程语言可以说是编译型和解释型相混合的。典型的例子就是java。java会把源代码翻译成一种叫中间代码的文件(.class文件)，中间代码并不能被CPU理解，但是可以被一个叫做JVM的程序理解并执行。可以看到下图中，java的编译器既包含编译器也包含解释器。这里面的解释器有另一个名字，叫做 &lt;strong&gt;虚拟机&lt;/strong&gt; (Virtual Machine)，因为它像一个虚拟的机器一样。&lt;/p&gt;
+&lt;p&gt;java编译器的图示。&lt;/p&gt;
+&lt;p&gt;也许有人会说java最终是被解释执行的。但其实在java中也引入了一个叫JIT(Just In Time Compiler)的技术，这个技术会将高频使用的中间代码在运行时动态地编译成机器代码。在这样的情况下，就更难说java是编译型还是解释型了。&lt;/p&gt;
+&lt;h1 id="编译器的构造"&gt;编译器的构造
+&lt;/h1&gt;&lt;p&gt;接下来，我们较为浅显的看一下编译器的构造。&lt;/p&gt;
+&lt;h2 id="宏观视角"&gt;宏观视角
+&lt;/h2&gt;&lt;p&gt;从简单粗暴的方式来看，编译器主要是两个部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;分析部分：分析源代码，形成一个中间结构（中间代码）&lt;/li&gt;
+&lt;li&gt;综合部分：从中间结构，翻译成目标代码（机器代码）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中，分析部分也叫做编译器前端(front end)，综合部分也叫做编译器后端(back end)。&lt;/p&gt;
+&lt;p&gt;宏观视角图&lt;/p&gt;
+&lt;h2 id="微观视角"&gt;微观视角
+&lt;/h2&gt;&lt;p&gt;如果更加细节的看编译器的构造，可以分为以下部分：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;词法分析：将源代码转化为token序列 (类似于把一篇文章，按照单词拆分开)&lt;/li&gt;
+&lt;li&gt;语法分析：将token序列组织成语法树 (类似于把单词，按照语法组合成句子)&lt;/li&gt;
+&lt;li&gt;语义分析：验证语法树上的元素，做一些转换 (类似于把句子的语法格式标准化)&lt;/li&gt;
+&lt;li&gt;中间代码生成器：将语法树转化为 某种更基础格式的代码序列 (类似于把一个标准化的中文句子翻译成标准化的英文句子)&lt;/li&gt;
+&lt;li&gt;机器无关代码优化：对中间代码优化（类似于将英文句子写的更加优美）&lt;/li&gt;
+&lt;li&gt;代码生成器：把中间代码转化为目标代码 (类似于将英文句子转化为某种方言下的英文，比如美式英文)&lt;/li&gt;
+&lt;li&gt;机器相关代码优化：对目标代码优化（类似与对美式英文的文章进行润色）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;微观视角图&lt;/p&gt;
+&lt;h2 id="一个例子"&gt;一个例子
+&lt;/h2&gt;&lt;p&gt;我们举一个龙书上的例子，考虑下面的语句&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;position &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; initial&lt;span style="color:#0550ae"&gt;+&lt;/span&gt;rate&lt;span style="color:#0550ae"&gt;*&lt;/span&gt;&lt;span style="color:#0550ae"&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/let-us-write-compiler/compile.png"
+loading="lazy"
+alt="compile"
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;词法分析：将代码中的代词分离成一个个token。其中id代表标识符(identifier)。每个标识符被存入到对应的符号表中。词法分析输出了token序列。&lt;/li&gt;
+&lt;li&gt;语法分析：把token按照结构组织起来。先做乘法再做加法，最终进行赋值。语法分析的主要结果就是形成了语法树(syntax tree)。&lt;/li&gt;
+&lt;li&gt;语义分析：假设rate是浮点类型，60是整数类型，由于他们在内存中表达形式不一样，无法直接做乘法运算。于是语义分析中，将60转化为了浮点类型。语义分析主要就是校验语法树。&lt;/li&gt;
+&lt;li&gt;中间代码生成：我们将语句转化为更接近机器能理解的语句。常用的一种格式叫做三地址代码 (three-address code) 。即一个语句中最多有三个变量。&lt;/li&gt;
+&lt;li&gt;代码优化器：对代码进行化简，让代码数量变得更少。&lt;/li&gt;
+&lt;li&gt;代码生成器：形成机器代码。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="将多个步骤组合成趟pass"&gt;将多个步骤组合成趟(pass)
+&lt;/h2&gt;&lt;p&gt;之前我们对编译器的拆解是逻辑拆解。在实际实现的时候，多个逻辑步骤会组合到一起，形成一个 &lt;strong&gt;趟&lt;/strong&gt; (pass/phrase) 。每趟读入一个输入文件并产生一个输出文件。比如前端步骤中的词法、语法、语义以及中间代码生成可以组合成一趟；代码优化可以单独组合成一趟。&lt;/p&gt;
+&lt;h1 id="总结"&gt;总结
+&lt;/h1&gt;&lt;p&gt;我们浅显地讲解了程序的概念，程序是由机器指令构成的集合。讲解了程序是如何制作的，程序是编译器将源代码编译成目标代码，从而制作出来的。&lt;/p&gt;
+&lt;p&gt;进一步的，我们探索了编译器的构造。了解了编译器的前端的组成部分：词法分析、语法分析、语义分析和中间代码生成；编译器后端的组成部分：机器无关代码优化，机器相关代码优化，生成目标代码。此外，将一系列步骤组合到一起，从一个输入文件产生一个输出文件的过程叫做趟。&lt;/p&gt;
+&lt;p&gt;后续，我们将从编译器的构造一步一步展开讨论。下一节我们讨论的是词法分析。&lt;/p&gt;</description></item><item><title>cmake入门</title><link>https://crackhopper.github.io/2020/02/15/cmake%E5%85%A5%E9%97%A8/</link><pubDate>Sat, 15 Feb 2020 20:48:22 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2020/02/15/cmake%E5%85%A5%E9%97%A8/</guid><description>&lt;h1 id="简介"&gt;简介
+&lt;/h1&gt;&lt;p&gt;CMake是一个主要用来管理C++项目的工具。主要特点是：更好的解决C++项目跨平台编译带来的配置问题。&lt;/p&gt;
+&lt;p&gt;CMake提供很多实用的功能，本文简单介绍我项目里常用的一些特性。&lt;/p&gt;
+&lt;p&gt;如何安装CMake这里就不介绍了，可以自行搜索。安装好后要确保在命令行可以执行cmake命令。&lt;/p&gt;
+&lt;h1 id="编译一个可执行文件"&gt;编译一个可执行文件
+&lt;/h1&gt;&lt;h2 id="hello-world项目"&gt;Hello World项目
+&lt;/h2&gt;&lt;p&gt;CMake通过找寻目录下的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 文件，读取文件里的内容对项目进行构建。使用方式是&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cmake &amp;lt;project_dir&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;其中 &lt;code&gt;&amp;lt;project_dir&amp;gt;&lt;/code&gt; 是 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 所在的文件夹。cmake的工作流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;cmake读取 &lt;code&gt;&amp;lt;project_dir&amp;gt;&lt;/code&gt; 文件夹下面的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 文件。&lt;/li&gt;
+&lt;li&gt;执行平台解析，基础库解析，依赖库查找。如果有错误则暴露错误，如果成功则生成一系列用来构建的文件。其中最重要的一个文件叫 &lt;code&gt;Makefile&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;用户通过执行 make ，读取 &lt;code&gt;Makefile&lt;/code&gt; 对项目进行构建。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="简单的例子"&gt;简单的例子
+&lt;/h3&gt;&lt;p&gt;看一个简单的例子，目录层级如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/hello-world.png"
+loading="lazy"
+alt="hello-world"
+&gt;
+其中，两个文件的内容：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;helloworld.cpp&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&amp;lt;iostream&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; argc&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;char&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt;argv&lt;span style="color:#1f2328"&gt;[]){&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Hello World!&amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;CMakeLists&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8.9&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;helloworld.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里解释一下 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 的内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第1行指定最低的cmake版本&lt;/li&gt;
+&lt;li&gt;第2行指定项目名称&lt;/li&gt;
+&lt;li&gt;第3方添加一个任务，生成可执行文件 &lt;code&gt;hello&lt;/code&gt; 。生成这个文件需要用到 &lt;code&gt;helloworld.cpp&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;cmake不区分命令的大小写 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="构建helloworld"&gt;构建helloworld
+&lt;/h3&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/make-hello-world-s.png"
+loading="lazy"
+alt="make-hello-world-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;解释一下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cmake .&lt;/code&gt; 运行cmake命令，查找目录为 &lt;code&gt;.&lt;/code&gt; (即当前目录) 。这个命令会生成一系列文件。包括一个重要的 &lt;code&gt;Makefile&lt;/code&gt; 文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make&lt;/code&gt; 会在当前文件夹查找 &lt;code&gt;Makefile&lt;/code&gt; 文件 ，然后对项目进行编译，最终产生了二进制 &lt;code&gt;hello&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;./hello&lt;/code&gt; 运行这个编译好的二进制文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="项目外构建"&gt;项目外构建
+&lt;/h2&gt;&lt;p&gt;cmake提供了一个非常好用的特性，就是 &lt;strong&gt;项目外构建&lt;/strong&gt; 。简单来说，cmake支持在自定义的位置对项目进行构建。这样就避免了构建时生成的临时文件把原本的项目弄的非常混乱。&lt;/p&gt;
+&lt;p&gt;比如说刚才的例子，我们在项目里创建一个build文件夹，在里面构建。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build.png"
+loading="lazy"
+alt="out-build"
+&gt;&lt;/p&gt;
+&lt;p&gt;构建好了之后:
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build-res.png"
+loading="lazy"
+alt="out-build-res"
+&gt;&lt;/p&gt;
+&lt;p&gt;我们可以看到生成的文件都在build文件夹中。进入到里面，进行make即可编译。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build-make.png"
+loading="lazy"
+alt="out-build-make"
+&gt;&lt;/p&gt;
+&lt;h1 id="编译一个静态库文件"&gt;编译一个静态库文件
+&lt;/h1&gt;&lt;h2 id="静态库机制"&gt;静态库机制
+&lt;/h2&gt;&lt;p&gt;说静态库首先要说什么是编译。&lt;/p&gt;
+&lt;p&gt;编译就是把 &lt;strong&gt;源代码&lt;/strong&gt; 转化为 &lt;strong&gt;目标代码&lt;/strong&gt; 的过程。而什么是 &lt;strong&gt;目标代码&lt;/strong&gt; 呢？就是机器可以执行的二进制代码，一般来说都是要符合某种规范的，比如linux下的elf格式，windows下的pe格式。这里就不细展开了。&lt;/p&gt;
+&lt;p&gt;有的代码具备很强的通用性，比如计算绝对值的函数。我们希望在多个项目里都使用这个函数。那么一个方式就是把你的源代码编译成库文件 （也是一种二进制格式），当你写程序需要的时候，链接器可以 &lt;strong&gt;链接&lt;/strong&gt; 到这个库文件中，找到对应函数的二进制，&amp;ldquo;注入&amp;quot;到你写的程序中。&lt;/p&gt;
+&lt;p&gt;因此我们通常常见的项目构建都分两步：编译、链接。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;编译：负责源代码转换为目标代码&lt;/li&gt;
+&lt;li&gt;链接：负责找到程序的入口（main函数），并把二进制组装起来，生成可执行格式（elf或pe）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么如何把代码构建成一个静态库呢？&lt;/p&gt;
+&lt;h2 id="静态库项目"&gt;静态库项目
+&lt;/h2&gt;&lt;p&gt;我们先看一下 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 的写法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;STATIC&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;对应的cpp文件如下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;double&lt;/span&gt; &lt;span style="color:#6639ba"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;double&lt;/span&gt; v&lt;span style="color:#1f2328"&gt;){&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; v&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;?&lt;/span&gt; &lt;span style="color:#900;font-weight:bold"&gt;v&lt;/span&gt; &lt;span style="color:#1f2328"&gt;:&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;v&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们尝试构建一下：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/static-lib-s.png"
+loading="lazy"
+alt="static-lib-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;构建后的结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/static-lib-res.png"
+loading="lazy"
+alt="static-lib-res"
+&gt;&lt;/p&gt;
+&lt;p&gt;注意到，libabs.a文件，即为我们构造出的静态库文件。&lt;/p&gt;
+&lt;h1 id="编译一个动态库文件"&gt;编译一个动态库文件
+&lt;/h1&gt;&lt;h2 id="动态库机制"&gt;动态库机制
+&lt;/h2&gt;&lt;p&gt;静态库引入代码复用的能力后，有一个新的问题出现了：比如abs代码，在多个程序里都有使用，而且这多个程序可能都在系统上执行，这样abs的代码就被系统内存加载了多次。这无疑是一种浪费。&lt;/p&gt;
+&lt;p&gt;动态库提供了一种机制：库的代码并不会&amp;quot;注入&amp;quot;到编译产出的二进制文件中，而是由操作系统加载对应的库，在程序加载到内存的过程中，操作系统自动把对应的动态库调用进行重定向。这样abs的代码只会在内存中出现一次。&lt;/p&gt;
+&lt;p&gt;动态库技术是一个非常广泛使用的技术，操作系统大部分的api都是通过动态库提供的。&lt;/p&gt;
+&lt;p&gt;构建动态库和构建静态库一样简单。我们看一下例子：&lt;/p&gt;
+&lt;h2 id="动态库项目"&gt;动态库项目
+&lt;/h2&gt;&lt;p&gt;延用静态库的例子，我们只需要把 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 修改一下即可。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SHARED&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;构造的结果会产生一个 &lt;code&gt;libabs.so&lt;/code&gt; 文件。读者可以自行尝试一下。&lt;/p&gt;
+&lt;p&gt;如果要同时构建静态库和动态库，cmake的写法需要一点技巧：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SHARED&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs_static&lt;/span&gt; &lt;span style="color:#0a3069"&gt;STATIC&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set_target_properties&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs_static&lt;/span&gt; &lt;span style="color:#0a3069"&gt;PROPERTIES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;OUTPUT_NAME&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;abs&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这是因为cmake中不允许target有相同的名字，所以我们需要用不同的名字，同时修改target的输出。&lt;/p&gt;
+&lt;h1 id="引入库文件"&gt;引入库文件
+&lt;/h1&gt;&lt;h2 id="引入子模块"&gt;引入子模块
+&lt;/h2&gt;&lt;p&gt;使用 &lt;code&gt;add_subdirectory&lt;/code&gt; 函数，可以把子文件夹中的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 引入到当前 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 中。&lt;/p&gt;
+&lt;p&gt;举个例子：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;./&lt;/span&gt; &lt;span style="color:#0a3069"&gt;./hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;./world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加多目录的路径
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# Add block directories
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加hello文件夹中的hello库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加world文件夹中的world库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt; &lt;span style="color:#0a3069"&gt;main.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;#将多目录下的hello库和world库链接上可执行文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;add_subdirectory&lt;/code&gt; 会把对应文件夹中的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 引入进来，包括内部的target。这里假定了 &lt;code&gt;hello&lt;/code&gt; 文件夹的target是 &lt;code&gt;hello&lt;/code&gt; ， 这里假定了 &lt;code&gt;world&lt;/code&gt; 文件夹的target是 &lt;code&gt;world&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;target_link_libraries&lt;/code&gt; 用来对 &lt;code&gt;helloworld&lt;/code&gt; 这个target进行更多的描述：描述这个target完成过程中，需要对 &lt;code&gt;hello&lt;/code&gt; 以及 &lt;code&gt;world&lt;/code&gt; 两个target进行链接（这两个target必须是库）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;完整的目录结构：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/multi-cmake.png"
+loading="lazy"
+alt="multi-cmake"
+&gt;&lt;/p&gt;
+&lt;h2 id="引入第三方库"&gt;引入第三方库
+&lt;/h2&gt;&lt;p&gt;由于大量开源模块都是使用cmake进行构建的，因此存在大量的开源脚本方便你快速把第三方库引入到你的项目里。&lt;/p&gt;
+&lt;p&gt;我们这里以引入opencv为例。&lt;/p&gt;
+&lt;p&gt;编写一个使用opencv的程序， &lt;code&gt;hello_cv.cpp&lt;/code&gt; 。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;复制官方文档的代码：https://docs.opencv.org/3.2.0/d0/d2a/contours2_8cpp-example.html&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;想要让这个程序运行起来，有以下几个条件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;本地需要安装opencv开发环境。使用命令 &lt;code&gt;sudo apt-get install libopencv-dev&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;检测opencv是否安装成功 &lt;code&gt;dpkg -L libopencv-dev&lt;/code&gt; 。这个命令会显示上面安装的包里的文件都被安装到什么位置了。在我的系统里，文件主要被安装在 &lt;code&gt;/usr/bin&lt;/code&gt; , &lt;code&gt;/usr/include&lt;/code&gt; , &lt;code&gt;/usr/lib/x86_64-linux-gnu&lt;/code&gt;, &lt;code&gt;/usr/share/OpenCV&lt;/code&gt; 这几个文件夹中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;接着，我们创建cmake配置文件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;告诉cmake去那里找头文件，显然是要在 &lt;code&gt;/usr/include&lt;/code&gt; 里找&lt;/li&gt;
+&lt;li&gt;告诉cmake去那里找库文件，显然是要在 &lt;code&gt;/usr/lib/x86_64-linux-gnu&lt;/code&gt; 里找&lt;/li&gt;
+&lt;li&gt;告诉cmake应该链接哪些库文件，显然是 &lt;code&gt;libopencv_core.so&lt;/code&gt; 、 &lt;code&gt;libopencv_highgui.so&lt;/code&gt; 和 &lt;code&gt;libopencv_imgproc.so&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;于是我们的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定查找头文件的目录
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/usr/include&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定查找库文件的目录
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;link_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/usr/lib/x86_64-linux&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定项目的target，产生一个二进制
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello_cv.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定链接库，优先链接动态库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_core&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_highgui&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_imgproc&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;最后得到的结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv.png"
+loading="lazy"
+alt="opencv"
+&gt;&lt;/p&gt;
+&lt;p&gt;运行结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv-demo.png"
+loading="lazy"
+alt="opencv-demo"
+&gt;&lt;/p&gt;
+&lt;h2 id="使用find_package"&gt;使用find_package
+&lt;/h2&gt;&lt;p&gt;引入opencv非常容易，但有一个新问题。不同的平台上，opencv的安装地址可能不一样。如何才能更加通用的探测各个平台的opencv，并正确的链接呢？&lt;/p&gt;
+&lt;p&gt;cmake为了解决这个问题，要求所有兼容cmake的包，都编写对应的cmake模块。比如opencv包安装文件，就包含了对应的cmake模块：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv-cmake-s.png"
+loading="lazy"
+alt="opencv-cmake-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;这里的.cmake文件被安装到 &lt;code&gt;/usr/share&lt;/code&gt; 文件夹下。这个是cmake会搜索模块的路径之一。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;具体参见：https://cmake.org/cmake/help/v3.0/command/find_package.html&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此，我们只需要很简单的修改我们的cmake文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 根据 OpenCVConfig.cmake 里面的注释，可以知道用法：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;find_package&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;OpenCV&lt;/span&gt; &lt;span style="color:#0a3069"&gt;REQUIRED&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;OpenCV_INCLUDE_DIRS&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定二进制和链接库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello_cv.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;OpenCV_LIBS&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这样即保证了跨平台，又很简单。赶快试一下吧！&lt;/p&gt;</description></item></channel></rss>

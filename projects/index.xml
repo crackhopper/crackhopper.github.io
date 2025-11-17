@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>项目 on crackhopper的技术博客</title><link>https://crackhopper.github.io/projects/</link><description>Recent content in 项目 on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Mon, 01 Jan 2024 10:00:00 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/projects/index.xml" rel="self" type="application/rss+xml"/><item><title>自研游戏引擎</title><link>https://crackhopper.github.io/projects/%E8%87%AA%E7%A0%94%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</link><pubDate>Mon, 01 Jan 2024 10:00:00 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/projects/%E8%87%AA%E7%A0%94%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</guid><description>&lt;img src="https://crackhopper.github.io/images/game-engine.jpg" alt="Featured image of post 自研游戏引擎" /&gt;&lt;h2 id="项目简介"&gt;项目简介
+&lt;/h2&gt;&lt;p&gt;这是一个自研的 2D 游戏引擎项目，用于开发独立游戏。&lt;/p&gt;
+&lt;h2 id="技术栈"&gt;技术栈
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;C++&lt;/li&gt;
+&lt;li&gt;OpenGL&lt;/li&gt;
+&lt;li&gt;自研渲染管线&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="项目目标"&gt;项目目标
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;支持 2D 游戏开发&lt;/li&gt;
+&lt;li&gt;提供简洁的 API&lt;/li&gt;
+&lt;li&gt;追求极致的性能&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="项目状态"&gt;项目状态
+&lt;/h2&gt;&lt;p&gt;开发中&amp;hellip;&lt;/p&gt;</description></item></channel></rss>
