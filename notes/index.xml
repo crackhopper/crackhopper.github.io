@@ -1,4 +1,1614 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>笔记 on crackhopper的技术博客</title><link>https://crackhopper.github.io/notes/</link><description>Recent content in 笔记 on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 20 Jan 2022 21:44:32 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/notes/index.xml" rel="self" type="application/rss+xml"/><item><title>数学之不动点定理</title><link>https://crackhopper.github.io/notes/%E6%95%B0%E5%AD%A6%E4%B9%8B%E4%B8%8D%E5%8A%A8%E7%82%B9%E5%AE%9A%E7%90%86/</link><pubDate>Thu, 20 Jan 2022 21:44:32 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E6%95%B0%E5%AD%A6%E4%B9%8B%E4%B8%8D%E5%8A%A8%E7%82%B9%E5%AE%9A%E7%90%86/</guid><description/></item><item><title>开源协议详解</title><link>https://crackhopper.github.io/notes/%E5%BC%80%E6%BA%90%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</link><pubDate>Fri, 14 Jan 2022 15:46:49 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E5%BC%80%E6%BA%90%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</guid><description>&lt;p&gt;&lt;a class="link" href="https://www.gnu.org/licenses/gpl-faq.html" target="_blank" rel="noopener"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>笔记 on crackhopper的技术博客</title><link>https://crackhopper.github.io/notes/</link><description>Recent content in 笔记 on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 19 Nov 2025 15:35:53 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/notes/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;基于官方文档： &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
+&gt;https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery&lt;/a&gt; 的翻译和整理。&lt;/p&gt;
+&lt;p&gt;其中，特别用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
+&lt;p&gt;快速总结(指定layer的做法)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;利用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 环境变量，强制只加载指定的layer。&lt;/li&gt;
+&lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=~implicit~&lt;/code&gt; 禁用所有 implicit layer。&lt;/li&gt;
+&lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=*wegame*&lt;/code&gt; 禁用wegame layer。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="layer-discoverylayer-发现"&gt;&lt;strong&gt;Layer Discovery（Layer 发现）&lt;/strong&gt;
+&lt;/h1&gt;&lt;p&gt;Layer 可以分为两类：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Implicit Layers（隐式层）&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Explicit Layers（显式层）&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;两者的主要区别在于：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;隐式层会被自动启用，除非被覆盖禁用。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;显式层必须由应用程序主动启用。&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;请注意，隐式层并非存在于所有操作系统（例如 Android 上没有隐式层）。&lt;/p&gt;
+&lt;p&gt;在任意系统上，loader（加载器）会在特定的位置查找它可加载的层的信息。&lt;br&gt;
+这个查找系统中可用 layer 的过程被称为 &lt;strong&gt;Layer Discovery（layer 发现）&lt;/strong&gt;。在发现阶段，loader 会确定哪些 layer 是可用的、layer 名称、layer 版本以及该 layer 支持的扩展。&lt;br&gt;
+这些信息会通过 &lt;code&gt;vkEnumerateInstanceLayerProperties&lt;/code&gt; 返回给应用。&lt;/p&gt;
+&lt;p&gt;Loader 可用的所有 layer 的集合称为 &lt;strong&gt;layer library（layer 库）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;vulkan规范规定了 layer 必须遵循的最小约定和规则，尤其是关于 layer 如何与 loader 和其他 layer 交互。&lt;/p&gt;
+&lt;h2 id="layer-manifest-file-usagelayer-清单文件的使用方式"&gt;&lt;strong&gt;Layer Manifest File Usage（Layer 清单文件的使用方式）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;在 Windows、Linux 和 macOS 系统中，使用 JSON 格式的 &lt;strong&gt;manifest 文件&lt;/strong&gt; 来存储 layer 信息。&lt;br&gt;
+为了找到系统中安装的 layer，Vulkan loader 会读取这些 JSON 文件，以确定 layer 的名称、属性、以及其扩展。&lt;/p&gt;
+&lt;p&gt;使用 manifest 文件使得 loader 可以在应用未查询或启用任何扩展时 &lt;strong&gt;避免加载任何共享库文件&lt;/strong&gt;（DLL / SO）。&lt;/p&gt;
+&lt;p&gt;Layer Manifest File 的格式将在后文详细说明。&lt;/p&gt;
+&lt;p&gt;Android 的 loader &lt;strong&gt;不会使用 manifest 文件&lt;/strong&gt;。相反，它会使用称为 &lt;strong&gt;&amp;ldquo;introspection&amp;rdquo;（自省）函数&lt;/strong&gt; 的一组特殊函数来查询 layer 属性。&lt;br&gt;
+这些函数的目的与读取 manifest 文件相同：获取 layer 所需的全部信息。&lt;br&gt;
+Desktop loader 不会使用这些 introspection 函数，但 layer 仍应包含它们以保持一致性。&lt;/p&gt;
+&lt;h2 id="android-layer-discoveryandroid-上的-layer-发现"&gt;&lt;strong&gt;Android Layer Discovery（Android 上的 Layer 发现）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;在 Android 上，loader 会在：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;/data/local/debug/vulkan&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;中查找可枚举的 layer。&lt;br&gt;
+启用了调试的应用可以枚举并启用该目录中的所有 layer。&lt;/p&gt;
+&lt;h2 id="windows-layer-discoverywindows-上的-layer-发现"&gt;&lt;strong&gt;Windows Layer Discovery（Windows 上的 Layer 发现）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;为了找到系统中安装的 layer，Vulkan loader 会扫描以下 Windows 注册表键下的值：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\ExplicitLayers HKEY_CURRENT_USER\SOFTWARE\Khronos\Vulkan\ExplicitLayers HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\ImplicitLayers HKEY_CURRENT_USER\SOFTWARE\Khronos\Vulkan\ImplicitLayers&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;对于上述键中 &lt;strong&gt;DWORD 值为 0&lt;/strong&gt; 的项，loader 会打开该项名称所对应的 JSON manifest 文件。&lt;br&gt;
+&lt;strong&gt;每个项必须是 manifest 文件的绝对路径名。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;示例图：
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84Layer%e5%8f%91%e7%8e%b0%e6%9c%ba%e5%88%b6-1763537962866.png"
+loading="lazy"
+alt="Vulkan的Layer发现机制-1763537962866"
+&gt;&lt;/p&gt;
+&lt;p&gt;另外，只有在应用 &lt;strong&gt;没有管理员权限&lt;/strong&gt; 时才会查找 &lt;code&gt;HKEY_CURRENT_USER&lt;/code&gt; 路径。&lt;br&gt;
+这样做是为了确保具有管理员权限的应用不会运行无需管理员权限就能安装的 layer。&lt;/p&gt;
+&lt;p&gt;此外，loader 还会扫描与 Display Adapter（显示适配器）和其软件组件相关的注册表键，以查找 manifest 文件的位置。&lt;/p&gt;
+&lt;p&gt;这些键位于驱动安装期间创建的 device key 中，并包含 Vulkan、OpenGL、Direct3D ICD 等基础设置。&lt;/p&gt;
+&lt;p&gt;这些 Device Adapter 和 Software Component 键路径应通过 &lt;strong&gt;PnP Configuration Manager API&lt;/strong&gt; 获取。&lt;/p&gt;
+&lt;p&gt;其中 &lt;code&gt;000X&lt;/code&gt; 是一个编号键，每个设备一个编号。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanExplicitLayers HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanImplicitLayers HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Software Component GUID}\000X\VulkanExplicitLayers HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Software Component GUID}\000X\VulkanImplicitLayers&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;具体来说，显卡驱动器编号为： `4D36E968-E325-11CE-BFC1-08002BE10318`
+软件组织编号为： `5C4C3332-344D-483C-8739-259E934C9CC8`
+上面两个key的截图为：
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443508236"
+&gt;
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443585935"
+&gt;&lt;/p&gt;
+&lt;p&gt;在 64 位系统上，可能存在另一组注册表值，用于记录 32 位 layer：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanExplicitLayersWow HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanImplicitLayersWow HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Software Component GUID}\000X\VulkanExplicitLayersWow HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Software Component GUID}\000X\VulkanImplicitLayersWow&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;如果上述任意键中存在 &lt;strong&gt;REG_SZ&lt;/strong&gt; 类型的值，loader 会打开该键值所指定的 JSON manifest 文件。&lt;/p&gt;
+&lt;p&gt;每个键值也必须是 manifest 文件的绝对路径。&lt;br&gt;
+若键值为 &lt;strong&gt;REG_MULTI_SZ&lt;/strong&gt;，则该值会被解释为 &lt;strong&gt;多个 JSON manifest 文件的路径列表&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;通常情况下，应用程序应将 layer 安装到：&lt;code&gt;SOFTWARE\Khronos\Vulkan&lt;/code&gt; 路径下。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PnP 注册表位置仅适用于 &lt;strong&gt;驱动安装包包含的 layer&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;应用安装程序不应修改 device-specific 注册表，而驱动程序不应修改系统注册表。&lt;/li&gt;
+&lt;li&gt;Vulkan loader 将打开提供的每个 manifest 文件，以获取 layer 的信息，包括其共享库（DLL）的名称或路径。&lt;/li&gt;
+&lt;li&gt;如果定义了环境变量 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt;，loader 将忽略注册表中的路径，而是仅查找此变量指定的目录。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;（详见“强制 layer 源目录”一节。）&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;所以我们禁用其他Layer的一个办法是使用 `VK_LAYER_PATH` 环境变量
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id="linux-layer-discoverylinux-上的-layer-发现"&gt;&lt;strong&gt;Linux Layer Discovery（Linux 上的 Layer 发现）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;在 Linux 上，Vulkan loader 会扫描以下目录中的文件：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;/usr/local/etc/vulkan/explicit_layer.d /usr/local/etc/vulkan/implicit_layer.d /usr/local/share/vulkan/explicit_layer.d /usr/local/share/vulkan/implicit_layer.d /etc/vulkan/explicit_layer.d /etc/vulkan/implicit_layer.d /usr/share/vulkan/explicit_layer.d /usr/share/vulkan/implicit_layer.d $HOME/.local/share/vulkan/explicit_layer.d $HOME/.local/share/vulkan/implicit_layer.d&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;一些注意事项：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/usr/local/*&lt;/code&gt; 目录可在构建时配置成其他目录。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;$HOME&lt;/code&gt; 是应用用户的 home 目录；对于 suid 程序会忽略 &lt;code&gt;$HOME&lt;/code&gt; 路径。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/usr/local/etc&lt;/code&gt; 和 &lt;code&gt;/usr/local/share&lt;/code&gt; 目录用于本地构建的 layer。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/usr/share&lt;/code&gt; 目录用于 Linux 发行版安装的 layer。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;$HOME&lt;/code&gt; 下的目录仅在应用没有 root 权限时搜索，以避免 root 权限的应用执行无需 root 权限就能安装的 layer。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;与 Windows 类似，如果设置了 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt;，loader 将忽略上述路径，仅使用该变量指定的路径。但该环境变量对 suid 程序无效。&lt;/p&gt;
+&lt;h2 id="macos-layer-discoverymacos-上的-layer-发现"&gt;&lt;strong&gt;macOS Layer Discovery（macOS 上的 Layer 发现）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;在 macOS 上，Vulkan loader 会扫描：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;bundle&amp;gt;/Contents/Resources/vulkan/explicit_layer.d &amp;lt;bundle&amp;gt;/Contents/Resources/vulkan/implicit_layer.d /etc/vulkan/explicit_layer.d /etc/vulkan/implicit_layer.d /usr/local/share/vulkan/explicit_layer.d /usr/local/share/vulkan/implicit_layer.d /usr/share/vulkan/explicit_layer.d /usr/share/vulkan/implicit_layer.d $HOME/.local/share/vulkan/explicit_layer.d $HOME/.local/share/vulkan/implicit_layer.d&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;说明：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;bundle&amp;gt;&lt;/code&gt; 是应用程序的 bundle 目录，该目录会被优先扫描。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/usr/local/*&lt;/code&gt; 目录可在构建时配置。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$HOME&lt;/code&gt; 是当前用户的 home 目录；对 suid 程序会忽略。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$HOME&lt;/code&gt; 下的路径只有在应用没有 root 权限时才会被搜索。&lt;/li&gt;
+&lt;li&gt;和 Windows 一样，如果定义了 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt;，loader 将仅搜索该变量指定路径（suid 程序除外）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="debug-layer相关的能力"&gt;debug layer相关的能力
+&lt;/h1&gt;&lt;p&gt;参考文档： &lt;a class="link" href="http://vulkan.lunarg.com/doc/view/latest/mac/LoaderDebugging.html" target="_blank" rel="noopener"
+&gt;http://vulkan.lunarg.com/doc/view/latest/mac/LoaderDebugging.html&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id="layer的禁用"&gt;Layer的禁用
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;注意：此功能仅在使用 Vulkan 头文件版本 1.3.234 或之后构建的 Loader 中可用。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;有时，&lt;strong&gt;隐式层（implicit layers）&lt;/strong&gt; 会对应用程序造成问题。因此，下一步可以尝试禁用一个或多个已列出的隐式层。&lt;/p&gt;
+&lt;p&gt;你可以使用 &lt;strong&gt;过滤环境变量&lt;/strong&gt;（&lt;code&gt;VK_LOADER_LAYERS_ENABLE&lt;/code&gt; 和 &lt;code&gt;VK_LOADER_LAYERS_DISABLE&lt;/code&gt;）来选择性启用或禁用不同的 layer。&lt;/p&gt;
+&lt;p&gt;如果你不确定该怎么做，可以尝试通过设置 &lt;code&gt;VK_LOADER_LAYERS_DISABLE&lt;/code&gt; 为 &lt;code&gt;~implicit~&lt;/code&gt; 来 &lt;strong&gt;手动禁用所有隐式层&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这将禁用所有隐式层，并且当启用了 layer 日志时，loader 会以下列方式在日志输出中报告被禁用的层：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[Vulkan Loader] WARNING | LAYER: Implicit layer &amp;#34;VK_LAYER_MESA_device_select&amp;#34; forced disabled because name matches filter of env var &amp;#39;VK_LOADER_LAYERS_DISABLE&amp;#39;. [Vulkan Loader] WARNING | LAYER: Implicit layer &amp;#34;VK_LAYER_AMD_switchable_graphics_64&amp;#34; forced disabled because name matches filter of env var &amp;#39;VK_LOADER_LAYERS_DISABLE&amp;#39;. [Vulkan Loader] WARNING | LAYER: Implicit layer &amp;#34;VK_LAYER_Twitch_Overlay&amp;#34; forced disabled because name matches filter of env var &amp;#39;VK_LOADER_LAYERS_DISABLE&amp;#39;.
+&lt;/code&gt;&lt;/pre&gt;&lt;pre&gt;&lt;code&gt;对于我们程序的问题来说，可以使用 `VK_LOADER_LAYERS_DISABLE=VK_LAYER_TENCENT_wegame_cross_overlay` 禁用wegame的layer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id="选择性重新启用层selectively-re-enable-layers"&gt;&lt;strong&gt;选择性重新启用层（Selectively Re-enable Layers）&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;注意：此功能仅在使用 Vulkan 头文件版本 1.3.234 或之后构建的 Loader 中可用。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在调试由 layer 引起的问题时，一个有效的策略是：&lt;br&gt;
+&lt;strong&gt;先禁用所有 layer，再逐个重新启用。&lt;/strong&gt;&lt;br&gt;
+如果问题重新出现，则能立刻确定是哪个 layer 导致了问题。&lt;/p&gt;
+&lt;p&gt;例如，在上面的被禁用 layer 列表中，我们选择性地重新启用某一个：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~ set VK_LOADER_LAYERS_ENABLE=*AMD*&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这样将保持 &lt;code&gt;&amp;quot;VK_LAYER_MESA_device_select&amp;quot;&lt;/code&gt; 和 &lt;code&gt;&amp;quot;VK_LAYER_Twitch_Overlay&amp;quot;&lt;/code&gt; 继续被禁用，&lt;br&gt;
+而 &lt;code&gt;&amp;quot;VK_LAYER_AMD_switchable_graphics_64&amp;quot;&lt;/code&gt; 会被启用。&lt;/p&gt;
+&lt;h3 id="示例禁用所有隐式层但允许名称中包含-steam-或-mesa-的-layer"&gt;&lt;strong&gt;示例：禁用所有隐式层，但允许名称中包含 steam 或 mesa 的 layer&lt;/strong&gt;
+&lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~
+set VK_LOADER_LAYERS_ALLOW=*steam*,*Mesa*
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id="更多"&gt;更多
+&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item><item><title>Vulkan的ICD机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/</link><pubDate>Tue, 18 Nov 2025 12:57:45 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/</guid><description>&lt;h1 id="什么是-vulkan-icd"&gt;什么是 Vulkan ICD？
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;ICD&lt;/strong&gt; 是 &lt;strong&gt;Installable Client Driver&lt;/strong&gt;（可安装客户端驱动程序）的缩写。&lt;/p&gt;
+&lt;p&gt;在 Vulkan 架构中，ICD 指的是 &lt;strong&gt;图形硬件供应商（如 NVIDIA、AMD、Intel）提供的、针对特定硬件实现的 Vulkan 驱动程序部分&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;简单来说，ICD 就是你的 &lt;strong&gt;显卡驱动程序中负责执行 Vulkan 命令的那部分代码&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Vulkan API 的设计采用了一种分层的（layered）架构，使其比其前身 OpenGL 或 DirectX 更加模块化和灵活。在这个架构中，ICD 扮演了核心角色。&lt;/p&gt;
+&lt;h2 id="详细解释-vulkan-架构中的-icd"&gt;详细解释 Vulkan 架构中的 ICD
+&lt;/h2&gt;&lt;h3 id="1-vulkan-loader加载器"&gt;1. Vulkan Loader（加载器）
+&lt;/h3&gt;&lt;p&gt;在应用程序 (App) 和 ICD 之间，有一个关键的中间件：&lt;strong&gt;Vulkan Loader&lt;/strong&gt;（加载器）。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 它是应用程序首先链接的库（通常是 &lt;code&gt;vulkan-1.dll&lt;/code&gt; 或 &lt;code&gt;libvulkan.so&lt;/code&gt;）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;功能：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;发现与管理：&lt;/strong&gt; Loader 负责发现系统上安装的所有 Vulkan ICDs（即所有支持 Vulkan 的显卡驱动）。ICD 通常通过特定的 &lt;strong&gt;JSON 清单文件&lt;/strong&gt;（例如 &lt;code&gt;nvidia_icd.json&lt;/code&gt;、&lt;code&gt;amd_icd.json&lt;/code&gt; 等，位于系统特定目录如 &lt;code&gt;/usr/share/vulkan/icd.d/&lt;/code&gt;）向 Loader 注册自己。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;调度 (Dispatch)：&lt;/strong&gt; 当应用程序调用一个 Vulkan API 函数时（例如 &lt;code&gt;vkCreateInstance&lt;/code&gt;、&lt;code&gt;vkCmdDraw&lt;/code&gt;），Loader 负责将这个调用正确地导向（调度）到 &lt;strong&gt;正确的 ICD&lt;/strong&gt; 或 &lt;strong&gt;Vulkan Layer&lt;/strong&gt;（验证层、工具层等）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="2-installable-client-driver-icd"&gt;2. Installable Client Driver (ICD)
+&lt;/h3&gt;&lt;p&gt;ICD 是真正的“幕后英雄”，负责与物理 GPU 硬件通信。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 实现 Vulkan API 的核心功能，将抽象的 Vulkan 命令（如绘制三角形、进行计算）转换为 GPU 可以理解的实际硬件指令。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;注册：&lt;/strong&gt; 每个 ICD 都会在系统上放置一个 JSON 文件，告诉 Loader 它的动态链接库（DLL 或 SO 文件）在哪里，以及它支持哪些 Vulkan 扩展和特性。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;多 ICDs：&lt;/strong&gt; 由于一台计算机上可能有多个 GPU（例如一个 Intel 集成显卡和一个 NVIDIA 独立显卡），因此系统上可以同时安装和运行 &lt;strong&gt;多个 ICDs&lt;/strong&gt;。Loader 会将它们全部识别出来，并在应用程序请求创建 Vulkan 实例或设备时，让应用程序选择使用哪一个 ICD。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="3-vulkan-layers层"&gt;3. Vulkan Layers（层）
+&lt;/h3&gt;&lt;p&gt;虽然不是 ICD 本身，但 Layers 是理解 Vulkan 架构的另一个重要部分。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;位置：&lt;/strong&gt; Layers 位于 Loader 和 ICD 之间。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 它们可以拦截 API 调用，并在调用传递给 ICD 之前或之后执行额外的操作。最常见的 Layers 是 &lt;strong&gt;验证层 (Validation Layers)&lt;/strong&gt;，用于在开发过程中检查应用程序是否正确使用了 Vulkan API。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="总结"&gt;总结
+&lt;/h2&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;角色&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;作用&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;谁提供？&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;应用程序 (App)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;调用 Vulkan API 函数。&lt;/td&gt;
+&lt;td&gt;开发者&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Loader&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;发现所有 ICDs，管理 Layers，并将 API 调用调度给正确的 ICD。&lt;/td&gt;
+&lt;td&gt;Khronos Group（或驱动程序/发行版）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;ICD&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;真正的驱动程序实现，将 Vulkan 命令翻译成 GPU 硬件指令。&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;硬件供应商 (NVIDIA, AMD, Intel 等)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id="loader如何找到icd"&gt;Loader如何找到ICD？
+&lt;/h1&gt;&lt;p&gt;参考 vulkan 文档 : &lt;a class="link" href="https://vulkan.lunarg.com/doc/view/latest/mac/LoaderDriverInterface.html" target="_blank" rel="noopener"
+&gt;https://vulkan.lunarg.com/doc/view/latest/mac/LoaderDriverInterface.html&lt;/a&gt; 中的 Driver Discovery on Windows 部分，可以知道，通过查询如下注册表项：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanDriverName
+HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{SoftwareComponent GUID}\000X\VulkanDriverName
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="显卡设备"&gt;显卡设备
+&lt;/h2&gt;&lt;p&gt;对于显卡驱动开说，这里的 Adapter GUID是固定的，为 &lt;code&gt;4D36E968-E325-11CE-BFC1-08002BE10318&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443508236"
+&gt;&lt;/p&gt;
+&lt;p&gt;对应设备管理器：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444512168.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763444512168"
+&gt;&lt;/p&gt;
+&lt;p&gt;在我们的case下，这里的两个真实显卡会配置： &lt;code&gt;VulkanDriverName&lt;/code&gt; 和 &lt;code&gt;VulkanDriverNameWow&lt;/code&gt; 这两个key，分别指定64位和32位的 ICD的json配置文件。&lt;/p&gt;
+&lt;h2 id="软件组织设备"&gt;软件组织设备
+&lt;/h2&gt;&lt;p&gt;SoftwareComponent GUID也是固定的(“软件组件设备”，用于管理软件模块或驱动包中的附加功能。 &lt;strong&gt;为了让操作系统可以像管理硬件设备一样管理驱动包中的软件模块&lt;/strong&gt;)，为 &lt;code&gt;5C4C3332-344D-483C-8739-259E934C9CC8&lt;/code&gt; （&lt;strong&gt;SoftwareComponent 可以作为非标准设备或附加模块的“容器”，让操作系统统一管理&lt;/strong&gt;。）
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443585935"
+&gt;
+对应设备管理器：
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444471920.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763444471920"
+&gt;&lt;/p&gt;
+&lt;h1 id="使用windbg定位到loader获取icd的位置"&gt;使用WinDbg定位到Loader获取ICD的位置
+&lt;/h1&gt;&lt;p&gt;上面是我阅读文档得到的信息。不过，既然咱都学会了 windbg，是不是可以从二进制中看到vulkan如何加载这个json的呢？&lt;/p&gt;
+&lt;h2 id="思路1注册表访问函数上打断点失败"&gt;思路1：注册表访问函数上打断点（失败）
+&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763561340860.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763561340860"
+&gt;&lt;/p&gt;
+&lt;h3 id="1f68e2fd-中断示例"&gt;&lt;code&gt;1F68E:2FD&lt;/code&gt; 中断示例
+&lt;/h3&gt;&lt;p&gt;这个中断点是最接近我们要访问的注册表项了。可惜读取的值并不是我们期待的。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[0x0] ADVAPI32!RegGetValueWStub 0x55168e3898 0x7ff886f69e7d
+[0x1] ControlLib!ctlWaitForPropertyChange+0x1bcd 0x55168e38a0 0x7ff886f6c493
+[0x2] ControlLib!ctlWaitForPropertyChange+0x41e3 0x55168e3910 0x7fff7ef9348f
+[0x3] igvk64!ctlInit+0xff 0x55168e3a80 0x7fff7ee61a59
+[0x4] igvk64!DumpRegistryKeyDefinitions+0x1b76a9 0x55168e3ec0 0x7fff7ee60835
+[0x5] igvk64!DumpRegistryKeyDefinitions+0x1b6485 0x55168e41a0 0x7fff7ee476a4
+[0x6] igvk64!DumpRegistryKeyDefinitions+0x19d2f4 0x55168e4310 0x7fff7ee31bd5
+[0x7] igvk64!DumpRegistryKeyDefinitions+0x187825 0x55168e43c0 0x7fff7eda31e6
+[0x8] igvk64!DumpRegistryKeyDefinitions+0xf8e36 0x55168e4410 0x7fff7ed87534
+[0x9] igvk64!DumpRegistryKeyDefinitions+0xdd184 0x55168fb620 0x7fff7ed5ec7d
+[0xa] igvk64!DumpRegistryKeyDefinitions+0xb48cd 0x55168fb690 0x7fff7ece0ca5
+[0xb] igvk64!DumpRegistryKeyDefinitions+0x368f5 0x55168fb6e0 0x7fffbd89c6dc
+[0xc] vulkan_1!vkResetEvent+0x4b14c 0x55168fb7b0 0x7fff810205e7
+[0xd] VkLayer_khronos_validation!vulkan_layer_chassis::CreateInstance+0x217 0x55168fb910 0x7fff8bb1b27c
+[0xe] CrossVulkanLayer64!vkCreateInstance+0x180 0x55168fbad0 0x7ff8498fcacb
+[0xf] graphics_hook64!dummy_debug_proc+0x294b 0x55168fbbe0 0x7fff741fc952
+[0x10] nvoglv64!DrvPresentBuffers+0x3698d2 0x55168fbca0 0x7fffbd883652
+[0x11] vulkan_1!vkResetEvent+0x320c2 0x55168fbcd0 0x7fffbd8a751e
+[0x12] vulkan_1!vkResetEvent+0x55f8e 0x55168fc000 0x7ff717220f44
+[0x13] VulkanGLFWDemo!HelloTriangleApplication::createInstance+0x244 0x55168ff410 0x7ff717224b64
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;RegGetValueWStub，其实它是一个 “Stub（代理/跳转）” 函数，而真正的 API 是 RegGetValueW。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;LONG WINAPI &lt;span style="color:#6639ba"&gt;RegGetValueW&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; HKEY hkey&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in] 已打开的注册表键句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPCWSTR lpSubKey&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in, optional] 子键路径（相对 hkey），如果为 NULL 或 &amp;#34;&amp;#34; 则直接在 hkey 上查
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPCWSTR lpValue&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in, optional] 注册表值名称，如果为 NULL 或 &amp;#34;&amp;#34; 则查默认值
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwFlags&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in] 检索类型的标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPDWORD pdwType&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [out, optional] 返回数据类型（如 REG_SZ 等）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; PVOID pvData&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [out, optional] 缓冲区 接收数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPDWORD pcbData &lt;span style="color:#57606a"&gt;// [in,out] 指定数据缓冲区大小，返回时写入实际用字节数
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;因此可以看一下第二第三个参数：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; du rdx;
+000001ea`8a246d60 &amp;#34;SYSTEM\CurrentControlSet\Control&amp;#34;
+000001ea`8a246da0 &amp;#34;\Class\{4d36e968-e325-11ce-bfc1-&amp;#34;
+000001ea`8a246de0 &amp;#34;08002be10318}\0001&amp;#34;
+0:000&amp;gt; du r8;
+00007ff8`86f86370 &amp;#34;ControlApiPath&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;为什么注意这个注册表的读取？因为按照vulkan文档的解释，ICD的信息其实就是从这个key里得到的。&lt;/p&gt;
+&lt;p&gt;为了方便定位到类似的读取，我们改造一下断点：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;bp advapi32!RegGetValueWStub &amp;#34;du rdx; du r8;&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;继续执行，把这个调用的重要参数打印出来。除了这个并没有太多有效信息。所以，应该是使用别的API读取值。（ &lt;strong&gt;当然也可能是内核态读取的，这样无法断点；这个是后来才知道的，参见思路2&lt;/strong&gt; ）&lt;/p&gt;
+&lt;h3 id="总结-1"&gt;总结
+&lt;/h3&gt;&lt;p&gt;打了尽可能多的读取注册表的断点，没有一处中断到 读取 值 &lt;code&gt;VulkanDriverName&lt;/code&gt; 上。&lt;/p&gt;
+&lt;h2 id="思路2找到打开配置文件的代码追踪文件路径的获取过程"&gt;思路2：找到打开配置文件的代码，追踪文件路径的获取过程
+&lt;/h2&gt;&lt;p&gt;既然注册表思路不行，还有一个办法，我们其实已经知道对应的ICD配置文件。同时代码一定会读取这个文件，从 &lt;code&gt;kernel32!CreateFileW&lt;/code&gt; 入手，我们可以中断到ICD配置文件（字符串：一个json文件）。随后我们溯源这个字符串怎么来的。&lt;/p&gt;
+&lt;p&gt;这里细节不表。详细过程大概为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定位到文件的字符串，然后再代码中找到传参的变量/寄存器/内存。&lt;/li&gt;
+&lt;li&gt;如果是内存，打内存断点，随后追查内存写入位置的传参。
+循环上面两个步骤。。。（有效的利用TTD调试，可以不断的阅读汇编代码，中断，随后 &lt;code&gt;g-&lt;/code&gt; 跳转回去；当然还可以用 &lt;code&gt;tt br-&lt;/code&gt; 和 &lt;code&gt;tt ba-&lt;/code&gt; ，只不过我一开始不会用，就用了笨办法）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最终定位到，在内存位置： &lt;code&gt;000001ea`87f61530&lt;/code&gt; 这里，被填充了字符串： &lt;code&gt;C:\WINDOWS\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_aaa3915de44b535a\igvk64.json&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;而填充这个内存的代码无法中断到。通过不断的单步，最后定位到代码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-asm" data-lang="asm"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;win32u&lt;/span&gt;&lt;span style="color:#1f2328"&gt;!&lt;/span&gt;&lt;span style="color:#0550ae"&gt;NtGdiDdDDIQueryAdapterInfo&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt; &lt;span style="color:#0550ae"&gt;CFG&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#0550ae"&gt;c8bd1&lt;/span&gt; &lt;span style="color:#0550ae"&gt;mov&lt;/span&gt; &lt;span style="color:#0550ae"&gt;r10&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;rcx&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;b82a120000&lt;/span&gt; &lt;span style="color:#0550ae"&gt;mov&lt;/span&gt; &lt;span style="color:#0550ae"&gt;eax&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;122&lt;/span&gt;&lt;span style="color:#0550ae"&gt;Ah&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d8&lt;/span&gt; &lt;span style="color:#0550ae"&gt;f604250803fe7f01&lt;/span&gt; &lt;span style="color:#0550ae"&gt;test&lt;/span&gt; &lt;span style="color:#0550ae"&gt;byte&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ptr&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;7&lt;/span&gt;&lt;span style="color:#0550ae"&gt;FFE0308h&lt;/span&gt;&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;7503&lt;/span&gt; &lt;span style="color:#0550ae"&gt;jne&lt;/span&gt; &lt;span style="color:#0550ae"&gt;win32u&lt;/span&gt;&lt;span style="color:#1f2328"&gt;!&lt;/span&gt;&lt;span style="color:#0550ae"&gt;NtGdiDdDDIQueryAdapterInfo&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;+&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0x15&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;7&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8926b57e5&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e2&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#0550ae"&gt;f05&lt;/span&gt; &lt;span style="color:#0550ae"&gt;syscall&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e4&lt;/span&gt; &lt;span style="color:#0550ae"&gt;c3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e5&lt;/span&gt; &lt;span style="color:#0550ae"&gt;cd2e&lt;/span&gt; &lt;span style="color:#0550ae"&gt;int&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#0550ae"&gt;Eh&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e7&lt;/span&gt; &lt;span style="color:#0550ae"&gt;c3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e8&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#0550ae"&gt;f1f840000000000&lt;/span&gt; &lt;span style="color:#0550ae"&gt;nop&lt;/span&gt; &lt;span style="color:#0550ae"&gt;dword&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ptr&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;rax&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;+&lt;/span&gt;&lt;span style="color:#0550ae"&gt;rax&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在syscall之后，得到了数据。&lt;/p&gt;
+&lt;p&gt;通过询问AI，知道切换到了内核态。是由驱动本身来填充的。内核态的代码，用户态调试无法中断。这也是为什么，之前注册表访问函数中断不了的原因。&lt;/p&gt;
+&lt;p&gt;这个调用的堆栈：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[0x0] win32u!NtGdiDdDDIQueryAdapterInfo+0x14 0x55168fb7e8 0x7fffbd8b331d
+[0x1] vulkan_1!vkResetEvent+0x61d8d 0x55168fb7f0 0x7fffbd8b2e1c
+[0x2] vulkan_1!vkResetEvent+0x6188c 0x55168fbb20 0x7fffbd88489d
+[0x3] vulkan_1!vkResetEvent+0x3330d 0x55168fbbc0 0x7fffbd896535
+[0x4] vulkan_1!vkResetEvent+0x44fa5 0x55168fbc10 0x7fffbd89828a
+[0x5] vulkan_1!vkResetEvent+0x46cfa 0x55168fbca0 0x7fffbd8a8db2
+[0x6] vulkan_1!vkResetEvent+0x57822 0x55168fbd60 0x7ff71722f720
+[0x7] VulkanGLFWDemo!_glfwInitVulkan+0x110(int mode = 2) [C:\Users\develop\game-dev\renderer\external\glfw-3.4\src\vulkan.c @ 100] 0x55168ff150 0x7ff71722f5cc
+[0x8] VulkanGLFWDemo!glfwGetRequiredInstanceExtensions+0x5c(unsigned int * count = 0x55168ff214 : 0x0) [C:\Users\develop\game-dev\renderer\external\glfw-3.4\src\vulkan.c @ 236] 0x55168ff1c0 0x7ff7172249b8
+[0x9] VulkanGLFWDemo!HelloTriangleApplication::getRequiredExtenstions+0x48() [C:\Users\develop\game-dev\renderer\src\main.cpp @ 531] 0x55168ff1f0 0x7ff71721e6b2
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看出来，在我的程序获取 &lt;code&gt;glfw&lt;/code&gt; 所需要的extentions的时候，会触发 &lt;code&gt;_glfwInitVulkan&lt;/code&gt; ，最终触发了 &lt;code&gt;win32u!NtGdiDdDDIQueryAdapterInfo&lt;/code&gt; 这个函数的调用。&lt;/p&gt;
+&lt;p&gt;那么其他位置，比如 &lt;code&gt;vkCreateInstance&lt;/code&gt; 的时候，应该类似。最终的调用被转发给了系统调用，从而获取到了对应的ICD配置。（如果想定位到对应的指令，必须得内核态调试）&lt;/p&gt;
+&lt;p&gt;这个就更加进阶了。暂时我不打算继续深入。相关文档在： &lt;a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-" target="_blank" rel="noopener"
+&gt;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-&lt;/a&gt; 。未来有需要再看。&lt;/p&gt;
+&lt;h3 id="关于这个中断相关信息的ai解读"&gt;关于这个中断相关信息的AI解读
+&lt;/h3&gt;&lt;h4 id="ai节选"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;函数第一个参数：&lt;/p&gt;
+&lt;p&gt;dd @rcx L4 这个命令结果为：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;00000055168f6300 40001c00 00000030 87f61310 000001ea
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id="ai节选-1"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;您的内存数据如下： &lt;code&gt;00000055168f6300 40001c00 00000030 87f61310 000001ea&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这是一块连续内存，WinDbg 的 &lt;code&gt;dd&lt;/code&gt; (Display DWORD) 是按 4 字节显示的。我们来按结构体布局拆解它：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;地址&lt;/strong&gt;: &lt;code&gt;0x00000055168f6300&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x00 (hAdapter)&lt;/strong&gt;: &lt;code&gt;40001c00&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这是适配器句柄。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x04 (Type)&lt;/strong&gt;: &lt;code&gt;00000030&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;十六进制 &lt;code&gt;0x30&lt;/code&gt; = 十进制 &lt;strong&gt;48&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;查阅 WDDM 驱动开发文档，&lt;code&gt;KMTQUERYADAPTERINFOTYPE&lt;/code&gt; 枚举中，值 48 对应的是 &lt;strong&gt;&lt;code&gt;KMTQAITYPE_PHYSICALADAPTERDEVICEIDS&lt;/code&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;含义&lt;/strong&gt;：Vulkan Loader 正在询问内核：“&lt;strong&gt;请告诉我这个物理适配器的 PCI Device ID、Vendor ID 和 SubSystem ID&lt;/strong&gt;”。这正是 Loader 用来匹配 JSON 文件中筛选器的关键步骤。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x08 (pPrivateDriverData)&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由于这是 x64，指针占 8 字节，由后两个 DWORD 组成。&lt;/li&gt;
+&lt;li&gt;低 4 字节: &lt;code&gt;87f61310&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;高 4 字节: &lt;code&gt;000001ea&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;指针地址&lt;/strong&gt;: &lt;code&gt;0x000001ea87f61310&lt;/code&gt;。这是接收返回数据（Device IDs）的缓冲区地址。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;结论&lt;/strong&gt;：Vulkan 正在遍历 GPU 并获取它们的硬件 ID。&lt;/p&gt;
+&lt;h4 id="我的讨论"&gt;我的讨论
+&lt;/h4&gt;&lt;p&gt;我的调用会在 &lt;code&gt;000001ea87f61530&lt;/code&gt; 这个地址，写入 C:\WINDOWS\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_aaa3915de44b535a\igvk64.json 这个字符串。而不是你分析的地址。而在 &lt;code&gt;000001ea87f61310&lt;/code&gt; 这个位置，信息为：（二进制）：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;000001ea87f61310 0001 0000 0001 0000 0056 0075 006c 006b
+000001ea87f61320 0061 006e 0044 0072 0069 0076 0065 0072
+000001ea87f61330 004e 0061 006d 0065 0000 0000 0000 0000
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;并没有看到内存变化。看起来更像是函数调用输入的信息。000001ea87f61310 是结构体的地址，而 000001ea87f61530 则是用来接收返回值的buffer。&lt;/p&gt;
+&lt;p&gt;或者说，整个rcx存放的是一个指针，指向某个结构体。而这个结构体前三个dword之后，又跟随一个指针，这个指针指向另一个结构体（顺便用这个结构体接收一些返回值）。&lt;/p&gt;
+&lt;p&gt;这么一推断，你上面很多说法都不成立（毕竟你的接口体定义都不对）&lt;/p&gt;
+&lt;h4 id="ai节选-2"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;&lt;strong&gt;修正：现场内存分析 (CSI 现场还原)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;你抓到的内存数据： &lt;code&gt;000001ea'87f61310 0056 0075 006c 006b ...&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这确实是 &lt;strong&gt;Unicode 字符串&lt;/strong&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;0056&lt;/code&gt; = &amp;lsquo;V&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0075&lt;/code&gt; = &amp;lsquo;u&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;006c&lt;/code&gt; = &amp;rsquo;l'&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;006b&lt;/code&gt; = &amp;lsquo;k&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;拼起来正是：&lt;strong&gt;&lt;code&gt;VulkanDriverName&lt;/code&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;这是什么意思？&lt;/strong&gt; 这说明 &lt;code&gt;Type = 0x30&lt;/code&gt; (48) 在这个上下文（Windows 10/11 + DCH 驱动）中，实际上执行的是 &lt;strong&gt;&lt;code&gt;KMTQAITYPE_ADAPTERREGISTRYINFO&lt;/code&gt;&lt;/strong&gt; (查询适配器注册表信息) 的某种变体或特定实现。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;流程重构：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Input&lt;/strong&gt;: Vulkan Loader 将字符串 &lt;code&gt;VulkanDriverName&lt;/code&gt; 放入 &lt;code&gt;pPrivateDriverData&lt;/code&gt; 指向的缓冲区。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Call&lt;/strong&gt;: 调用 &lt;code&gt;NtGdiDdDDIQueryAdapterInfo&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Kernel Action&lt;/strong&gt;: 内核拿着显卡句柄，去该显卡在 &lt;code&gt;HKLM\SYSTEM\CurrentControlSet\Control\Class\{GUID}\00xx&lt;/code&gt; 下的&lt;strong&gt;私有驱动注册表项&lt;/strong&gt;中查找名为 &lt;code&gt;VulkanDriverName&lt;/code&gt; 的值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Output&lt;/strong&gt;: 内核找到了路径（如 &lt;code&gt;...\igvk64.json&lt;/code&gt;），并将其写回到缓冲区的某个偏移位置（你观察到的 &lt;code&gt;0x...530&lt;/code&gt;）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;结论&lt;/strong&gt;：Vulkan Loader 不再依赖全局的 &lt;code&gt;Khronos\Vulkan\Drivers&lt;/code&gt; 列表，而是直接询问内核：“当前这个显卡，它的驱动 JSON 藏在哪里？”。这就是为什么你的注册表中没有那个全局 Drivers 键值的原因。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;注意：实际上和Vulkan Loader可能没有关系。因为目前堆栈定位到调用是 vkEnumerateInstanceExtensionProperties 中
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id="ai节选-3"&gt;AI（节选）
+&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;AI坚持认为调用时用 `D3DKMTQueryAdapterInfo` 这个函数。
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;它并没有直接调用 NtGdiDdDDIQueryAdapterInfo。&lt;/p&gt;
+&lt;p&gt;它调用的是 D3DKMTQueryAdapterInfo。这是一个由 gdi32.dll 或 d3dkmthk.dll 导出的函数。&lt;/p&gt;
+&lt;p&gt;在 WinDbg 中，你看到 NtGdi&amp;hellip; 是因为 D3DKMT&amp;hellip; 只是一个很薄的封装，它立即通过 syscall 进入内核，而 WinDbg 在内核入口处抓住了它。&lt;/p&gt;
+&lt;p&gt;待排查。&lt;/p&gt;
+&lt;h1 id="补充知识"&gt;补充知识
+&lt;/h1&gt;&lt;h2 id="dch"&gt;DCH
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;DCH&lt;/strong&gt; 代表 &lt;strong&gt;D&lt;/strong&gt;eclarative, &lt;strong&gt;C&lt;/strong&gt;omponentized, &lt;strong&gt;H&lt;/strong&gt;ardware Support Apps。这是微软在 Windows 10 1809 之后强制推行的新驱动架构。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Legacy (旧版) 驱动&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个巨大的 &lt;code&gt;.exe&lt;/code&gt; 安装包。&lt;/li&gt;
+&lt;li&gt;把 DLL 扔进 &lt;code&gt;System32&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;注册表乱写。&lt;/li&gt;
+&lt;li&gt;控制面板和驱动混在一起。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;DCH (新版) 驱动&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Declarative (声明式)&lt;/strong&gt;：通过 INF 文件清晰声明所有文件去向。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Componentized (组件化)&lt;/strong&gt;：核心驱动 (Kernel)、服务 (Service)、用户软件 (Control Panel) 必须分开。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hardware Support Apps&lt;/strong&gt;：控制面板（如 NVIDIA Control Panel）必须通过 Microsoft Store 安装，不能捆绑在驱动里。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关键影响&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;驱动文件被严格隔离在 &lt;code&gt;C:\Windows\System32\DriverStore\FileRepository\...&lt;/code&gt; 这种带哈希值的文件夹里，防止被篡改或覆盖。&lt;/li&gt;
+&lt;li&gt;Vulkan JSON 文件也必须放在那里。&lt;/li&gt;
+&lt;li&gt;注册表不再使用全局位置，而是绑定在 PnP 设备节点上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description></item><item><title>WinDbg的初级用法</title><link>https://crackhopper.github.io/notes/windbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95/</link><pubDate>Mon, 17 Nov 2025 22:05:20 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/windbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95/</guid><description>&lt;p&gt;起因开始于 &lt;a class="link" href="https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/" &gt;记录调试Vulkan程序打印奇怪日志的问题&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id="正文开始"&gt;正文开始
+&lt;/h1&gt;&lt;h2 id="简要介绍"&gt;简要介绍
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;WinDbg&lt;/strong&gt;（Windows Debugger）是 Microsoft 提供的强大调试工具，广泛应用于 Windows 系统的内核调试、用户模式调试、崩溃转储分析等场景。它适用于调试应用程序、驱动程序、操作系统内核等各种不同类型的程序。WinDbg 支持命令行界面，并且具有图形用户界面（WinDbg Preview），它能够帮助开发人员和系统管理员诊断并修复系统崩溃或程序错误。&lt;/p&gt;
+&lt;h2 id="安装与启动-windbg"&gt;安装与启动 WinDbg
+&lt;/h2&gt;&lt;p&gt;参考文档： &lt;a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/" target="_blank" rel="noopener"
+&gt;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;简单来说：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-ps" data-lang="ps"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;winget&lt;/span&gt; &lt;span style="color:#6639ba"&gt;install&lt;/span&gt; &lt;span style="color:#6639ba"&gt;Microsoft.WinDbg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;用windows的包管理器下载即可。（类似苹果的HomeBrew，windows下我一般除了 winget，还会用到 chocolate 和 scoop）&lt;/p&gt;
+&lt;h2 id="启动调试"&gt;启动调试
+&lt;/h2&gt;&lt;p&gt;点击文件：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763393136760.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763393136760"
+&gt;&lt;/p&gt;
+&lt;p&gt;选项介绍：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Launch executable : 直接启动一个exe，并且中断到最开始的地方。&lt;/li&gt;
+&lt;li&gt;Launch executable (advanced) : 这个模式支持更多设置，包括运行参数(arguments)和运行目录(start directory) 。还支持 时间旅行调试 (Time Travel Debugging, TTD)&lt;/li&gt;
+&lt;li&gt;Attach to process: 附加到已经在运行的进程上进行调试。&lt;/li&gt;
+&lt;li&gt;Open dump file: 加载一个先前捕获的内存转储文件（crash dump）进行事后分析。&lt;/li&gt;
+&lt;li&gt;Open trace file: 加载一个先前记录的 时间旅行调试 (TTD) 跟踪文件进行回放和分析。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们这里选择 Launch executable ，选择要调试的vulkan程序即可。&lt;/p&gt;
+&lt;h2 id="时间旅行调试-ttd-time-travel-debugging"&gt;时间旅行调试 (TTD, Time Travel Debugging)
+&lt;/h2&gt;&lt;p&gt;启动调试的时候，选择 &lt;code&gt;Launch executable(advanced)&lt;/code&gt; 。并勾选开启 Time Travel Debugging&lt;/p&gt;
+&lt;p&gt;微软开发的一种革命性的调试技术。它允许开发者和逆向工程师&lt;strong&gt;记录&lt;/strong&gt;一个进程的执行过程，然后像观看视频一样，对这个记录进行&lt;strong&gt;回放&lt;/strong&gt;和&lt;strong&gt;反向调试&lt;/strong&gt;。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;特点&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;描述&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;优势&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;反向执行 (Reverse Execution)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;可以在程序的执行时间轴上&lt;strong&gt;向后移动&lt;/strong&gt;。&lt;/td&gt;
+&lt;td&gt;能够轻松地回溯到程序状态发生损坏、或导致崩溃的那个瞬间之前，准确找出问题的根源。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;完整记录 (Full Recording)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;捕获了程序执行过程中的所有状态变化，包括 CPU 寄存器、内存读写等。&lt;/td&gt;
+&lt;td&gt;无需重现 Bug。一旦记录了 Bug 发生的过程，您可以无限次地回放和分析，而 Bug 不会再“跑掉”。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;可重复性 (Reproducibility)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;调试会话基于记录文件，而不是实时运行的程序。&lt;/td&gt;
+&lt;td&gt;调试过程是完全确定的，在不同的机器上、不同的时间点上分析结果始终一致，非常利于协作。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;高级查询 (Advanced Query)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;允许使用查询语言（如 Linq）来搜索整个执行历史记录。&lt;/td&gt;
+&lt;td&gt;可以快速找到“是谁最后写入了这个内存地址？”或“这个函数在哪里被调用过？”等复杂问题。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;非常好用，建议调试复杂问题的时候，先开启TTD录制一次。随后加载对应的trace文件。就可以用TTD调试了。在这个调试模式可以使用：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;g-&lt;/code&gt; : 跳到上一个断点（所以把所有断点 disable 或者清空后，可以直接跳到开头）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;p-&lt;/code&gt; : 往回跳1个指令。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="常用寄存器"&gt;常用寄存器
+&lt;/h2&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;变量&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;含义 (x64)&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;备注&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;@rcx&lt;/code&gt;, &lt;code&gt;@rdx&lt;/code&gt;, &lt;code&gt;@r8&lt;/code&gt;, &lt;code&gt;@r9&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;通用寄存器 （易失性）&lt;/td&gt;
+&lt;td&gt;在windows x64下，函数调用前，这四个寄存器会保存函数调用的前4个参数。（使用的时候，可以不带 &lt;code&gt;@&lt;/code&gt; 符号)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;@ip&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;instruction pointer&lt;/td&gt;
+&lt;td&gt;指向下一个要执行的指令。通常配合查看汇编代码的时候。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;@rsp&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;栈指针寄存器&lt;/td&gt;
+&lt;td&gt;总是指向栈顶的地址。（地址越低，越靠近栈顶；函数开始调用前，会移动栈顶指针向低地址，以准备足够的栈空间用来存储局部变量）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;@r14, r15&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;通用寄存器（非易失性）&lt;/td&gt;
+&lt;td&gt;常用于标识当前函数的栈帧起始位置。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;ymm0, ymm1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;256位矢量寄存器&lt;/td&gt;
+&lt;td&gt;avx指令集中的寄存器。AVX（Advanced Vector Extensions）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="内存的引用"&gt;内存的引用
+&lt;/h2&gt;&lt;p&gt;一般采用 &lt;code&gt;[ expression ]&lt;/code&gt; 的方式引用一个内存地址。随后配合指令，决定读写的大小。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;expression&lt;/code&gt; 可以是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;寄存器&lt;/li&gt;
+&lt;li&gt;寄存器 + 偏移&lt;/li&gt;
+&lt;li&gt;基址 + 索引 * 缩放 + 偏移&lt;/li&gt;
+&lt;li&gt;标号&lt;/li&gt;
+&lt;li&gt;常量&lt;/li&gt;
+&lt;li&gt;任意合法的组合&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注意，有些指令需要内存对齐。否则产生GP异常（General Protection Fault，通用保护异常）。比如SSE，AVX指令。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;movaps xmm0, [rax] ; 需要 16 字节对齐，否则 #GP 异常
+movdqa xmm1, [rax] ; 需要 16 字节对齐
+vmovaps ymm0, [rax] ; rax 必须 32 字节对齐
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="指令集sseavx简介"&gt;指令集（SSE/AVX）简介
+&lt;/h2&gt;&lt;p&gt;上一节中，提到的一些用比较特别寄存器的，都是扩展指令集的指令。这节简要介绍一些。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SSE: Streaming SIMD Extensions 。Intel 在 &lt;strong&gt;1999 年&lt;/strong&gt; 发布的 SIMD（Single Instruction Multiple Data）扩展。使用 &lt;strong&gt;128 位的 XMM 寄存器（xmm0–xmm15）&lt;/strong&gt; ，提供浮点加速。通常需要对齐。&lt;/li&gt;
+&lt;li&gt;AVX: Advanced Vector Extensions 。Intel 在 &lt;strong&gt;2011 年&lt;/strong&gt; 推出的 SSE 进化版。 使用 &lt;strong&gt;256 位 YMM 寄存器（ymm0–ymm15 / ymm31）&lt;/strong&gt;。具备无需对齐的指令。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;更多高阶指令：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;AVX2（2013）： 整数 SIMD，Gather 指令，更强的向量整数操作（如 vpblendd、vpmulld）。&lt;/li&gt;
+&lt;li&gt;AVX-512（2016）：寄存器扩大到 &lt;strong&gt;512 位的 ZMM0–31&lt;/strong&gt;。掩码寄存器（k0–k7），更丰富的数学指令（如 exp/log），分段化（Foundation / BW / VL / VNNI / IFMA 等）。应用：HPC（科学计算），AI 推理（VNNI），数据中心服务器（Xeon 里普遍支持）&lt;/li&gt;
+&lt;li&gt;VNNI（Vector Neural Network Instructions）： 属于 AVX-512 家族（也有 AVX2 版本）。专为 AI 推理优化：提供更快的 dot-product（点积）运算，用于 INT8/INT16 加速。&lt;/li&gt;
+&lt;li&gt;AMX（Advanced Matrix Extensions）(2021)：&lt;strong&gt;矩阵加速器&lt;/strong&gt;，不是传统 SIMD 了。Tile 寄存器（矩阵寄存器）、Tile 配置指令、Tile DP（矩阵乘加）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这些跟处理器相关。通常消费级处理器，没有AMX。&lt;/p&gt;
+&lt;h2 id="常用指令"&gt;常用指令
+&lt;/h2&gt;&lt;h3 id="first-of-all"&gt;First of All
+&lt;/h3&gt;&lt;p&gt;用 &lt;code&gt;.hh &amp;lt;x&amp;gt;&lt;/code&gt; 指令可以查看 &lt;code&gt;&amp;lt;x&amp;gt;&lt;/code&gt; 指令的文档。&lt;/p&gt;
+&lt;h3 id="执行控制和断点"&gt;执行控制和断点
+&lt;/h3&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;命令&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;完整形式/别名&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;功能描述&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;示例&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;g&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;go&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;继续执行&lt;/strong&gt;。程序将从当前位置继续运行直到遇到断点或退出。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;g&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;p&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;step&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;步过 (Step Over)&lt;/strong&gt;。执行下一条指令。如果下一条是函数调用，则执行完整个函数再停下。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;p&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;t&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;trace&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;步入 (Step Into)&lt;/strong&gt;。执行下一条指令。如果下一条是函数调用，则进入该函数内部并停在第一条指令。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;t&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;bp&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;Set Breakpoint&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;设置软件断点&lt;/strong&gt;。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bp MyModule!MyFunction&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;ba&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;Set Access Breakpoint&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;设置访问断点（硬件断点）&lt;/strong&gt;。用于监视内存地址的读、写或执行。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;ba w8 @rcx&lt;/code&gt; (在 &lt;code&gt;@rcx&lt;/code&gt; 地址上设置 8 字节的写访问断点)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;bl&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;List Breakpoints&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;列出&lt;/strong&gt; 当前设置的所有断点。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bl&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;bc&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;Clear Breakpoints&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;清除&lt;/strong&gt; 指定编号的断点。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bc 0&lt;/code&gt; (清除编号为 0 的断点)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;be&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;Enable Breakpoints&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;启用&lt;/strong&gt; 指定编号的断点。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;be 0&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;bd&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;Disable Breakpoints&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;禁用&lt;/strong&gt; 指定编号的断点。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bd 0&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;重中之重：&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;bp, ba&lt;/code&gt; : 调试必备&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注意， &lt;code&gt;bl,bc,be,bd&lt;/code&gt; 在UI上操作更方便。&lt;/p&gt;
+&lt;h3 id="内存检查"&gt;内存检查
+&lt;/h3&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;命令&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;数据类型&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;功能描述&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;示例&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;db&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Byte (字节)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 字节数据 (1 字节/8 位)。同时显示十六进制和 ASCII 字符。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;db 0x180000000&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;dw&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Word (字)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 字数据 (2 字节/16 位)。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dw @rcx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;dd&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Double-Word (双字)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 双字数据 (4 字节/32 位)。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dd @rsp&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;dq&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Quad-Word (四字)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 四字数据 (8 字节/64 位)。&lt;strong&gt;x64 环境下最常用&lt;/strong&gt;。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dq @rcx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;da&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;ASCII String&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 内存中的 &lt;strong&gt;ASCII&lt;/strong&gt; 字符串。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;da @rdx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;du&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;UNICODE String&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示&lt;/strong&gt; 内存中的 &lt;strong&gt;UNICODE&lt;/strong&gt; (UTF-16) 字符串。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;du @rcx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="上下文与符号信息-context--symbol"&gt;上下文与符号信息 (Context &amp;amp; Symbol)
+&lt;/h3&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;命令&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;别名&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;功能描述&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;示例&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;r&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;registers&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;查看/修改&lt;/strong&gt; 寄存器的值。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;r&lt;/code&gt; (查看所有) 或 &lt;code&gt;r rcx=0x123&lt;/code&gt; (修改 &lt;code&gt;rcx&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;k&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;kb&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;显示栈回溯 (Stack Backtrace)&lt;/strong&gt;。这是最常用的调试命令之一。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;k&lt;/code&gt; 或 &lt;code&gt;kb&lt;/code&gt; (后者会显示栈上前4个QWORD)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;lm&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;list modules&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;列出&lt;/strong&gt; 当前加载的所有模块（DLL/EXE）。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;lm&lt;/code&gt; 或 &lt;code&gt;lm v&lt;/code&gt; (显示详细信息)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;x&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;examine symbols&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;检查&lt;/strong&gt; 指定模块内的符号（函数名、变量名）。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;x MyModule!*&lt;/code&gt; (列出 MyModule 的所有符号)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;?&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;evaluate&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;计算&lt;/strong&gt; 表达式的值。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;? 0x10 + @r8&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;lmv m&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;查看具体模块的详细信息&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;lmv m vulkan_1&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;用 &lt;code&gt;x&lt;/code&gt; 指令，支持通配符。可以先用来查询模块中可以使用的符号。（有些带有pdb信息的，有些无pdb信息的仍然有导出库的符号）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;r&lt;/code&gt; 指令看寄存器的时候，可以指定格式。例如 &lt;code&gt;r ymm1:uq&lt;/code&gt; 。具体参照文档。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="断点设定示例"&gt;断点设定示例
+&lt;/h2&gt;&lt;p&gt;考虑在文件创建的时候打断点。&lt;/p&gt;
+&lt;h3 id="createfilea-和-createfilew-函数"&gt;CreateFileA 和 CreateFileW 函数
+&lt;/h3&gt;&lt;p&gt;这两个是windows的api函数，用来创建文件。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;特性&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;CreateFileA (ANSI 版本)&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;CreateFileW (Unicode 版本)&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;字符串类型&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;接受 &lt;strong&gt;ANSI/多字节&lt;/strong&gt; 字符串。&lt;/td&gt;
+&lt;td&gt;接受 &lt;strong&gt;Unicode&lt;/strong&gt; (UTF-16) 字符串。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;应用场景&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;主要用于&lt;strong&gt;较老&lt;/strong&gt;或非 Unicode 环境的程序。&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;现代 Windows 应用程序的主流&lt;/strong&gt;，支持全球语言字符集。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;内部机制&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;需要在内部将 ANSI 转换为 Unicode 才能交给系统内核处理，有轻微性能开销。&lt;/td&gt;
+&lt;td&gt;直接使用 Unicode，无需转换，&lt;strong&gt;效率更高，更可靠&lt;/strong&gt;。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="createfile函数参数"&gt;CreateFile函数参数
+&lt;/h3&gt;&lt;p&gt;两个函数调用的参数是类似的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;HANDLE &lt;span style="color:#6639ba"&gt;CreateFileW&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; LPCWSTR lpFileName&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;//&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;文件名&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;W版本使用 LPCWSTR&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; DWORD dwDesiredAccess&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 2. 期望的访问权限
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwShareMode&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 3. 文件共享模式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPSECURITY_ATTRIBUTES lpSecurityAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 4. 安全属性
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwCreationDisposition&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;&lt;span style="color:#57606a"&gt;// 5. 创建/打开的方式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwFlagsAndAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 6. 文件属性和标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; HANDLE hTemplateFile &lt;span style="color:#57606a"&gt;// 7. 模板文件句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;期望的访问权限：主要传入 &lt;code&gt;GENERIC_READ|GENERIC_WRITE|GENERIC_EXECUTE|0&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;文件共享模式: 决定其他程序是否可以打开同一个文件。 &lt;code&gt;0|FILE_SHARED_READ|FILE_SHARED_WRITE|FILE_SHARED_DELETE&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;安全属性: 主要是权限控制&lt;/li&gt;
+&lt;li&gt;创建/打开的方式 : 当文件存在或者不存在的时候如何处理。&lt;strong&gt;非常关键&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;CREATE_NEW&lt;/code&gt; ：创建新文件。如果文件已存在，则失败。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CREATE_ALWAYS&lt;/code&gt; ：创建新文件。如果文件已存在，则覆盖并清空。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;OPEN_EXISTING&lt;/code&gt; ：打开现有文件。如果文件不存在则失败。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;OPEN_ALWAYS&lt;/code&gt; ：打开现有文件。如果文件不存在则创建。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;文件属性和标志：设置隐藏文件、只读文件等等。&lt;/li&gt;
+&lt;li&gt;模板文件句柄：按照模板文件来创建文件，继承其属性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="windows-x64调用约定"&gt;Windows x64调用约定
+&lt;/h3&gt;&lt;p&gt;在 Windows x64 架构下，微软规定使用 &lt;strong&gt;Fastcall&lt;/strong&gt; 调用约定，它要求函数的前四个非浮点数参数通过特定的通用寄存器传递，而不是通过栈传递。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;参数序号&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;寄存器&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;作用&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;WinDbg 伪寄存器&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;第一个参数 (Param 1)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;RCX&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;通用寄存器 C&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;@rcx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;第二个参数 (Param 2)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;RDX&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;通用寄存器 D&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;@rdx&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;第三个参数 (Param 3)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;R8&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;通用寄存器 R8&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;@r8&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;第四个参数 (Param 4)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;R9&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;通用寄存器 R9&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;@r9&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;第五个及后续参数&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;栈 (Stack)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;从栈上获取参数&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dq @rsp + 0x28&lt;/code&gt; / &lt;code&gt;dq @rsp + 0x30&lt;/code&gt; 等&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;回顾 &lt;code&gt;CreateFileW&lt;/code&gt; 的前四个参数：&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;lpFileName&lt;/code&gt; $\rightarrow$ &lt;strong&gt;&lt;code&gt;@rcx&lt;/code&gt;&lt;/strong&gt; (文件名指针)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dwDesiredAccess&lt;/code&gt; $\rightarrow$ &lt;strong&gt;&lt;code&gt;@rdx&lt;/code&gt;&lt;/strong&gt; (访问权限 DWORD)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dwShareMode&lt;/code&gt; $\rightarrow$ &lt;strong&gt;&lt;code&gt;@r8&lt;/code&gt;&lt;/strong&gt; (共享模式 DWORD)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;lpSecurityAttributes&lt;/code&gt; $\rightarrow$ &lt;strong&gt;&lt;code&gt;@r9&lt;/code&gt;&lt;/strong&gt; (安全属性指针)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;因此，您在 WinDbg 中查看参数时，总是使用 &lt;code&gt;du @rcx&lt;/code&gt; 或 &lt;code&gt;? @rdx&lt;/code&gt; 等命令。&lt;/p&gt;
+&lt;h1 id="实操演练"&gt;实操演练
+&lt;/h1&gt;&lt;p&gt;我们的目标是找到异常写日志的代码。选择一个合适的方式，加载exe启动后，看到如下页面。&lt;/p&gt;
+&lt;p&gt;启动对应exe：
+&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763395254791.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763395254791"
+&gt;&lt;/p&gt;
+&lt;h2 id="初始页面讲解"&gt;初始页面讲解
+&lt;/h2&gt;&lt;h3 id="模块加载信息"&gt;模块加载信息
+&lt;/h3&gt;&lt;h4 id="主程序"&gt;主程序
+&lt;/h4&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;ModLoad: 00007ff7`f70b0000 00007ff7`f70fa000 image00007ff7`f70b0000
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;加载主程序。名称image后面跟着的是虚拟内存地址，意味着程序被加载到这个内存位置上。主程序永远是第一个被加载的。&lt;/p&gt;
+&lt;p&gt;查看主程序模块：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; lm a 00007ff7`f70b0000
+Browse full module list
+start end module name
+00007ff7`f70b0000 00007ff7`f70fa000 VulkanGLFWDemo C (no symbols)
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;lm&lt;/code&gt; (List Modules):&lt;/strong&gt; 基本命令，用于显示模块信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;a&lt;/code&gt; (Address):&lt;/strong&gt; 这是一个子命令或限定符，意思是**&amp;ldquo;按地址过滤&amp;rdquo;**。它告诉 WinDbg &lt;strong&gt;只显示包含这个特定地址的模块&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;地址用 $`$ 分隔 : 分隔内存地址的高位和低位部分是为了&lt;strong&gt;提高可读性和清晰度&lt;/strong&gt;，尤其是在处理 &lt;strong&gt;64 位 (8 字节)&lt;/strong&gt; 地址时 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="其他模块简要介绍"&gt;其他模块简要介绍
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ntdll.dll&lt;/code&gt; : &lt;strong&gt;Windows NT 层的核心库&lt;/strong&gt;。它提供用户模式程序到内核模式驱动程序和函数的接口，是所有 Windows 进程的基石。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KERNEL32.DLL&lt;/code&gt; : 提供基本的 &lt;strong&gt;操作系统服务&lt;/strong&gt;，如内存管理、进程和线程管理、文件 I/O 等。它是 Windows 编程中最重要的 DLL 之一。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;KERNELBASE.dll&lt;/code&gt; : 包含 &lt;code&gt;KERNEL32.DLL&lt;/code&gt; 的许多底层函数实现。在现代 Windows 中，许多核心 API 调用被路由到这里。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;USER32.dll&lt;/code&gt; : 负责管理用户界面元素，如&lt;strong&gt;窗口、菜单、对话框&lt;/strong&gt;等。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;win32u.dll&lt;/code&gt; : 包含底层用户模式的图形和窗口管理函数，是 &lt;code&gt;USER32.dll&lt;/code&gt; 和 &lt;code&gt;GDI32.dll&lt;/code&gt; 的&lt;strong&gt;更底层实现&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;vulkan-1.dll&lt;/code&gt; : 这是一个&lt;strong&gt;图形 API 库&lt;/strong&gt;。它表明你的程序正在使用 &lt;strong&gt;Vulkan&lt;/strong&gt; 图形 API，这通常用于高性能的 3D 游戏或渲染应用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="为什么是这个加载顺序"&gt;为什么是这个加载顺序？
+&lt;/h4&gt;&lt;p&gt;任何 Windows 进程启动，都需要两个最基本的 DLL 来与内核交互和管理自身。因此，它们总是最先被加载，并且顺序非常固定：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;顺序&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;模块&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;职责和原因&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;1.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;主程序 (&lt;code&gt;VulkanGLFWDemo C&lt;/code&gt; / &lt;code&gt;image...&lt;/code&gt;)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 它是被执行的文件。加载器首先将 EXE 文件映射到进程的虚拟地址空间，并开始解析它的导入表（Import Table）。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;2.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;ntdll.dll&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 这是所有用户模式代码访问内核服务（&lt;code&gt;ntoskrnl.exe&lt;/code&gt;）的&lt;strong&gt;唯一网关&lt;/strong&gt;。任何更高层的 DLL，包括 &lt;code&gt;KERNEL32.DLL&lt;/code&gt;，都必须通过 &lt;code&gt;ntdll.dll&lt;/code&gt; 来工作。它必须在其他所有依赖内核的模块之前加载。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;3.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;KERNEL32.DLL&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 它是提供进程、内存、文件等基本 API 的高级层。它自身依赖于 &lt;code&gt;ntdll.dll&lt;/code&gt;。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;4.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;KERNELBASE.dll&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 它是 &lt;code&gt;KERNEL32.DLL&lt;/code&gt; 的底层实现库。现代 Windows 将 &lt;code&gt;KERNEL32&lt;/code&gt; 的许多实际功能移到了 &lt;code&gt;KERNELBASE&lt;/code&gt; 中，以提高效率和隔离性。它紧随其后的加载，是为了满足 &lt;code&gt;KERNEL32&lt;/code&gt; 启动时的依赖。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;在基础的系统服务加载完成后，加载器会继续加载主程序&lt;strong&gt;导入表&lt;/strong&gt;中列出的下一组核心依赖项，通常是与用户界面 (UI) 相关的库：&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;顺序&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;模块&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;职责和原因&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;5.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;USER32.dll&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 主程序是一个图形应用（基于 &lt;code&gt;Vulkan&lt;/code&gt;），所以它需要窗口管理 API。&lt;code&gt;USER32.dll&lt;/code&gt; 是管理窗口、消息和对话框的关键。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;6.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;win32u.dll&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 类似 &lt;code&gt;KERNELBASE&lt;/code&gt; 和 &lt;code&gt;KERNEL32&lt;/code&gt; 的关系，&lt;code&gt;win32u.dll&lt;/code&gt; 是 &lt;code&gt;USER32.dll&lt;/code&gt; 的底层实现，用于处理用户模式和内核模式之间的用户界面切换。它在 &lt;code&gt;USER32&lt;/code&gt; 之后加载，因为它被 &lt;code&gt;USER32&lt;/code&gt; 所依赖。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;7.&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;GDI32.dll&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;原因：&lt;/strong&gt; 图形设备接口库，负责绘图、字体等。它通常是与 &lt;code&gt;USER32&lt;/code&gt; 捆绑在一起加载的，用于提供图形界面所需的基本绘制能力。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="ui配置"&gt;UI配置
+&lt;/h3&gt;&lt;p&gt;页面中的View选项可以调出很多好用的窗口。根据自己的需求配置即可。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763519564490.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763519564490"
+&gt;&lt;/p&gt;
+&lt;p&gt;随后可以拖拽窗口，dock到自己喜欢的位置上。&lt;/p&gt;
+&lt;h3 id="第一个中断"&gt;第一个中断
+&lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;(4d30.26a4): Break instruction exception - code 80000003 (first chance)
+ntdll!LdrpDoDebuggerBreak+0x35:
+00007ff8`9503f5fd cc int 3
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;进程线程信息：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;4d30&lt;/code&gt;&lt;/strong&gt;: 进程 ID (PID)，十六进制表示。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;26a4&lt;/code&gt;&lt;/strong&gt;: 线程 ID (TID)，十六进制表示。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;异常类型和状态：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Break instruction exception&lt;/code&gt;&lt;/strong&gt;: &lt;strong&gt;异常类型：&lt;/strong&gt; &lt;strong&gt;中断指令异常&lt;/strong&gt;。这意味着 CPU 遇到了一个专门用于触发调试中断的指令。&lt;/li&gt;
+&lt;li&gt;code 80000003： &lt;strong&gt;异常代码：&lt;/strong&gt; 这是 Windows 中 &lt;strong&gt;硬编码断点&lt;/strong&gt;（Hardcoded Breakpoint）的异常代码。这个代码通常是由 &lt;code&gt;int 3&lt;/code&gt;（汇编指令）触发的。在 Windows 进程启动或调试器接管时，系统会故意执行这个指令，以确保调试器能在程序真正开始运行前获得控制权。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;暂停位置：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;ntdll!LdrpDoDebuggerBreak+0x35&lt;/code&gt;&lt;/strong&gt;: &lt;strong&gt;模块与函数：&lt;/strong&gt; 程序当前暂停在 &lt;code&gt;ntdll.dll&lt;/code&gt; 模块中的 &lt;code&gt;LdrpDoDebuggerBreak&lt;/code&gt; 函数内，偏移量为 &lt;code&gt;+0x35&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;00007ff8`9503f5fd&lt;/code&gt; : &lt;strong&gt;内存地址：&lt;/strong&gt; 异常发生的具体指令地址。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cc&lt;/code&gt; 机器码。对应的汇编为 &lt;code&gt;int 3&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="命令窗口-0000"&gt;命令窗口 &lt;code&gt;0:000&amp;gt;&lt;/code&gt;
+&lt;/h3&gt;&lt;p&gt;命令提示符格式: &lt;code&gt;P:T&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;P: 代表正在调试的处理器编号（CPU编号）。&lt;/li&gt;
+&lt;li&gt;T: 代表正在调试的线程编号&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;命令窗口后面可以输出上面我们介绍过的调试指令。&lt;/p&gt;
+&lt;h2 id="添加断点"&gt;添加断点
+&lt;/h2&gt;&lt;p&gt;命令行里输入如下命令&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;bp kernel32!CreateFileA;
+bp kernel32!CreateFileW;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;右下角面板可以打开 Breakpoint 选项卡：
+&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763396928280.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763396928280"
+&gt;&lt;/p&gt;
+&lt;p&gt;随后可以输入命令：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;g
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;启动程序运行。&lt;/p&gt;
+&lt;p&gt;注意，断点另一个常见的用法是，后面接中断触发后执行的指令，比如：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;bp kernel32!CreateFileW &amp;#34;du rcx;&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个断点中断后，会以 unicode字符串的方式打印 rcx指针指向的地址。这是非常常用的技巧。&lt;/p&gt;
+&lt;h2 id="中断到createfile"&gt;中断到CreateFile
+&lt;/h2&gt;&lt;p&gt;下面进入我们第一次中断的情况：
+&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763397056640.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763397056640"
+&gt;&lt;/p&gt;
+&lt;h3 id="寄存器观察"&gt;寄存器观察
+&lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; r
+rax=000000000000005c rbx=0000000000000000 rcx=00000073ac18c1b0
+rdx=0000000080000000 rsi=0000022a13050f00 rdi=000000000000005c
+rip=00007ff893b970f0 rsp=00000073ac18c168 rbp=00000073ac18c270
+r8=0000000000000001 r9=0000000000000000 r10=0000022a13050f5c
+r11=00000073ac18c1b0 r12=0000000000000000 r13=00000073ac18c310
+r14=0000000000000000 r15=00000073ac18c1b0
+iopl=0 nv up ei pl zr na po nc
+cs=0033 ss=002b ds=002b es=002b fs=0053 gs=002b efl=00000246
+KERNEL32!CreateFileW:
+00007ff8`93b970f0 ff25ea270300 jmp qword ptr [KERNEL32!_imp_CreateFileW (00007ff8`93bc98e0)] ds:00007ff8`93bc98e0={KERNELBASE!CreateFileW (00007ff8`922f3ac0)}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;回忆API接口：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;HANDLE &lt;span style="color:#6639ba"&gt;CreateFileW&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; LPCWSTR lpFileName&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;//&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;文件名&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;W版本使用 LPCWSTR&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; DWORD dwDesiredAccess&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 2. 期望的访问权限
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwShareMode&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 3. 文件共享模式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPSECURITY_ATTRIBUTES lpSecurityAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 4. 安全属性
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwCreationDisposition&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;&lt;span style="color:#57606a"&gt;// 5. 创建/打开的方式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwFlagsAndAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 6. 文件属性和标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; HANDLE hTemplateFile &lt;span style="color:#57606a"&gt;// 7. 模板文件句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;函数入参：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rcx&lt;/code&gt; : 第一个参数。&lt;code&gt;lpFileName&lt;/code&gt; (文件名地址)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rdx&lt;/code&gt; : 第二个参数。&lt;code&gt;dwDesiredAccess&lt;/code&gt; (期望访问权限) 。$0x80000000$ 对应 &lt;code&gt;GENERIC_READ&lt;/code&gt;。这表示程序&lt;strong&gt;只请求读取权限&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;r8&lt;/code&gt;: 第三个参数： &lt;code&gt;dwShareMode&lt;/code&gt; (共享模式)。 &lt;code&gt;0x1&lt;/code&gt; 对应 &lt;code&gt;FILE_SHARE_READ&lt;/code&gt;。这意味着其他进程在文件打开时&lt;strong&gt;可以同时拥有读取权限&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;r9&lt;/code&gt;: 第四个参数： &lt;code&gt;lpSecurityAttributes&lt;/code&gt; (安全属性) 。0代表不使用安全属性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;函数返回：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rax&lt;/code&gt; : &lt;strong&gt;返回值寄存器&lt;/strong&gt; 。 在调用前，&lt;code&gt;RAX&lt;/code&gt; 的值不确定。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;控制/指针寄存器:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rip&lt;/code&gt; : &lt;strong&gt;Instruction Pointer (指令指针)&lt;/strong&gt;。指向当前 CPU 正在执行的下一条指令的地址，即 &lt;code&gt;KERNEL32!CreateFileW&lt;/code&gt; 的入口点。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rsp&lt;/code&gt; : &lt;strong&gt;Stack Pointer (栈指针)&lt;/strong&gt;。指向当前线程栈的顶部。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rbp&lt;/code&gt; : &lt;strong&gt;Base Pointer (基址指针)&lt;/strong&gt;。通常用于标记当前函数栈帧的底部。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="易失性和非易失性寄存器"&gt;易失性和非易失性寄存器
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rbx&lt;/code&gt; : &lt;strong&gt;非易失性（Non-Volatile）寄存器&lt;/strong&gt;，也称为&lt;strong&gt;被调用者保存（Callee-Saved）&lt;/strong&gt; 寄存器。程序员和编译器通常用 $RBX$ 来存储在整个函数执行过程中需要保持不变的 &lt;strong&gt;重要本地变量&lt;/strong&gt;或 &lt;strong&gt;指针&lt;/strong&gt; 。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rsi/rdi&lt;/code&gt; : 同上。在旧的 x86 架构中，它们传统上用作源索引（Source Index）和目标索引（Destination Index），常用于字符串和内存块操作。x64架构中，则类似 &lt;code&gt;rbx&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;同样非易失性寄存器有： &lt;code&gt;rbx, rbp, rsi, rdi, r12, r13, r14, r15&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;而易失性寄存器有： &lt;code&gt;rcx, rdx,r8,r9 r10, r11&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="状态和段寄存器不太常用"&gt;状态和段寄存器（不太常用）
+&lt;/h4&gt;&lt;p&gt;状态和段寄存器解读：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;iopl=0 nv up ei pl zr na po nc
+cs=0033 ss=002b ds=002b es=002b fs=0053 gs=002b efl=00000246
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;iopl=0&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;含义：&lt;/strong&gt; &lt;strong&gt;I/O Privilege Level (I/O 特权级别)&lt;/strong&gt;。这是一个 2 位的字段，用于控制当前代码是否可以直接执行 I/O 指令。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;值：&lt;/strong&gt; $0$ 是最高的特权级别（通常是内核模式，Ring 0）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;nv &amp;hellip;.&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;含义 &lt;strong&gt;RFLAGS&lt;/strong&gt; (Registers Flags)，它包含了控制 CPU 操作和指示上次运算结果的各种标志位。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;缩写&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;含义&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;状态&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;解释&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;nv&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Overflow Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;nv&lt;/strong&gt; (No Overflow)&lt;/td&gt;
+&lt;td&gt;上一次运算没有发生溢出。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;up&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Direction Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;up&lt;/strong&gt; (Up)&lt;/td&gt;
+&lt;td&gt;字符串操作（如移动数据）的方向是从低地址到高地址（递增）。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;ei&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Interrupt Enable Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;ei&lt;/strong&gt; (Enable Interrupts)&lt;/td&gt;
+&lt;td&gt;CPU &lt;strong&gt;允许&lt;/strong&gt;接收外部可屏蔽中断信号。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;pl&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Sign Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;pl&lt;/strong&gt; (Positive)&lt;/td&gt;
+&lt;td&gt;上一次算术运算的结果是非负数（或零）。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;zr&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Zero Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;zr&lt;/strong&gt; (Zero)&lt;/td&gt;
+&lt;td&gt;上一次算术或逻辑运算的结果是&lt;strong&gt;零&lt;/strong&gt;。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;na&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Auxiliary Carry Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;na&lt;/strong&gt; (Not Applicable)&lt;/td&gt;
+&lt;td&gt;辅助进位标志，主要用于 BCD (Binary-Coded Decimal) 运算，通常不显示具体状态。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;po&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Parity Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;po&lt;/strong&gt; (Parity Odd)&lt;/td&gt;
+&lt;td&gt;上一次运算结果的低 8 位中，置位（1）的个数是奇数。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;nc&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Carry Flag&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;nc&lt;/strong&gt; (No Carry)&lt;/td&gt;
+&lt;td&gt;上一次算术运算没有产生进位或借位。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;cs=0033 &amp;hellip;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;段寄存器（Segment Registers）。x64架构中，主要用于定义&lt;strong&gt;特权级别&lt;/strong&gt;和访问一些特殊结构（如线程本地存储）。在x86架构中，段寄存器主要是辅助地址选择。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;寄存器&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;值&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;含义&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;解释 (x64 Windows)&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;cs&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;0033&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Code Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;代码段。段选择子 $0x33$ 对应于**用户模式（User Mode, Ring 3）**代码。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;ss&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;002b&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Stack Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;栈段。段选择子 $0x2B$ 对应于**用户模式（User Mode, Ring 3）**数据。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;ds&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;002b&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Data Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;数据段。与 SS 相同，对应于用户模式数据。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;es&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;002b&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;Extra Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;附加段。与 SS/DS 相同，对应于用户模式数据。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;fs&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;0053&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;FS Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;特殊用途&lt;/strong&gt;。在 64 位 Windows 中，$FS$ 寄存器指向&lt;strong&gt;线程信息块 (TEB)&lt;/strong&gt;，用于访问线程特定的数据（如异常处理、栈限制等）。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;gs&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;002b&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;GS Segment&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;特殊用途&lt;/strong&gt;。在 64 位 Windows 中，$GS$ 寄存器通常指向 &lt;strong&gt;KPCR (内核处理器控制区)&lt;/strong&gt;，但用户模式下它的使用较少或被重定义。这里的值 $0x2B$ 可能只是一个占位符。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="更多函数参数的观察"&gt;更多函数参数的观察
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;HANDLE &lt;span style="color:#6639ba"&gt;CreateFileW&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; LPCWSTR lpFileName&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;//&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;文件名&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;W版本使用 LPCWSTR&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; DWORD dwDesiredAccess&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 2. 期望的访问权限
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwShareMode&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 3. 文件共享模式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPSECURITY_ATTRIBUTES lpSecurityAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 4. 安全属性
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwCreationDisposition&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;&lt;span style="color:#57606a"&gt;// 5. 创建/打开的方式
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwFlagsAndAttributes&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 6. 文件属性和标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; HANDLE hTemplateFile &lt;span style="color:#57606a"&gt;// 7. 模板文件句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;lpFileName&lt;/code&gt; 下面的值显示为一个字符串。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;du @rcx
+00000073`ac18c1b0 &amp;#34;C:\WINDOWS\System32\DriverStore\&amp;#34;
+00000073`ac18c1f0 &amp;#34;FileRepository\nvmi.inf_amd64_c6&amp;#34;
+00000073`ac18c230 &amp;#34;ae241e95feb82d\nv-vk64.json&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;ol start="2"&gt;
+&lt;li&gt;&lt;code&gt;dwDesiredAccess&lt;/code&gt; : 注意，不能用 dw, db等指令，这些指令会解析参数为地址。如果是直接看寄存器的值，用r指令。下面的值显示为 &lt;code&gt;GENERIC_READ&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; r @rdx
+rdx=0000000080000000
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;ol start="3"&gt;
+&lt;li&gt;&lt;code&gt;dwShareMode&lt;/code&gt; ： &lt;code&gt;r @r8&lt;/code&gt; 结果为 &lt;code&gt;0x1&lt;/code&gt; 即 &lt;code&gt;FILE_SHARE_READ&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start="4"&gt;
+&lt;li&gt;&lt;code&gt;lpSecurityAttributes&lt;/code&gt; ： 先用r来看地址是否为空。 &lt;code&gt;r @r9&lt;/code&gt; 。结果为0。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="关于-db-dw-dd-dq"&gt;关于 &lt;code&gt;db, dw, dd, dq&lt;/code&gt;
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;BYTE&lt;/code&gt; : 8字节 。因此， &lt;code&gt;db&lt;/code&gt; 会把内存按照8字节切分。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;WORD&lt;/code&gt; : 16字节&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DWORD&lt;/code&gt; : 32字节&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;QWORD&lt;/code&gt; : 64字节&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="关于寄存器"&gt;关于寄存器
+&lt;/h4&gt;&lt;p&gt;&lt;strong&gt;WinDbg 默认将寄存器名称视为其&lt;/strong&gt;存储的 &lt;strong&gt;值&lt;/strong&gt; 。因此比如 &lt;code&gt;dd rcx&lt;/code&gt; 实际上将rcx的值作为dd的参数。dd的参数需要使用到一个地址，因此实际会解析 rcx 存储值所指向的地址，而不是rcx的值。&lt;/p&gt;
+&lt;p&gt;所以要注意： &lt;strong&gt;寄存器在 windbg 中被当作值来使用；而指令后面的参数常常作为地址来解析&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id="栈上参数"&gt;栈上参数
+&lt;/h4&gt;&lt;p&gt;接着，对于5，6，7参数，都保存在栈上。对于栈上来说，约定有：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;相对地址（相对于 RSP）&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;长度 (字节)&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;含义&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;CreateFileW 参数&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x00}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;返回地址&lt;/strong&gt;（Return Address）&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&amp;mdash; 32 字节阴影空间（Shadow Space）开始 &amp;mdash;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x08}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;阴影空间槽位 1&lt;/td&gt;
+&lt;td&gt;（用于保存 $\text{RCX}$ 的副本）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x10}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;阴影空间槽位 2&lt;/td&gt;
+&lt;td&gt;（用于保存 $\text{RDX}$ 的副本）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x18}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;阴影空间槽位 3&lt;/td&gt;
+&lt;td&gt;（用于保存 $\text{R8}$ 的副本）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x20}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;阴影空间槽位 4&lt;/td&gt;
+&lt;td&gt;（用于保存 $\text{R9}$ 的副本）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&amp;mdash; 32 字节阴影空间（Shadow Space）结束 &amp;mdash;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x28}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;第 5 个参数&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dwCreationDisposition&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x30}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;第 6 个参数&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dwFlagsAndAttributes&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\mathbf{RSP + 0x38}$&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;第 7 个参数&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;hTemplateFile&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;阴影空间&lt;/strong&gt; : 其实是按照规范，所有参数都应该在栈上。不过windows会放入寄存器，因此这些栈上空间就相当于被留空了。（实际会保存副本）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;调用参数的存储位置&lt;/strong&gt; (正偏移): 一般在 &lt;code&gt;rsp&lt;/code&gt; 向高地址的方向去找，每次64位（即8byte）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;局部变量&lt;/strong&gt; (负偏移): 一般在 rsp 向低地址的方向去找，每次64位。所以，第一个局部变量位置在 &lt;code&gt;rsp-0x08&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start="5"&gt;
+&lt;li&gt;&lt;code&gt;dwCreateionDisposition&lt;/code&gt; : dw 代表 &lt;code&gt;DWORD&lt;/code&gt; ，因此用dd指令。容易看到第一个值为 &lt;code&gt;0x03&lt;/code&gt; ，对应 &lt;code&gt;OPEN_EXISTING&lt;/code&gt; ，即打开一个文件或设备。如果文件或设备不存在，函数将失败。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; dd rsp+0x28
+00000073`ac18c190 00000003 00000073 00000080 00000000
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;ol start="6"&gt;
+&lt;li&gt;&lt;code&gt;dwCreateionDisposition&lt;/code&gt; 从上一步的结果也容易看到这个参数为 &lt;code&gt;0x80&lt;/code&gt; (注意，每64bit一个参数，因此 &lt;code&gt;00000073&lt;/code&gt; 被跳过，随后是 &lt;code&gt;00000080&lt;/code&gt; ，即 &lt;code&gt;0x80&lt;/code&gt; ) ，对应值为 &lt;code&gt;FILE_ATTRIBUTE_NORMAL&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ol start="7"&gt;
+&lt;li&gt;&lt;code&gt;hTemplateFile&lt;/code&gt; ，这个参数是HANDLE类型，通常是指针，在 64位程序中，就是8个字节，用dq命令来看。容易看到结果为空。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; dq @rsp+0x38
+00000073`ac18c1a0 00000000`00000000 00000000`00000000
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="函数代码的观察"&gt;函数代码的观察
+&lt;/h2&gt;&lt;p&gt;断点处，我们可以看到&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;KERNEL32!CreateFileW:
+00007ff8`93b970f0 ff25ea270300 jmp qword ptr [KERNEL32!_imp_CreateFileW (00007ff8`93bc98e0)] ds:00007ff8`93bc98e0={KERNELBASE!CreateFileW (00007ff8`922f3ac0)}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个代表下一步要执行的指令。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;00007ff8`93b970f0&lt;/code&gt; : 当前指令的地址。&lt;/li&gt;
+&lt;li&gt;指令 &lt;code&gt;ff25ea270300&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="指令的解读-ff25ea270300"&gt;指令的解读 &lt;code&gt;ff25ea270300&lt;/code&gt;
+&lt;/h4&gt;&lt;p&gt;拆分为:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ff25&lt;/code&gt; : &lt;code&gt;jmp qword ptr [RIP+displacement]&lt;/code&gt; 这个操作码（OPCODE）。意思是，以当前 &lt;code&gt;RIP&lt;/code&gt; （当前指令地址） 作为基地址，叠加 displacement 偏移量后，得到的地址按照QWORD解析，并作为地址进一步跳转到其指向的位置。（因此涉及到一次跳转）
+&lt;ul&gt;
+&lt;li&gt;这个跳转通常叫做 IAT （操作系统和指令层都实现的概念：Import Address Table，导入地址表）&lt;/li&gt;
+&lt;li&gt;IAT这个技术用来做动态链接。提供一个间接层，程序在自己的内存空间设置一张指针表。那么通过IAT跳转指令 &lt;code&gt;jmp qword ptr&lt;/code&gt; （间接跳转指令），就会进一步解码这个表中指向的地址，从而实现RIP的计算、解码加跳转。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ea270300&lt;/code&gt; ：4个byte，偏移量。因为是 Little Endian，所以代表的值为 &lt;code&gt;0x000327ea&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;计算间接跳转地址 &lt;code&gt;00007ff8`93b970f0&lt;/code&gt; + &lt;code&gt;0x000327ea&lt;/code&gt; = &lt;code&gt;00007ff8`93bc98e0&lt;/code&gt; 。这个地址是IAT表的地址。因此按照里面的值，进一步查找地址，得到 &lt;code&gt;00007ff8`922f3ac0&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;显示区域的 &lt;code&gt;ds:00007ff8`93bc98e0={KERNELBASE!CreateFileW (00007ff8`922f3ac0)}&lt;/code&gt; 显示的是IAT表项的地址。不过并不代表使用了段寄存器，而是反汇编工具的约定，是一个注释，表明它访问的是数据内存（IAT表）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="真正的代码位置"&gt;真正的代码位置
+&lt;/h4&gt;&lt;p&gt;经过上面的分析，我们知道，真正的要执行的代码的位置在 &lt;code&gt;00007ff8`922f3ac0&lt;/code&gt; ，其对应的符号表的符号为 &lt;code&gt;KERNELBASE!CreateFileW&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id="函数地址和符号"&gt;函数地址和符号
+&lt;/h4&gt;&lt;p&gt;函数地址在调试的时候，经常有与之相关的符号：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; ln 00007ff8`922f3ac0
+Browse module
+Set bu breakpoint
+(00007ff8`922f3ac0) KERNELBASE!CreateFileW | (00007ff8`922f3ba0) KERNELBASE!SleepEx
+Exact matches:
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到地址对应的符号为 &lt;code&gt;KERNELBASE!CreateFileW&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;反之，也可以从符号找到对应的地址：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; ln KERNELBASE!CreateFileW
+Browse module
+Set bu breakpoint
+(00007ff8`922f3ac0) KERNELBASE!CreateFileW | (00007ff8`922f3ba0) KERNELBASE!SleepEx
+Exact matches:
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id="符号和地址如何关联的呢"&gt;符号和地址如何关联的呢？
+&lt;/h4&gt;&lt;p&gt;答案：通过调试信息文件。windows自己加载了对应的调试信息。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; lm m kernelbase
+Browse full module list
+start end module name
+00007ff8`922b0000 00007ff8`926a8000 KERNELBASE (pdb symbols) C:\ProgramData\Dbg\sym\kernelbase.pdb\8314490F996705E2CF4A8DF59DF277DB1\kernelbase.pdb
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id="如何知道我们自己程序的调试符号表有没有加载"&gt;&lt;strong&gt;如何知道我们自己程序的调试符号表有没有加载？&lt;/strong&gt;
+&lt;/h4&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; lm m VulkanGLFWDemo
+Browse full module list
+start end module name
+00007ff7`f70b0000 00007ff7`f70fa000 VulkanGLFWDemo C (no symbols)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到没有加载。这是由于我们用的时release无符号版本的程序。（当然，release也可以配置生成pdb调试信息）&lt;/p&gt;
+&lt;h4 id="如何查看具体汇编代码指令方式"&gt;&lt;strong&gt;如何查看具体汇编代码&lt;/strong&gt;（指令方式）
+&lt;/h4&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; u KERNELBASE!CreateFileW L10
+KERNELBASE!CreateFileW:
+00007ff8`922f3ac0 488bc4 mov rax,rsp
+00007ff8`922f3ac3 48895808 mov qword ptr [rax+8],rbx
+00007ff8`922f3ac7 48896810 mov qword ptr [rax+10h],rbp
+00007ff8`922f3acb 48897018 mov qword ptr [rax+18h],rsi
+00007ff8`922f3acf 48897820 mov qword ptr [rax+20h],rdi
+00007ff8`922f3ad3 4156 push r14
+00007ff8`922f3ad5 4883ec50 sub rsp,50h
+00007ff8`922f3ad9 448bb42480000000 mov r14d,dword ptr [rsp+80h]
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;u&lt;/code&gt; ： unassemble，反汇编&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;L8&lt;/code&gt; : 8行 。注意 L后面跟的是16进制数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下面来具体解释这里面的汇编干了什么&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;地址&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;机器码&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;汇编指令&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;解释&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;目的&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ac0}$&lt;/td&gt;
+&lt;td&gt;$\text{488bc4}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov rax,rsp&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将当前的栈指针 $\text{RSP}$ 的值备份到 $\text{RAX}$。&lt;/td&gt;
+&lt;td&gt;暂时保存栈指针，以便在 $\text{RSP}$ 被后续指令修改后，仍能通过 $\text{RAX}$ 访问原始栈帧（特别是阴影空间）。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ac3}$&lt;/td&gt;
+&lt;td&gt;$\text{48895808}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov qword ptr [rax+8],rbx&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RBX}$ 寄存器的值保存到 $\text{RAX}+0\text{x}08$ 处。&lt;/td&gt;
+&lt;td&gt;保存 &lt;strong&gt;非易失性&lt;/strong&gt; 寄存器 $\text{RBX}$。该地址是 $\text{RSP}+0\text{x}08$，即&lt;strong&gt;阴影空间&lt;/strong&gt;的第一个槽位。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ac7}$&lt;/td&gt;
+&lt;td&gt;$\text{48896810}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov qword ptr [rax+10h],rbp&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RBP}$ 的值保存到 $\text{RAX}+0\text{x}10$ 处。&lt;/td&gt;
+&lt;td&gt;保存 &lt;strong&gt;非易失性&lt;/strong&gt; 寄存器 $\text{RBP}$（基址指针）。这是阴影空间的第二个槽位。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3acb}$&lt;/td&gt;
+&lt;td&gt;$\text{48897018}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov qword ptr [rax+18h],rsi&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RSI}$ 的值保存到 $\text{RAX}+0\text{x}18$ 处。&lt;/td&gt;
+&lt;td&gt;保存 &lt;strong&gt;非易失性&lt;/strong&gt; 寄存器 $\text{RSI}$。这是阴影空间的第三个槽位。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3acf}$&lt;/td&gt;
+&lt;td&gt;$\text{48897820}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov qword ptr [rax+20h],rdi&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RDI}$ 的值保存到 $\text{RAX}+0\text{x}20$ 处。&lt;/td&gt;
+&lt;td&gt;保存 &lt;strong&gt;非易失性&lt;/strong&gt; 寄存器 $\text{RDI}$。这是阴影空间的第四个槽位。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ad3}$&lt;/td&gt;
+&lt;td&gt;$\text{4156}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;push r14&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{R14}$ 寄存器的值压入栈中。&lt;/td&gt;
+&lt;td&gt;保存 &lt;strong&gt;非易失性&lt;/strong&gt; 寄存器 $\text{R14}$。这会使 $\text{RSP}$ 减去 $0\text{x}08$。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ad5}$&lt;/td&gt;
+&lt;td&gt;$\text{4883ec50}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;sub rsp,50h&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RSP}$ 减去 $0\text{x}50$ ($80$ 字节)。&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;分配局部变量和后续函数调用所需的栈帧空间。&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$\text{922f3ad9}$&lt;/td&gt;
+&lt;td&gt;$\text{448bb42480000000}$&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;mov r14d,dword ptr [rsp+80h]&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;将 $\text{RSP} + 0\text{x}80$ 处的 4 字节数据加载到 $\text{R14D}$（$\text{R14}$ 的低 32 位）。&lt;/td&gt;
+&lt;td&gt;访问栈上参数或调用者栈帧中的局部变量。$0\text{x}80$ 是相对于&lt;strong&gt;调整后的 $\text{RSP}$&lt;/strong&gt; 的大偏移量。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;注：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;类似 &lt;code&gt;r14d&lt;/code&gt; ，还有 &lt;code&gt;eax, ebx, ecx&lt;/code&gt; 分别代表 &lt;code&gt;rax, rbx, rcx&lt;/code&gt; 的低32位&lt;/li&gt;
+&lt;li&gt;更多代码内容，从汇编分析，就比较费时间和偏离主题了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="如何查看具体汇编代码ui方式"&gt;&lt;strong&gt;如何查看具体汇编代码&lt;/strong&gt;（UI方式）
+&lt;/h4&gt;&lt;p&gt;可以打开 Disaseembly 面板。（当然如果有源代码+pdb文件，甚至可以直接打开源代码，类似普通在 vscode 中调试一样）&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763521358979.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763521358979"
+&gt;&lt;/p&gt;
+&lt;h1 id="ttd指令"&gt;TTD指令
+&lt;/h1&gt;&lt;p&gt;time travel 模式下，有一些便捷指令。尤其常用 &lt;code&gt;!tt&lt;/code&gt; 和 &lt;code&gt;!tt &amp;lt;position&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt; tt 0 - Time travel to the beginning of the trace (percentage)
+tt 50 - Time travel to halfway through the trace (percentage)
+tt 100 - Time travel to the end of the trace (percentage)
+tt 13.56 - Time travel to 13.56% through the trace
+tt 1A0: - Time travel to position 1A0:0
+tt 1A0:0 - Time travel to position 1A0:0
+tt 1A0:12F - Time travel to position 1A0:12F
+tt 1A0000000000000012F - Time travel to position 1A0:12F
+tt br rax - Time travel to the next write to RAX
+tt br- rax 0x12345678 - Time travel to the previous write to RAX with the value 0x12345678
+tt ba- rw 0x12345678 0x4000 - Find previous position that reads or writes from memory range
+[0x12345678 - 0x12345678 + 0x4000).
+tt ba e 0x7fffe0001234 0x30000 - Find next position that executes from specified range. If the
+address and range represent the range of ntdll.dll, this command
+would find the next position where ntdll.dll is entered.
+tt bm - Time travel to the next instruction that is in a different module
+than current instruction&amp;#39;s module.
+tt bm- ntdll.dll - Time travel to the previous instruction that is in ntdll.dll
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;此外，在ttd模式下，还可以用 ：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;p-&lt;/code&gt; ： 回退一步&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;g-&lt;/code&gt; ： 回退到上一个缎带你&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="todo-未来有空再进一步研究"&gt;TODO: (未来有空再进一步研究)
+&lt;/h1&gt;&lt;ol&gt;
+&lt;li&gt;memory leak调试&lt;/li&gt;
+&lt;li&gt;脚本：NatVis&lt;/li&gt;
+&lt;li&gt;脚本：javascript&lt;/li&gt;
+&lt;li&gt;以及更多学习资料： &lt;a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugging-resources" target="_blank" rel="noopener"
+&gt;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugging-resources&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description></item><item><title>开源协议详解</title><link>https://crackhopper.github.io/notes/%E5%BC%80%E6%BA%90%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</link><pubDate>Fri, 14 Jan 2022 15:46:49 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E5%BC%80%E6%BA%90%E5%8D%8F%E8%AE%AE%E8%AF%A6%E8%A7%A3/</guid><description>&lt;p&gt;&lt;a class="link" href="https://www.gnu.org/licenses/gpl-faq.html" target="_blank" rel="noopener"
 &gt;https://www.gnu.org/licenses/gpl-faq.html&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id="gpl是否要求修改版的源代码公开"&gt;GPL是否要求修改版的源代码公开。
 &lt;/h2&gt;&lt;p&gt;GPL不要求你发布你的修改版或者任何一部分修改版。你有自由修改并自用，而不必发布。这个规则也适用于机构（包括公司）；机构可以做出修改版并在内部使用而不向其他外部组织发布。&lt;/p&gt;
@@ -111,15 +1721,398 @@
 &lt;li&gt;如果再发布的产品中包含一个Notice文件，则在Notice文件中需要带有Apache Licence。你可以在Notice中增加自己的许可，但不可以表现为对Apache Licence构成更改。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h1 id="mit协议"&gt;MIT协议
-&lt;/h1&gt;&lt;p&gt;MIT是和BSD一样宽范的许可协议,作者只想保留版。而无任何其他了限。也就是说,你必须在你的发行版里包含原许可协议的声明,无论你是以二进制发布的还是以源代码发布的.&lt;/p&gt;</description></item><item><title>矩阵初步</title><link>https://crackhopper.github.io/notes/%E7%9F%A9%E9%98%B5%E5%88%9D%E6%AD%A5/</link><pubDate>Fri, 14 Jan 2022 13:04:49 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E7%9F%A9%E9%98%B5%E5%88%9D%E6%AD%A5/</guid><description>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;adjoint matrix
-&lt;a class="link" href="https://en.wikipedia.org/wiki/Conjugate_transpose" target="_blank" rel="noopener"
-&gt;https://en.wikipedia.org/wiki/Conjugate_transpose&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;classical adjoint matrix
-&lt;a class="link" href="https://en.wikipedia.org/wiki/Adjugate_matrix" target="_blank" rel="noopener"
-&gt;https://en.wikipedia.org/wiki/Adjugate_matrix&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>数据库六大范式</title><link>https://crackhopper.github.io/notes/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%85%AD%E5%A4%A7%E8%8C%83%E5%BC%8F/</link><pubDate>Thu, 13 Jan 2022 12:44:45 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%85%AD%E5%A4%A7%E8%8C%83%E5%BC%8F/</guid><description/></item></channel></rss>
+&lt;/h1&gt;&lt;p&gt;MIT是和BSD一样宽范的许可协议,作者只想保留版。而无任何其他了限。也就是说,你必须在你的发行版里包含原许可协议的声明,无论你是以二进制发布的还是以源代码发布的.&lt;/p&gt;</description></item><item><title>小白学写编译器：1.编译基础概念</title><link>https://crackhopper.github.io/notes/%E5%B0%8F%E7%99%BD%E5%AD%A6%E5%86%99%E7%BC%96%E8%AF%91%E5%99%A81.%E7%BC%96%E8%AF%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5/</link><pubDate>Sun, 14 Jun 2020 21:49:51 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/%E5%B0%8F%E7%99%BD%E5%AD%A6%E5%86%99%E7%BC%96%E8%AF%91%E5%99%A81.%E7%BC%96%E8%AF%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5/</guid><description>&lt;h1 id="机器指令"&gt;机器指令
+&lt;/h1&gt;&lt;p&gt;我们知道CPU是计算机的大脑，也知道计算机只认识由0和1组成的二进制码，比如&amp;quot;1001010110101010&amp;quot; 这样的。具体来说，当计算机的CPU遇到一个这样的二进制码时，会做出相应的动作：读取内存、写入内存、执行加法、执行乘法、向其他设备发送IO指令(读取键盘、写入显示器)等等。每个CPU都有自己所识别的二进制码，我们称之为 &lt;strong&gt;机器指令&lt;/strong&gt; (machine code) 。将一系列机器指令组合成一个集合，那么计算机就可以完成很多复杂的计算和行为，这种机器指令的集合，我们称呼为 &lt;strong&gt;程序&lt;/strong&gt; (program)。当计算机运行一个程序的时候，我们会说计算机正在执行一个 &lt;strong&gt;任务&lt;/strong&gt; (task) 或 &lt;strong&gt;进程&lt;/strong&gt; (process) 。&lt;/p&gt;
+&lt;p&gt;最早的程序员是使用机器语言编写程序的。比如早期的大家用纸带编写程序，通过对纸带上是否打孔来区分是0还是1，从而识别出机器指令，让CPU执行计算。而如今随着技术的发展，开发程序的工作即被便利化也被复杂化了。大家不再使用二进制开发程序，而是使用编程语言(programming language)。&lt;/p&gt;
+&lt;p&gt;机器指令插图&lt;/p&gt;
+&lt;h1 id="编程语言和编译器"&gt;编程语言和编译器
+&lt;/h1&gt;&lt;p&gt;二进制代码太难以记忆，并且编写的程序很难阅读。因此人们首先开发了叫做 &lt;strong&gt;汇编&lt;/strong&gt; (assembly) 的 &lt;strong&gt;编程语言&lt;/strong&gt; (programming language)，用英文字母来代替机器指令。汇编语言是比机器指令更容易理解的指令集，也更容易开发程序。但英文字母并不能被CPU理解，因此需要由 &lt;strong&gt;汇编器&lt;/strong&gt; (assembler) 把汇编代码翻译成机器指令。&lt;/p&gt;
+&lt;p&gt;后来人们发现这种方式非常有效果。因此发明了更多好用的编程语言，也更加接近自然语言的表达方式，比如Fortran，Lisp，C语言等等。由编程语言编写的代码称为 &lt;strong&gt;源代码&lt;/strong&gt; (source code) ，机器指令的集合称为 &lt;strong&gt;目标代码&lt;/strong&gt; (object code) 。而把源代码翻译成目标代码的工具，称为 &lt;strong&gt;编译器&lt;/strong&gt; (compiler)&lt;/p&gt;
+&lt;p&gt;编译器的图示&lt;/p&gt;
+&lt;p&gt;编译器本身是一个非常复杂的程序。而开发编译器也是一个非常复杂的工程。编译器的作用是生产程序，而编译器本身也是程序。因此编译器也是由编程语言开发的。那么困惑的点来了，如果编译器是由编程语言开发的，那么编译器的源代码由谁来翻译？实际上，第一版编译器是由机器指令开发的，实现了简单的汇编语言；随后用汇编语言再次开发了最初版本的C语言；随后由C语言本身开发C语言的编译器。当一个语言可以用自己开发自己的编译器，这种语言我们说它实现了 &lt;strong&gt;自举&lt;/strong&gt; (bootstrap)。和编译器工程特别相似的就是机械领域的大部分机床，第一代机床都是手工制作的；随后各代机床利用前代机床生产的零件，提升自己的性能。大部分发达国家的技术垄断都是这种需要多轮迭代的技术。&lt;/p&gt;
+&lt;p&gt;和编译器相似的一个概念叫做 &lt;strong&gt;解释器(interpreter)&lt;/strong&gt; 。解释器并不会产生目标程序，而是直接将源代码一句一句的转化为机器指令进行执行。&lt;/p&gt;
+&lt;p&gt;解释器的图示&lt;/p&gt;
+&lt;p&gt;举两个例子：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C语言由它的编译器——gcc进行编译，生成机器二进制码组成的程序，由CPU直接执行。类似C语言这种编译生成由CPU直接执行的机器指令的语言，我们叫做 &lt;strong&gt;编译型语言&lt;/strong&gt; 。&lt;/li&gt;
+&lt;li&gt;javascript语言由它的解释器——浏览器进行解释执行。javascript语言并不会生成程序，真正被CPU执行的程序仍然是浏览器。而浏览器将javascript代码动态的转化为机器指令。这种由其他程序(解释器)作为宿主，解释执行的语言，我们叫做 &lt;strong&gt;解释型语言&lt;/strong&gt; 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;实际上，很多现代的编程语言可以说是编译型和解释型相混合的。典型的例子就是java。java会把源代码翻译成一种叫中间代码的文件(.class文件)，中间代码并不能被CPU理解，但是可以被一个叫做JVM的程序理解并执行。可以看到下图中，java的编译器既包含编译器也包含解释器。这里面的解释器有另一个名字，叫做 &lt;strong&gt;虚拟机&lt;/strong&gt; (Virtual Machine)，因为它像一个虚拟的机器一样。&lt;/p&gt;
+&lt;p&gt;java编译器的图示。&lt;/p&gt;
+&lt;p&gt;也许有人会说java最终是被解释执行的。但其实在java中也引入了一个叫JIT(Just In Time Compiler)的技术，这个技术会将高频使用的中间代码在运行时动态地编译成机器代码。在这样的情况下，就更难说java是编译型还是解释型了。&lt;/p&gt;
+&lt;h1 id="编译器的构造"&gt;编译器的构造
+&lt;/h1&gt;&lt;p&gt;接下来，我们较为浅显的看一下编译器的构造。&lt;/p&gt;
+&lt;h2 id="宏观视角"&gt;宏观视角
+&lt;/h2&gt;&lt;p&gt;从简单粗暴的方式来看，编译器主要是两个部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;分析部分：分析源代码，形成一个中间结构（中间代码）&lt;/li&gt;
+&lt;li&gt;综合部分：从中间结构，翻译成目标代码（机器代码）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中，分析部分也叫做编译器前端(front end)，综合部分也叫做编译器后端(back end)。&lt;/p&gt;
+&lt;p&gt;宏观视角图&lt;/p&gt;
+&lt;h2 id="微观视角"&gt;微观视角
+&lt;/h2&gt;&lt;p&gt;如果更加细节的看编译器的构造，可以分为以下部分：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;词法分析：将源代码转化为token序列 (类似于把一篇文章，按照单词拆分开)&lt;/li&gt;
+&lt;li&gt;语法分析：将token序列组织成语法树 (类似于把单词，按照语法组合成句子)&lt;/li&gt;
+&lt;li&gt;语义分析：验证语法树上的元素，做一些转换 (类似于把句子的语法格式标准化)&lt;/li&gt;
+&lt;li&gt;中间代码生成器：将语法树转化为 某种更基础格式的代码序列 (类似于把一个标准化的中文句子翻译成标准化的英文句子)&lt;/li&gt;
+&lt;li&gt;机器无关代码优化：对中间代码优化（类似于将英文句子写的更加优美）&lt;/li&gt;
+&lt;li&gt;代码生成器：把中间代码转化为目标代码 (类似于将英文句子转化为某种方言下的英文，比如美式英文)&lt;/li&gt;
+&lt;li&gt;机器相关代码优化：对目标代码优化（类似与对美式英文的文章进行润色）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;微观视角图&lt;/p&gt;
+&lt;h2 id="一个例子"&gt;一个例子
+&lt;/h2&gt;&lt;p&gt;我们举一个龙书上的例子，考虑下面的语句&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;position &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; initial&lt;span style="color:#0550ae"&gt;+&lt;/span&gt;rate&lt;span style="color:#0550ae"&gt;*&lt;/span&gt;&lt;span style="color:#0550ae"&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/let-us-write-compiler/compile.png"
+loading="lazy"
+alt="compile"
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;词法分析：将代码中的代词分离成一个个token。其中id代表标识符(identifier)。每个标识符被存入到对应的符号表中。词法分析输出了token序列。&lt;/li&gt;
+&lt;li&gt;语法分析：把token按照结构组织起来。先做乘法再做加法，最终进行赋值。语法分析的主要结果就是形成了语法树(syntax tree)。&lt;/li&gt;
+&lt;li&gt;语义分析：假设rate是浮点类型，60是整数类型，由于他们在内存中表达形式不一样，无法直接做乘法运算。于是语义分析中，将60转化为了浮点类型。语义分析主要就是校验语法树。&lt;/li&gt;
+&lt;li&gt;中间代码生成：我们将语句转化为更接近机器能理解的语句。常用的一种格式叫做三地址代码 (three-address code) 。即一个语句中最多有三个变量。&lt;/li&gt;
+&lt;li&gt;代码优化器：对代码进行化简，让代码数量变得更少。&lt;/li&gt;
+&lt;li&gt;代码生成器：形成机器代码。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="将多个步骤组合成趟pass"&gt;将多个步骤组合成趟(pass)
+&lt;/h2&gt;&lt;p&gt;之前我们对编译器的拆解是逻辑拆解。在实际实现的时候，多个逻辑步骤会组合到一起，形成一个 &lt;strong&gt;趟&lt;/strong&gt; (pass/phrase) 。每趟读入一个输入文件并产生一个输出文件。比如前端步骤中的词法、语法、语义以及中间代码生成可以组合成一趟；代码优化可以单独组合成一趟。&lt;/p&gt;
+&lt;h1 id="总结"&gt;总结
+&lt;/h1&gt;&lt;p&gt;我们浅显地讲解了程序的概念，程序是由机器指令构成的集合。讲解了程序是如何制作的，程序是编译器将源代码编译成目标代码，从而制作出来的。&lt;/p&gt;
+&lt;p&gt;进一步的，我们探索了编译器的构造。了解了编译器的前端的组成部分：词法分析、语法分析、语义分析和中间代码生成；编译器后端的组成部分：机器无关代码优化，机器相关代码优化，生成目标代码。此外，将一系列步骤组合到一起，从一个输入文件产生一个输出文件的过程叫做趟。&lt;/p&gt;
+&lt;p&gt;后续，我们将从编译器的构造一步一步展开讨论。下一节我们讨论的是词法分析。&lt;/p&gt;</description></item><item><title>cmake入门</title><link>https://crackhopper.github.io/notes/cmake%E5%85%A5%E9%97%A8/</link><pubDate>Sat, 15 Feb 2020 20:48:22 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/cmake%E5%85%A5%E9%97%A8/</guid><description>&lt;h1 id="简介"&gt;简介
+&lt;/h1&gt;&lt;p&gt;CMake是一个主要用来管理C++项目的工具。主要特点是：更好的解决C++项目跨平台编译带来的配置问题。&lt;/p&gt;
+&lt;p&gt;CMake提供很多实用的功能，本文简单介绍我项目里常用的一些特性。&lt;/p&gt;
+&lt;p&gt;如何安装CMake这里就不介绍了，可以自行搜索。安装好后要确保在命令行可以执行cmake命令。&lt;/p&gt;
+&lt;h1 id="编译一个可执行文件"&gt;编译一个可执行文件
+&lt;/h1&gt;&lt;h2 id="hello-world项目"&gt;Hello World项目
+&lt;/h2&gt;&lt;p&gt;CMake通过找寻目录下的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 文件，读取文件里的内容对项目进行构建。使用方式是&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cmake &amp;lt;project_dir&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;其中 &lt;code&gt;&amp;lt;project_dir&amp;gt;&lt;/code&gt; 是 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 所在的文件夹。cmake的工作流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;cmake读取 &lt;code&gt;&amp;lt;project_dir&amp;gt;&lt;/code&gt; 文件夹下面的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 文件。&lt;/li&gt;
+&lt;li&gt;执行平台解析，基础库解析，依赖库查找。如果有错误则暴露错误，如果成功则生成一系列用来构建的文件。其中最重要的一个文件叫 &lt;code&gt;Makefile&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;用户通过执行 make ，读取 &lt;code&gt;Makefile&lt;/code&gt; 对项目进行构建。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="简单的例子"&gt;简单的例子
+&lt;/h3&gt;&lt;p&gt;看一个简单的例子，目录层级如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/hello-world.png"
+loading="lazy"
+alt="hello-world"
+&gt;
+其中，两个文件的内容：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;helloworld.cpp&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&amp;lt;iostream&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; argc&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;char&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt;argv&lt;span style="color:#1f2328"&gt;[]){&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Hello World!&amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;CMakeLists&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8.9&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;helloworld.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里解释一下 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 的内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第1行指定最低的cmake版本&lt;/li&gt;
+&lt;li&gt;第2行指定项目名称&lt;/li&gt;
+&lt;li&gt;第3方添加一个任务，生成可执行文件 &lt;code&gt;hello&lt;/code&gt; 。生成这个文件需要用到 &lt;code&gt;helloworld.cpp&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;cmake不区分命令的大小写 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="构建helloworld"&gt;构建helloworld
+&lt;/h3&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/make-hello-world-s.png"
+loading="lazy"
+alt="make-hello-world-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;解释一下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cmake .&lt;/code&gt; 运行cmake命令，查找目录为 &lt;code&gt;.&lt;/code&gt; (即当前目录) 。这个命令会生成一系列文件。包括一个重要的 &lt;code&gt;Makefile&lt;/code&gt; 文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make&lt;/code&gt; 会在当前文件夹查找 &lt;code&gt;Makefile&lt;/code&gt; 文件 ，然后对项目进行编译，最终产生了二进制 &lt;code&gt;hello&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;./hello&lt;/code&gt; 运行这个编译好的二进制文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="项目外构建"&gt;项目外构建
+&lt;/h2&gt;&lt;p&gt;cmake提供了一个非常好用的特性，就是 &lt;strong&gt;项目外构建&lt;/strong&gt; 。简单来说，cmake支持在自定义的位置对项目进行构建。这样就避免了构建时生成的临时文件把原本的项目弄的非常混乱。&lt;/p&gt;
+&lt;p&gt;比如说刚才的例子，我们在项目里创建一个build文件夹，在里面构建。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build.png"
+loading="lazy"
+alt="out-build"
+&gt;&lt;/p&gt;
+&lt;p&gt;构建好了之后:
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build-res.png"
+loading="lazy"
+alt="out-build-res"
+&gt;&lt;/p&gt;
+&lt;p&gt;我们可以看到生成的文件都在build文件夹中。进入到里面，进行make即可编译。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/out-build-make.png"
+loading="lazy"
+alt="out-build-make"
+&gt;&lt;/p&gt;
+&lt;h1 id="编译一个静态库文件"&gt;编译一个静态库文件
+&lt;/h1&gt;&lt;h2 id="静态库机制"&gt;静态库机制
+&lt;/h2&gt;&lt;p&gt;说静态库首先要说什么是编译。&lt;/p&gt;
+&lt;p&gt;编译就是把 &lt;strong&gt;源代码&lt;/strong&gt; 转化为 &lt;strong&gt;目标代码&lt;/strong&gt; 的过程。而什么是 &lt;strong&gt;目标代码&lt;/strong&gt; 呢？就是机器可以执行的二进制代码，一般来说都是要符合某种规范的，比如linux下的elf格式，windows下的pe格式。这里就不细展开了。&lt;/p&gt;
+&lt;p&gt;有的代码具备很强的通用性，比如计算绝对值的函数。我们希望在多个项目里都使用这个函数。那么一个方式就是把你的源代码编译成库文件 （也是一种二进制格式），当你写程序需要的时候，链接器可以 &lt;strong&gt;链接&lt;/strong&gt; 到这个库文件中，找到对应函数的二进制，&amp;ldquo;注入&amp;quot;到你写的程序中。&lt;/p&gt;
+&lt;p&gt;因此我们通常常见的项目构建都分两步：编译、链接。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;编译：负责源代码转换为目标代码&lt;/li&gt;
+&lt;li&gt;链接：负责找到程序的入口（main函数），并把二进制组装起来，生成可执行格式（elf或pe）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么如何把代码构建成一个静态库呢？&lt;/p&gt;
+&lt;h2 id="静态库项目"&gt;静态库项目
+&lt;/h2&gt;&lt;p&gt;我们先看一下 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 的写法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;STATIC&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;对应的cpp文件如下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;double&lt;/span&gt; &lt;span style="color:#6639ba"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;double&lt;/span&gt; v&lt;span style="color:#1f2328"&gt;){&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; v&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;?&lt;/span&gt; &lt;span style="color:#900;font-weight:bold"&gt;v&lt;/span&gt; &lt;span style="color:#1f2328"&gt;:&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;v&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们尝试构建一下：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/static-lib-s.png"
+loading="lazy"
+alt="static-lib-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;构建后的结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/static-lib-res.png"
+loading="lazy"
+alt="static-lib-res"
+&gt;&lt;/p&gt;
+&lt;p&gt;注意到，libabs.a文件，即为我们构造出的静态库文件。&lt;/p&gt;
+&lt;h1 id="编译一个动态库文件"&gt;编译一个动态库文件
+&lt;/h1&gt;&lt;h2 id="动态库机制"&gt;动态库机制
+&lt;/h2&gt;&lt;p&gt;静态库引入代码复用的能力后，有一个新的问题出现了：比如abs代码，在多个程序里都有使用，而且这多个程序可能都在系统上执行，这样abs的代码就被系统内存加载了多次。这无疑是一种浪费。&lt;/p&gt;
+&lt;p&gt;动态库提供了一种机制：库的代码并不会&amp;quot;注入&amp;quot;到编译产出的二进制文件中，而是由操作系统加载对应的库，在程序加载到内存的过程中，操作系统自动把对应的动态库调用进行重定向。这样abs的代码只会在内存中出现一次。&lt;/p&gt;
+&lt;p&gt;动态库技术是一个非常广泛使用的技术，操作系统大部分的api都是通过动态库提供的。&lt;/p&gt;
+&lt;p&gt;构建动态库和构建静态库一样简单。我们看一下例子：&lt;/p&gt;
+&lt;h2 id="动态库项目"&gt;动态库项目
+&lt;/h2&gt;&lt;p&gt;延用静态库的例子，我们只需要把 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 修改一下即可。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SHARED&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;构造的结果会产生一个 &lt;code&gt;libabs.so&lt;/code&gt; 文件。读者可以自行尝试一下。&lt;/p&gt;
+&lt;p&gt;如果要同时构建静态库和动态库，cmake的写法需要一点技巧：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SHARED&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_library&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs_static&lt;/span&gt; &lt;span style="color:#0a3069"&gt;STATIC&lt;/span&gt; &lt;span style="color:#0a3069"&gt;abs.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set_target_properties&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;abs_static&lt;/span&gt; &lt;span style="color:#0a3069"&gt;PROPERTIES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;OUTPUT_NAME&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;abs&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这是因为cmake中不允许target有相同的名字，所以我们需要用不同的名字，同时修改target的输出。&lt;/p&gt;
+&lt;h1 id="引入库文件"&gt;引入库文件
+&lt;/h1&gt;&lt;h2 id="引入子模块"&gt;引入子模块
+&lt;/h2&gt;&lt;p&gt;使用 &lt;code&gt;add_subdirectory&lt;/code&gt; 函数，可以把子文件夹中的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 引入到当前 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 中。&lt;/p&gt;
+&lt;p&gt;举个例子：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;./&lt;/span&gt; &lt;span style="color:#0a3069"&gt;./hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;./world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加多目录的路径
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# Add block directories
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hello&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加hello文件夹中的hello库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#57606a"&gt;#添加world文件夹中的world库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt; &lt;span style="color:#0a3069"&gt;main.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;#将多目录下的hello库和world库链接上可执行文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;helloworld&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello&lt;/span&gt; &lt;span style="color:#0a3069"&gt;world&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;add_subdirectory&lt;/code&gt; 会把对应文件夹中的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 引入进来，包括内部的target。这里假定了 &lt;code&gt;hello&lt;/code&gt; 文件夹的target是 &lt;code&gt;hello&lt;/code&gt; ， 这里假定了 &lt;code&gt;world&lt;/code&gt; 文件夹的target是 &lt;code&gt;world&lt;/code&gt; 。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;target_link_libraries&lt;/code&gt; 用来对 &lt;code&gt;helloworld&lt;/code&gt; 这个target进行更多的描述：描述这个target完成过程中，需要对 &lt;code&gt;hello&lt;/code&gt; 以及 &lt;code&gt;world&lt;/code&gt; 两个target进行链接（这两个target必须是库）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;完整的目录结构：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/multi-cmake.png"
+loading="lazy"
+alt="multi-cmake"
+&gt;&lt;/p&gt;
+&lt;h2 id="引入第三方库"&gt;引入第三方库
+&lt;/h2&gt;&lt;p&gt;由于大量开源模块都是使用cmake进行构建的，因此存在大量的开源脚本方便你快速把第三方库引入到你的项目里。&lt;/p&gt;
+&lt;p&gt;我们这里以引入opencv为例。&lt;/p&gt;
+&lt;p&gt;编写一个使用opencv的程序， &lt;code&gt;hello_cv.cpp&lt;/code&gt; 。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;复制官方文档的代码：https://docs.opencv.org/3.2.0/d0/d2a/contours2_8cpp-example.html&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;想要让这个程序运行起来，有以下几个条件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;本地需要安装opencv开发环境。使用命令 &lt;code&gt;sudo apt-get install libopencv-dev&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;检测opencv是否安装成功 &lt;code&gt;dpkg -L libopencv-dev&lt;/code&gt; 。这个命令会显示上面安装的包里的文件都被安装到什么位置了。在我的系统里，文件主要被安装在 &lt;code&gt;/usr/bin&lt;/code&gt; , &lt;code&gt;/usr/include&lt;/code&gt; , &lt;code&gt;/usr/lib/x86_64-linux-gnu&lt;/code&gt;, &lt;code&gt;/usr/share/OpenCV&lt;/code&gt; 这几个文件夹中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;接着，我们创建cmake配置文件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;告诉cmake去那里找头文件，显然是要在 &lt;code&gt;/usr/include&lt;/code&gt; 里找&lt;/li&gt;
+&lt;li&gt;告诉cmake去那里找库文件，显然是要在 &lt;code&gt;/usr/lib/x86_64-linux-gnu&lt;/code&gt; 里找&lt;/li&gt;
+&lt;li&gt;告诉cmake应该链接哪些库文件，显然是 &lt;code&gt;libopencv_core.so&lt;/code&gt; 、 &lt;code&gt;libopencv_highgui.so&lt;/code&gt; 和 &lt;code&gt;libopencv_imgproc.so&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;于是我们的 &lt;code&gt;CMakeLists.txt&lt;/code&gt; 如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定查找头文件的目录
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/usr/include&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定查找库文件的目录
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;link_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/usr/lib/x86_64-linux&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定项目的target，产生一个二进制
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello_cv.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定链接库，优先链接动态库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_core&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_highgui&lt;/span&gt; &lt;span style="color:#0a3069"&gt;opencv_imgproc&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;最后得到的结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv.png"
+loading="lazy"
+alt="opencv"
+&gt;&lt;/p&gt;
+&lt;p&gt;运行结果：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv-demo.png"
+loading="lazy"
+alt="opencv-demo"
+&gt;&lt;/p&gt;
+&lt;h2 id="使用find_package"&gt;使用find_package
+&lt;/h2&gt;&lt;p&gt;引入opencv非常容易，但有一个新问题。不同的平台上，opencv的安装地址可能不一样。如何才能更加通用的探测各个平台的opencv，并正确的链接呢？&lt;/p&gt;
+&lt;p&gt;cmake为了解决这个问题，要求所有兼容cmake的包，都编写对应的cmake模块。比如opencv包安装文件，就包含了对应的cmake模块：
+&lt;img src="https://crackhopper.github.io/images/cmake-tutorial/opencv-cmake-s.png"
+loading="lazy"
+alt="opencv-cmake-s"
+&gt;&lt;/p&gt;
+&lt;p&gt;这里的.cmake文件被安装到 &lt;code&gt;/usr/share&lt;/code&gt; 文件夹下。这个是cmake会搜索模块的路径之一。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;具体参见：https://cmake.org/cmake/help/v3.0/command/find_package.html&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此，我们只需要很简单的修改我们的cmake文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;2.8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 根据 OpenCVConfig.cmake 里面的注释，可以知道用法：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;find_package&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;OpenCV&lt;/span&gt; &lt;span style="color:#0a3069"&gt;REQUIRED&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;OpenCV_INCLUDE_DIRS&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 指定二进制和链接库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0a3069"&gt;hello_cv.cpp&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;OpenCV_LIBS&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这样即保证了跨平台，又很简单。赶快试一下吧！&lt;/p&gt;</description></item></channel></rss>

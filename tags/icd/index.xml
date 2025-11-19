@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Icd on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/icd/</link><description>Recent content in Icd on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Tue, 18 Nov 2025 12:57:45 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/icd/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan的ICD机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/</link><pubDate>Tue, 18 Nov 2025 12:57:45 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/</guid><description>&lt;h1 id="什么是-vulkan-icd"&gt;什么是 Vulkan ICD？
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;ICD&lt;/strong&gt; 是 &lt;strong&gt;Installable Client Driver&lt;/strong&gt;（可安装客户端驱动程序）的缩写。&lt;/p&gt;
+&lt;p&gt;在 Vulkan 架构中，ICD 指的是 &lt;strong&gt;图形硬件供应商（如 NVIDIA、AMD、Intel）提供的、针对特定硬件实现的 Vulkan 驱动程序部分&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;简单来说，ICD 就是你的 &lt;strong&gt;显卡驱动程序中负责执行 Vulkan 命令的那部分代码&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Vulkan API 的设计采用了一种分层的（layered）架构，使其比其前身 OpenGL 或 DirectX 更加模块化和灵活。在这个架构中，ICD 扮演了核心角色。&lt;/p&gt;
+&lt;h2 id="详细解释-vulkan-架构中的-icd"&gt;详细解释 Vulkan 架构中的 ICD
+&lt;/h2&gt;&lt;h3 id="1-vulkan-loader加载器"&gt;1. Vulkan Loader（加载器）
+&lt;/h3&gt;&lt;p&gt;在应用程序 (App) 和 ICD 之间，有一个关键的中间件：&lt;strong&gt;Vulkan Loader&lt;/strong&gt;（加载器）。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 它是应用程序首先链接的库（通常是 &lt;code&gt;vulkan-1.dll&lt;/code&gt; 或 &lt;code&gt;libvulkan.so&lt;/code&gt;）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;功能：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;发现与管理：&lt;/strong&gt; Loader 负责发现系统上安装的所有 Vulkan ICDs（即所有支持 Vulkan 的显卡驱动）。ICD 通常通过特定的 &lt;strong&gt;JSON 清单文件&lt;/strong&gt;（例如 &lt;code&gt;nvidia_icd.json&lt;/code&gt;、&lt;code&gt;amd_icd.json&lt;/code&gt; 等，位于系统特定目录如 &lt;code&gt;/usr/share/vulkan/icd.d/&lt;/code&gt;）向 Loader 注册自己。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;调度 (Dispatch)：&lt;/strong&gt; 当应用程序调用一个 Vulkan API 函数时（例如 &lt;code&gt;vkCreateInstance&lt;/code&gt;、&lt;code&gt;vkCmdDraw&lt;/code&gt;），Loader 负责将这个调用正确地导向（调度）到 &lt;strong&gt;正确的 ICD&lt;/strong&gt; 或 &lt;strong&gt;Vulkan Layer&lt;/strong&gt;（验证层、工具层等）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="2-installable-client-driver-icd"&gt;2. Installable Client Driver (ICD)
+&lt;/h3&gt;&lt;p&gt;ICD 是真正的“幕后英雄”，负责与物理 GPU 硬件通信。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 实现 Vulkan API 的核心功能，将抽象的 Vulkan 命令（如绘制三角形、进行计算）转换为 GPU 可以理解的实际硬件指令。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;注册：&lt;/strong&gt; 每个 ICD 都会在系统上放置一个 JSON 文件，告诉 Loader 它的动态链接库（DLL 或 SO 文件）在哪里，以及它支持哪些 Vulkan 扩展和特性。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;多 ICDs：&lt;/strong&gt; 由于一台计算机上可能有多个 GPU（例如一个 Intel 集成显卡和一个 NVIDIA 独立显卡），因此系统上可以同时安装和运行 &lt;strong&gt;多个 ICDs&lt;/strong&gt;。Loader 会将它们全部识别出来，并在应用程序请求创建 Vulkan 实例或设备时，让应用程序选择使用哪一个 ICD。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="3-vulkan-layers层"&gt;3. Vulkan Layers（层）
+&lt;/h3&gt;&lt;p&gt;虽然不是 ICD 本身，但 Layers 是理解 Vulkan 架构的另一个重要部分。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;位置：&lt;/strong&gt; Layers 位于 Loader 和 ICD 之间。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;作用：&lt;/strong&gt; 它们可以拦截 API 调用，并在调用传递给 ICD 之前或之后执行额外的操作。最常见的 Layers 是 &lt;strong&gt;验证层 (Validation Layers)&lt;/strong&gt;，用于在开发过程中检查应用程序是否正确使用了 Vulkan API。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="总结"&gt;总结
+&lt;/h2&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;角色&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;作用&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;谁提供？&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;应用程序 (App)&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;调用 Vulkan API 函数。&lt;/td&gt;
+&lt;td&gt;开发者&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Loader&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;发现所有 ICDs，管理 Layers，并将 API 调用调度给正确的 ICD。&lt;/td&gt;
+&lt;td&gt;Khronos Group（或驱动程序/发行版）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;ICD&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;真正的驱动程序实现，将 Vulkan 命令翻译成 GPU 硬件指令。&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;硬件供应商 (NVIDIA, AMD, Intel 等)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id="loader如何找到icd"&gt;Loader如何找到ICD？
+&lt;/h1&gt;&lt;p&gt;参考 vulkan 文档 : &lt;a class="link" href="https://vulkan.lunarg.com/doc/view/latest/mac/LoaderDriverInterface.html" target="_blank" rel="noopener"
+&gt;https://vulkan.lunarg.com/doc/view/latest/mac/LoaderDriverInterface.html&lt;/a&gt; 中的 Driver Discovery on Windows 部分，可以知道，通过查询如下注册表项：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{Adapter GUID}\000X\VulkanDriverName
+HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{SoftwareComponent GUID}\000X\VulkanDriverName
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="显卡设备"&gt;显卡设备
+&lt;/h2&gt;&lt;p&gt;对于显卡驱动开说，这里的 Adapter GUID是固定的，为 &lt;code&gt;4D36E968-E325-11CE-BFC1-08002BE10318&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443508236"
+&gt;&lt;/p&gt;
+&lt;p&gt;对应设备管理器：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444512168.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763444512168"
+&gt;&lt;/p&gt;
+&lt;p&gt;在我们的case下，这里的两个真实显卡会配置： &lt;code&gt;VulkanDriverName&lt;/code&gt; 和 &lt;code&gt;VulkanDriverNameWow&lt;/code&gt; 这两个key，分别指定64位和32位的 ICD的json配置文件。&lt;/p&gt;
+&lt;h2 id="软件组织设备"&gt;软件组织设备
+&lt;/h2&gt;&lt;p&gt;SoftwareComponent GUID也是固定的(“软件组件设备”，用于管理软件模块或驱动包中的附加功能。 &lt;strong&gt;为了让操作系统可以像管理硬件设备一样管理驱动包中的软件模块&lt;/strong&gt;)，为 &lt;code&gt;5C4C3332-344D-483C-8739-259E934C9CC8&lt;/code&gt; （&lt;strong&gt;SoftwareComponent 可以作为非标准设备或附加模块的“容器”，让操作系统统一管理&lt;/strong&gt;。）
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763443585935"
+&gt;
+对应设备管理器：
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444471920.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763444471920"
+&gt;&lt;/p&gt;
+&lt;h1 id="使用windbg定位到loader获取icd的位置"&gt;使用WinDbg定位到Loader获取ICD的位置
+&lt;/h1&gt;&lt;p&gt;上面是我阅读文档得到的信息。不过，既然咱都学会了 windbg，是不是可以从二进制中看到vulkan如何加载这个json的呢？&lt;/p&gt;
+&lt;h2 id="思路1注册表访问函数上打断点失败"&gt;思路1：注册表访问函数上打断点（失败）
+&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763561340860.png"
+loading="lazy"
+alt="Vulkan的ICD机制-1763561340860"
+&gt;&lt;/p&gt;
+&lt;h3 id="1f68e2fd-中断示例"&gt;&lt;code&gt;1F68E:2FD&lt;/code&gt; 中断示例
+&lt;/h3&gt;&lt;p&gt;这个中断点是最接近我们要访问的注册表项了。可惜读取的值并不是我们期待的。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[0x0] ADVAPI32!RegGetValueWStub 0x55168e3898 0x7ff886f69e7d
+[0x1] ControlLib!ctlWaitForPropertyChange+0x1bcd 0x55168e38a0 0x7ff886f6c493
+[0x2] ControlLib!ctlWaitForPropertyChange+0x41e3 0x55168e3910 0x7fff7ef9348f
+[0x3] igvk64!ctlInit+0xff 0x55168e3a80 0x7fff7ee61a59
+[0x4] igvk64!DumpRegistryKeyDefinitions+0x1b76a9 0x55168e3ec0 0x7fff7ee60835
+[0x5] igvk64!DumpRegistryKeyDefinitions+0x1b6485 0x55168e41a0 0x7fff7ee476a4
+[0x6] igvk64!DumpRegistryKeyDefinitions+0x19d2f4 0x55168e4310 0x7fff7ee31bd5
+[0x7] igvk64!DumpRegistryKeyDefinitions+0x187825 0x55168e43c0 0x7fff7eda31e6
+[0x8] igvk64!DumpRegistryKeyDefinitions+0xf8e36 0x55168e4410 0x7fff7ed87534
+[0x9] igvk64!DumpRegistryKeyDefinitions+0xdd184 0x55168fb620 0x7fff7ed5ec7d
+[0xa] igvk64!DumpRegistryKeyDefinitions+0xb48cd 0x55168fb690 0x7fff7ece0ca5
+[0xb] igvk64!DumpRegistryKeyDefinitions+0x368f5 0x55168fb6e0 0x7fffbd89c6dc
+[0xc] vulkan_1!vkResetEvent+0x4b14c 0x55168fb7b0 0x7fff810205e7
+[0xd] VkLayer_khronos_validation!vulkan_layer_chassis::CreateInstance+0x217 0x55168fb910 0x7fff8bb1b27c
+[0xe] CrossVulkanLayer64!vkCreateInstance+0x180 0x55168fbad0 0x7ff8498fcacb
+[0xf] graphics_hook64!dummy_debug_proc+0x294b 0x55168fbbe0 0x7fff741fc952
+[0x10] nvoglv64!DrvPresentBuffers+0x3698d2 0x55168fbca0 0x7fffbd883652
+[0x11] vulkan_1!vkResetEvent+0x320c2 0x55168fbcd0 0x7fffbd8a751e
+[0x12] vulkan_1!vkResetEvent+0x55f8e 0x55168fc000 0x7ff717220f44
+[0x13] VulkanGLFWDemo!HelloTriangleApplication::createInstance+0x244 0x55168ff410 0x7ff717224b64
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;RegGetValueWStub，其实它是一个 “Stub（代理/跳转）” 函数，而真正的 API 是 RegGetValueW。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;LONG WINAPI &lt;span style="color:#6639ba"&gt;RegGetValueW&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; HKEY hkey&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in] 已打开的注册表键句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPCWSTR lpSubKey&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in, optional] 子键路径（相对 hkey），如果为 NULL 或 &amp;#34;&amp;#34; 则直接在 hkey 上查
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPCWSTR lpValue&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in, optional] 注册表值名称，如果为 NULL 或 &amp;#34;&amp;#34; 则查默认值
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; DWORD dwFlags&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [in] 检索类型的标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPDWORD pdwType&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [out, optional] 返回数据类型（如 REG_SZ 等）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; PVOID pvData&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// [out, optional] 缓冲区 接收数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; LPDWORD pcbData &lt;span style="color:#57606a"&gt;// [in,out] 指定数据缓冲区大小，返回时写入实际用字节数
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;因此可以看一下第二第三个参数：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; du rdx;
+000001ea`8a246d60 &amp;#34;SYSTEM\CurrentControlSet\Control&amp;#34;
+000001ea`8a246da0 &amp;#34;\Class\{4d36e968-e325-11ce-bfc1-&amp;#34;
+000001ea`8a246de0 &amp;#34;08002be10318}\0001&amp;#34;
+0:000&amp;gt; du r8;
+00007ff8`86f86370 &amp;#34;ControlApiPath&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;为什么注意这个注册表的读取？因为按照vulkan文档的解释，ICD的信息其实就是从这个key里得到的。&lt;/p&gt;
+&lt;p&gt;为了方便定位到类似的读取，我们改造一下断点：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;bp advapi32!RegGetValueWStub &amp;#34;du rdx; du r8;&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;继续执行，把这个调用的重要参数打印出来。除了这个并没有太多有效信息。所以，应该是使用别的API读取值。（ &lt;strong&gt;当然也可能是内核态读取的，这样无法断点；这个是后来才知道的，参见思路2&lt;/strong&gt; ）&lt;/p&gt;
+&lt;h3 id="总结-1"&gt;总结
+&lt;/h3&gt;&lt;p&gt;打了尽可能多的读取注册表的断点，没有一处中断到 读取 值 &lt;code&gt;VulkanDriverName&lt;/code&gt; 上。&lt;/p&gt;
+&lt;h2 id="思路2找到打开配置文件的代码追踪文件路径的获取过程"&gt;思路2：找到打开配置文件的代码，追踪文件路径的获取过程
+&lt;/h2&gt;&lt;p&gt;既然注册表思路不行，还有一个办法，我们其实已经知道对应的ICD配置文件。同时代码一定会读取这个文件，从 &lt;code&gt;kernel32!CreateFileW&lt;/code&gt; 入手，我们可以中断到ICD配置文件（字符串：一个json文件）。随后我们溯源这个字符串怎么来的。&lt;/p&gt;
+&lt;p&gt;这里细节不表。详细过程大概为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定位到文件的字符串，然后再代码中找到传参的变量/寄存器/内存。&lt;/li&gt;
+&lt;li&gt;如果是内存，打内存断点，随后追查内存写入位置的传参。
+循环上面两个步骤。。。（有效的利用TTD调试，可以不断的阅读汇编代码，中断，随后 &lt;code&gt;g-&lt;/code&gt; 跳转回去；当然还可以用 &lt;code&gt;tt br-&lt;/code&gt; 和 &lt;code&gt;tt ba-&lt;/code&gt; ，只不过我一开始不会用，就用了笨办法）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最终定位到，在内存位置： &lt;code&gt;000001ea`87f61530&lt;/code&gt; 这里，被填充了字符串： &lt;code&gt;C:\WINDOWS\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_aaa3915de44b535a\igvk64.json&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;而填充这个内存的代码无法中断到。通过不断的单步，最后定位到代码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-asm" data-lang="asm"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;win32u&lt;/span&gt;&lt;span style="color:#1f2328"&gt;!&lt;/span&gt;&lt;span style="color:#0550ae"&gt;NtGdiDdDDIQueryAdapterInfo&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt; &lt;span style="color:#0550ae"&gt;CFG&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#0550ae"&gt;c8bd1&lt;/span&gt; &lt;span style="color:#0550ae"&gt;mov&lt;/span&gt; &lt;span style="color:#0550ae"&gt;r10&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;rcx&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;b82a120000&lt;/span&gt; &lt;span style="color:#0550ae"&gt;mov&lt;/span&gt; &lt;span style="color:#0550ae"&gt;eax&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;122&lt;/span&gt;&lt;span style="color:#0550ae"&gt;Ah&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57d8&lt;/span&gt; &lt;span style="color:#0550ae"&gt;f604250803fe7f01&lt;/span&gt; &lt;span style="color:#0550ae"&gt;test&lt;/span&gt; &lt;span style="color:#0550ae"&gt;byte&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ptr&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;7&lt;/span&gt;&lt;span style="color:#0550ae"&gt;FFE0308h&lt;/span&gt;&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e0&lt;/span&gt; &lt;span style="color:#0550ae"&gt;7503&lt;/span&gt; &lt;span style="color:#0550ae"&gt;jne&lt;/span&gt; &lt;span style="color:#0550ae"&gt;win32u&lt;/span&gt;&lt;span style="color:#1f2328"&gt;!&lt;/span&gt;&lt;span style="color:#0550ae"&gt;NtGdiDdDDIQueryAdapterInfo&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;+&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0x15&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;7&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8926b57e5&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e2&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#0550ae"&gt;f05&lt;/span&gt; &lt;span style="color:#0550ae"&gt;syscall&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e4&lt;/span&gt; &lt;span style="color:#0550ae"&gt;c3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e5&lt;/span&gt; &lt;span style="color:#0550ae"&gt;cd2e&lt;/span&gt; &lt;span style="color:#0550ae"&gt;int&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#0550ae"&gt;Eh&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;00007&lt;/span&gt;&lt;span style="color:#6639ba"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e7&lt;/span&gt; &lt;span style="color:#0550ae"&gt;c3&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0550ae"&gt;00007&lt;/span&gt;&lt;span style="color:#0550ae"&gt;ff8&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;`&lt;/span&gt;&lt;span style="color:#0550ae"&gt;926&lt;/span&gt;&lt;span style="color:#0550ae"&gt;b57e8&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#0550ae"&gt;f1f840000000000&lt;/span&gt; &lt;span style="color:#0550ae"&gt;nop&lt;/span&gt; &lt;span style="color:#0550ae"&gt;dword&lt;/span&gt; &lt;span style="color:#0550ae"&gt;ptr&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;rax&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;+&lt;/span&gt;&lt;span style="color:#0550ae"&gt;rax&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在syscall之后，得到了数据。&lt;/p&gt;
+&lt;p&gt;通过询问AI，知道切换到了内核态。是由驱动本身来填充的。内核态的代码，用户态调试无法中断。这也是为什么，之前注册表访问函数中断不了的原因。&lt;/p&gt;
+&lt;p&gt;这个调用的堆栈：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[0x0] win32u!NtGdiDdDDIQueryAdapterInfo+0x14 0x55168fb7e8 0x7fffbd8b331d
+[0x1] vulkan_1!vkResetEvent+0x61d8d 0x55168fb7f0 0x7fffbd8b2e1c
+[0x2] vulkan_1!vkResetEvent+0x6188c 0x55168fbb20 0x7fffbd88489d
+[0x3] vulkan_1!vkResetEvent+0x3330d 0x55168fbbc0 0x7fffbd896535
+[0x4] vulkan_1!vkResetEvent+0x44fa5 0x55168fbc10 0x7fffbd89828a
+[0x5] vulkan_1!vkResetEvent+0x46cfa 0x55168fbca0 0x7fffbd8a8db2
+[0x6] vulkan_1!vkResetEvent+0x57822 0x55168fbd60 0x7ff71722f720
+[0x7] VulkanGLFWDemo!_glfwInitVulkan+0x110(int mode = 2) [C:\Users\develop\game-dev\renderer\external\glfw-3.4\src\vulkan.c @ 100] 0x55168ff150 0x7ff71722f5cc
+[0x8] VulkanGLFWDemo!glfwGetRequiredInstanceExtensions+0x5c(unsigned int * count = 0x55168ff214 : 0x0) [C:\Users\develop\game-dev\renderer\external\glfw-3.4\src\vulkan.c @ 236] 0x55168ff1c0 0x7ff7172249b8
+[0x9] VulkanGLFWDemo!HelloTriangleApplication::getRequiredExtenstions+0x48() [C:\Users\develop\game-dev\renderer\src\main.cpp @ 531] 0x55168ff1f0 0x7ff71721e6b2
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看出来，在我的程序获取 &lt;code&gt;glfw&lt;/code&gt; 所需要的extentions的时候，会触发 &lt;code&gt;_glfwInitVulkan&lt;/code&gt; ，最终触发了 &lt;code&gt;win32u!NtGdiDdDDIQueryAdapterInfo&lt;/code&gt; 这个函数的调用。&lt;/p&gt;
+&lt;p&gt;那么其他位置，比如 &lt;code&gt;vkCreateInstance&lt;/code&gt; 的时候，应该类似。最终的调用被转发给了系统调用，从而获取到了对应的ICD配置。（如果想定位到对应的指令，必须得内核态调试）&lt;/p&gt;
+&lt;p&gt;这个就更加进阶了。暂时我不打算继续深入。相关文档在： &lt;a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-" target="_blank" rel="noopener"
+&gt;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/getting-started-with-windbg--kernel-mode-&lt;/a&gt; 。未来有需要再看。&lt;/p&gt;
+&lt;h3 id="关于这个中断相关信息的ai解读"&gt;关于这个中断相关信息的AI解读
+&lt;/h3&gt;&lt;h4 id="ai节选"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;函数第一个参数：&lt;/p&gt;
+&lt;p&gt;dd @rcx L4 这个命令结果为：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;00000055168f6300 40001c00 00000030 87f61310 000001ea
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id="ai节选-1"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;您的内存数据如下： &lt;code&gt;00000055168f6300 40001c00 00000030 87f61310 000001ea&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这是一块连续内存，WinDbg 的 &lt;code&gt;dd&lt;/code&gt; (Display DWORD) 是按 4 字节显示的。我们来按结构体布局拆解它：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;地址&lt;/strong&gt;: &lt;code&gt;0x00000055168f6300&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x00 (hAdapter)&lt;/strong&gt;: &lt;code&gt;40001c00&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这是适配器句柄。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x04 (Type)&lt;/strong&gt;: &lt;code&gt;00000030&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;十六进制 &lt;code&gt;0x30&lt;/code&gt; = 十进制 &lt;strong&gt;48&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;查阅 WDDM 驱动开发文档，&lt;code&gt;KMTQUERYADAPTERINFOTYPE&lt;/code&gt; 枚举中，值 48 对应的是 &lt;strong&gt;&lt;code&gt;KMTQAITYPE_PHYSICALADAPTERDEVICEIDS&lt;/code&gt;&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;含义&lt;/strong&gt;：Vulkan Loader 正在询问内核：“&lt;strong&gt;请告诉我这个物理适配器的 PCI Device ID、Vendor ID 和 SubSystem ID&lt;/strong&gt;”。这正是 Loader 用来匹配 JSON 文件中筛选器的关键步骤。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Offset 0x08 (pPrivateDriverData)&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由于这是 x64，指针占 8 字节，由后两个 DWORD 组成。&lt;/li&gt;
+&lt;li&gt;低 4 字节: &lt;code&gt;87f61310&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;高 4 字节: &lt;code&gt;000001ea&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;指针地址&lt;/strong&gt;: &lt;code&gt;0x000001ea87f61310&lt;/code&gt;。这是接收返回数据（Device IDs）的缓冲区地址。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;结论&lt;/strong&gt;：Vulkan 正在遍历 GPU 并获取它们的硬件 ID。&lt;/p&gt;
+&lt;h4 id="我的讨论"&gt;我的讨论
+&lt;/h4&gt;&lt;p&gt;我的调用会在 &lt;code&gt;000001ea87f61530&lt;/code&gt; 这个地址，写入 C:\WINDOWS\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_aaa3915de44b535a\igvk64.json 这个字符串。而不是你分析的地址。而在 &lt;code&gt;000001ea87f61310&lt;/code&gt; 这个位置，信息为：（二进制）：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;000001ea87f61310 0001 0000 0001 0000 0056 0075 006c 006b
+000001ea87f61320 0061 006e 0044 0072 0069 0076 0065 0072
+000001ea87f61330 004e 0061 006d 0065 0000 0000 0000 0000
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;并没有看到内存变化。看起来更像是函数调用输入的信息。000001ea87f61310 是结构体的地址，而 000001ea87f61530 则是用来接收返回值的buffer。&lt;/p&gt;
+&lt;p&gt;或者说，整个rcx存放的是一个指针，指向某个结构体。而这个结构体前三个dword之后，又跟随一个指针，这个指针指向另一个结构体（顺便用这个结构体接收一些返回值）。&lt;/p&gt;
+&lt;p&gt;这么一推断，你上面很多说法都不成立（毕竟你的接口体定义都不对）&lt;/p&gt;
+&lt;h4 id="ai节选-2"&gt;AI（节选）
+&lt;/h4&gt;&lt;p&gt;&lt;strong&gt;修正：现场内存分析 (CSI 现场还原)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;你抓到的内存数据： &lt;code&gt;000001ea'87f61310 0056 0075 006c 006b ...&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这确实是 &lt;strong&gt;Unicode 字符串&lt;/strong&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;0056&lt;/code&gt; = &amp;lsquo;V&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0075&lt;/code&gt; = &amp;lsquo;u&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;006c&lt;/code&gt; = &amp;rsquo;l'&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;006b&lt;/code&gt; = &amp;lsquo;k&amp;rsquo;&lt;/li&gt;
+&lt;li&gt;拼起来正是：&lt;strong&gt;&lt;code&gt;VulkanDriverName&lt;/code&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;这是什么意思？&lt;/strong&gt; 这说明 &lt;code&gt;Type = 0x30&lt;/code&gt; (48) 在这个上下文（Windows 10/11 + DCH 驱动）中，实际上执行的是 &lt;strong&gt;&lt;code&gt;KMTQAITYPE_ADAPTERREGISTRYINFO&lt;/code&gt;&lt;/strong&gt; (查询适配器注册表信息) 的某种变体或特定实现。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;流程重构：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Input&lt;/strong&gt;: Vulkan Loader 将字符串 &lt;code&gt;VulkanDriverName&lt;/code&gt; 放入 &lt;code&gt;pPrivateDriverData&lt;/code&gt; 指向的缓冲区。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Call&lt;/strong&gt;: 调用 &lt;code&gt;NtGdiDdDDIQueryAdapterInfo&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Kernel Action&lt;/strong&gt;: 内核拿着显卡句柄，去该显卡在 &lt;code&gt;HKLM\SYSTEM\CurrentControlSet\Control\Class\{GUID}\00xx&lt;/code&gt; 下的&lt;strong&gt;私有驱动注册表项&lt;/strong&gt;中查找名为 &lt;code&gt;VulkanDriverName&lt;/code&gt; 的值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Output&lt;/strong&gt;: 内核找到了路径（如 &lt;code&gt;...\igvk64.json&lt;/code&gt;），并将其写回到缓冲区的某个偏移位置（你观察到的 &lt;code&gt;0x...530&lt;/code&gt;）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;结论&lt;/strong&gt;：Vulkan Loader 不再依赖全局的 &lt;code&gt;Khronos\Vulkan\Drivers&lt;/code&gt; 列表，而是直接询问内核：“当前这个显卡，它的驱动 JSON 藏在哪里？”。这就是为什么你的注册表中没有那个全局 Drivers 键值的原因。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;注意：实际上和Vulkan Loader可能没有关系。因为目前堆栈定位到调用是 vkEnumerateInstanceExtensionProperties 中
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id="ai节选-3"&gt;AI（节选）
+&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;AI坚持认为调用时用 `D3DKMTQueryAdapterInfo` 这个函数。
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;它并没有直接调用 NtGdiDdDDIQueryAdapterInfo。&lt;/p&gt;
+&lt;p&gt;它调用的是 D3DKMTQueryAdapterInfo。这是一个由 gdi32.dll 或 d3dkmthk.dll 导出的函数。&lt;/p&gt;
+&lt;p&gt;在 WinDbg 中，你看到 NtGdi&amp;hellip; 是因为 D3DKMT&amp;hellip; 只是一个很薄的封装，它立即通过 syscall 进入内核，而 WinDbg 在内核入口处抓住了它。&lt;/p&gt;
+&lt;p&gt;待排查。&lt;/p&gt;
+&lt;h1 id="补充知识"&gt;补充知识
+&lt;/h1&gt;&lt;h2 id="dch"&gt;DCH
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;DCH&lt;/strong&gt; 代表 &lt;strong&gt;D&lt;/strong&gt;eclarative, &lt;strong&gt;C&lt;/strong&gt;omponentized, &lt;strong&gt;H&lt;/strong&gt;ardware Support Apps。这是微软在 Windows 10 1809 之后强制推行的新驱动架构。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Legacy (旧版) 驱动&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个巨大的 &lt;code&gt;.exe&lt;/code&gt; 安装包。&lt;/li&gt;
+&lt;li&gt;把 DLL 扔进 &lt;code&gt;System32&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;注册表乱写。&lt;/li&gt;
+&lt;li&gt;控制面板和驱动混在一起。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;DCH (新版) 驱动&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Declarative (声明式)&lt;/strong&gt;：通过 INF 文件清晰声明所有文件去向。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Componentized (组件化)&lt;/strong&gt;：核心驱动 (Kernel)、服务 (Service)、用户软件 (Control Panel) 必须分开。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hardware Support Apps&lt;/strong&gt;：控制面板（如 NVIDIA Control Panel）必须通过 Microsoft Store 安装，不能捆绑在驱动里。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关键影响&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;驱动文件被严格隔离在 &lt;code&gt;C:\Windows\System32\DriverStore\FileRepository\...&lt;/code&gt; 这种带哈希值的文件夹里，防止被篡改或覆盖。&lt;/li&gt;
+&lt;li&gt;Vulkan JSON 文件也必须放在那里。&lt;/li&gt;
+&lt;li&gt;注册表不再使用全局位置，而是绑定在 PnP 设备节点上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
