@@ -1,0 +1,894 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Vertexbuffer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/vertexbuffer/</link><description>Recent content in Vertexbuffer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/vertexbuffer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/notes/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;h2 id="正文开始"&gt;正文开始
+&lt;/h2&gt;&lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
+&lt;/h1&gt;&lt;h2 id="vertex-shader的修改"&gt;Vertex Shader的修改
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#version 450&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; inPosition&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;out&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; fragColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; main&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; gl_Position &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;inPosition&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; fragColor &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="布局限定符"&gt;布局限定符
+&lt;/h2&gt;&lt;h3 id="location-限定符详解"&gt;&lt;code&gt;location&lt;/code&gt; 限定符详解
+&lt;/h3&gt;&lt;p&gt;在 GLSL 中，&lt;code&gt;location&lt;/code&gt; 是一个 &lt;strong&gt;布局限定符 (layout qualifier)&lt;/strong&gt;，用于显式地指定一个变量在内存或管道中的位置索引。它的主要作用是建立 &lt;strong&gt;CPU 端应用程序&lt;/strong&gt; 与 &lt;strong&gt;GPU 端着色器&lt;/strong&gt; 之间的数据连接。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; inPosition&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 位置属性，索引为 0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 颜色属性，索引为 1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;用途:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;in&lt;/code&gt; (input) 变量是着色器从 &lt;strong&gt;顶点缓冲对象 (VBO)&lt;/strong&gt; 中读取的数据。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CPU 端&lt;/strong&gt; (例如，使用 OpenGL 或 Vulkan API) 必须使用相同的索引来配置数据源。例如，当你在 CPU 端调用 &lt;code&gt;glVertexAttribPointer&lt;/code&gt; 或 &lt;code&gt;vkCmdBindVertexBuffers&lt;/code&gt; 时，你需要指定与 &lt;code&gt;location&lt;/code&gt; 匹配的索引，告诉 GPU 哪个数据流对应着色器中的哪个输入变量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;在您的代码中:&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;inPosition&lt;/code&gt; 对应 &lt;strong&gt;索引 0&lt;/strong&gt; 的顶点属性数据（通常是顶点坐标）。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;inColor&lt;/code&gt; 对应 &lt;strong&gt;索引 1&lt;/strong&gt; 的顶点属性数据（通常是颜色值）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;重要性:&lt;/strong&gt; 确保 CPU/GPU 之间的数据对齐。如果不使用 &lt;code&gt;location&lt;/code&gt;，编译器会自行分配，但显式指定可以提高 &lt;strong&gt;可移植性&lt;/strong&gt; 和 &lt;strong&gt;调试效率&lt;/strong&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;out&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; fragColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 传递给片段着色器的颜色，索引为 0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这用于指定 &lt;strong&gt;顶点着色器&lt;/strong&gt; 向 &lt;strong&gt;片段着色器 (Fragment Shader)&lt;/strong&gt; 传递的变量的位置索引。这些变量在光栅化阶段会被 &lt;strong&gt;插值 (Interpolated)&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;用途:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;out&lt;/code&gt; (output) 变量是顶点着色器计算的结果，并将这些值传递给下一个阶段（通常是片段着色器）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;连接机制:&lt;/strong&gt; &lt;strong&gt;顶点着色器&lt;/strong&gt; 中的 &lt;code&gt;out&lt;/code&gt; 变量的 &lt;code&gt;location&lt;/code&gt; 必须与 &lt;strong&gt;片段着色器&lt;/strong&gt; 中相应 &lt;code&gt;in&lt;/code&gt; 变量的 &lt;code&gt;location&lt;/code&gt; &lt;strong&gt;匹配&lt;/strong&gt;，才能正确连接数据流。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="location-faq"&gt;location FAQ
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;如果 顶点着色器有多个 out。都会被光栅化阶段插值么？&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;是的，通常情况下，顶点着色器中所有带 out 限定符的变量都会在光栅化阶段被插值 (Interpolated)。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;有的变量会占用两个location，比如dvec3。为什么？&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;答案的核心在于 &lt;strong&gt;数据类型的大小&lt;/strong&gt; 和 &lt;strong&gt;硬件的对齐规则&lt;/strong&gt;，特别是针对 &lt;strong&gt;双精度浮点数 (Double-Precision Floating-Point, &lt;code&gt;double&lt;/code&gt;)&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;一个 &lt;code&gt;location&lt;/code&gt; 通常被设计用来存储一个 &lt;strong&gt;4 字节&lt;/strong&gt; 的基本单位，例如一个 &lt;code&gt;float&lt;/code&gt;、一个 &lt;code&gt;int&lt;/code&gt; 或一个 &lt;code&gt;vec4&lt;/code&gt; 的一个分量。因此，一个标准的 &lt;code&gt;location&lt;/code&gt; 槽位通常是 &lt;strong&gt;16 字节&lt;/strong&gt; (即 4 个 4 字节的组件，如 &lt;code&gt;vec4&lt;/code&gt;)。&lt;/li&gt;
+&lt;li&gt;而 &lt;code&gt;dvec3&lt;/code&gt; ，由于双精度浮点数占用8字节，那么这个向量需要占用24字节，因此一个location就无法存下，它必须溢出到并占用下一个连续的 &lt;code&gt;location&lt;/code&gt; 索引。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="cocos引擎中对应布局限定符"&gt;cocos引擎中对应布局限定符
+&lt;/h3&gt;&lt;p&gt;参看 &lt;code&gt;cocos-engine/editor/assets/chunks/shading-entries/data-structures/vs-input.chunk&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;58
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;//IA Input&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; a_position&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; a_normal&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; a_texCoord&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if CC_SURFACES_USE_TANGENT_SPACE&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;3&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_tangent&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if CC_SURFACES_USE_VERTEX_COLOR&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_color&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// Attribute define should depend on system macro, not surface macro&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if CC_SURFACES_USE_SECOND_UV || CC_USE_LIGHTMAP&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; a_texCoord1&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if CC_USE_SKINNING&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; __VERSION__ &lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;310&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// strictly speaking this should be u16vec4, but due to poor driver support&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// somehow it seems we can get better results on many platforms using u32vec4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; u32vec4 a_joints&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;pragma format&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;RGBA16UI&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_joints&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;5&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_weights&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if USE_INSTANCING&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; CC_USE_BAKED_ANIMATION
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;highp&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_jointAnimInfo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// frameID, totalJoints, offset&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_matWorld0&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_matWorld1&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_matWorld2&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; CC_USE_LIGHTMAP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_lightingMapUVParam&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; CC_RECEIVE_SHADOW &lt;span style="color:#0550ae"&gt;||&lt;/span&gt; CC_USE_REFLECTION_PROBE
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_localShadowBiasAndProbeId&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// x:shadow bias, y:shadow normal bias, z: reflection probe id, w: blend reflection probe id&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; CC_USE_REFLECTION_PROBE
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_reflectionProbeData&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// x:reflection probe blend weight&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; CC_USE_LIGHT_PROBE
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_sh_linear_const_r&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_sh_linear_const_g&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt; a_sh_linear_const_b&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#if CC_USE_MORPH&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; __VERSION__ &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;450&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;float&lt;/span&gt; a_vertexId&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;#&lt;/span&gt;endif
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;注意有很多没有显示指定location。此时会被动态绑定。做法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;搜集已指定的位置&lt;/strong&gt;：编译器首先收集所有通过 &lt;code&gt;layout(location = L)&lt;/code&gt; 显式指定的变量及其占用的位置范围。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;顺序分配未指定变量：&lt;/strong&gt; 对于所有未显式指定 &lt;code&gt;location&lt;/code&gt; 的变量，编译器会按照它们在 GLSL 源代码中&lt;strong&gt;声明的顺序&lt;/strong&gt;，从 &lt;strong&gt;第一个未被占用的、可用的 &lt;code&gt;location&lt;/code&gt; 索引&lt;/strong&gt; 开始，顺序地为它们分配位置。&lt;/li&gt;
+&lt;li&gt;所以，按照这个规则 &lt;code&gt;a_color&lt;/code&gt; 这个变量如果启动（对应的宏打开），那么可能绑定的位置是3、4或者6。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="顶点数据定义"&gt;顶点数据定义
+&lt;/h2&gt;&lt;p&gt;根据我们在VS中的布局限定：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; inPosition&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 位置属性，索引为 0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 颜色属性，索引为 1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们顶点数据也要有这两个分量&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;glm/glm.hpp&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;struct&lt;/span&gt; &lt;span style="color:#1f2328"&gt;Vertex&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec2 pos&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec3 color&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;const&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;Vertex&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; vertices &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="绑定描述-一组数据的读取方式"&gt;绑定描述 (一组数据的读取方式)
+&lt;/h2&gt;&lt;p&gt;描述顶点数据：绑定的索引、大小、移动速率（每个顶点移动，或 每个instance移动）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 描述如何加载顶点数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;VkVertexInputBindingDescription &lt;span style="color:#6639ba"&gt;getBindingDescription&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkVertexInputBindingDescription bindingDescription&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// binding：顶点缓冲区的索引（如果只有一个 VBO，通常为 0）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bindingDescription&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// stride：两个连续顶点之间的字节数，即 Vertex 结构体的大小
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bindingDescription&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;stride &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;Vertex&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// inputRate：数据速率。VK_VERTEX_INPUT_RATE_VERTEX 表示每读取一个顶点就移动一次
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bindingDescription&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;inputRate &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_VERTEX_INPUT_RATE_VERTEX&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; bindingDescription&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="属性描述-单个数据内部的读取方式"&gt;属性描述 (单个数据内部的读取方式)
+&lt;/h2&gt;&lt;p&gt;因为有两个属性，因此要分别描述两个属性。最终得到属性描述的数组&lt;/p&gt;
+&lt;p&gt;第一个属性（location=0）， &lt;code&gt;vec2&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;format &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_FORMAT_R32G32_SFLOAT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;offset &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; offsetof&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;Vertex&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; pos&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;第二个属性（location=1)，vec3&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;format &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_FORMAT_R32G32B32_SFLOAT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;offset &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; offsetof&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;Vertex&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; color&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果数据不是float：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ivec2&lt;/code&gt; : &lt;code&gt;VK_FORMAT_R32G32_SINT&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;uvec4&lt;/code&gt; : &lt;code&gt;VK_FORMAT_R32G32B32A32_UINT&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通常，Shader中的数据，长度小于4的数组比较常用，效率较高；而是的枚举可以参考上面的用法。&lt;/p&gt;
+&lt;h2 id="pipeline创建时"&gt;Pipeline创建时
+&lt;/h2&gt;&lt;p&gt;需要在pipeline创建时候，附带这些配置信息&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;auto&lt;/span&gt; bindingDescription &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; Vertex&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;getBindingDescription&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;auto&lt;/span&gt; attributeDescriptions &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; Vertex&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;getAttributeDescriptions&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vertexInputInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;vertexBindingDescriptionCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vertexInputInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;vertexAttributeDescriptionCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;attributeDescriptions&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;());&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vertexInputInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pVertexBindingDescriptions &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;bindingDescription&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vertexInputInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pVertexAttributeDescriptions &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; attributeDescriptions&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="顶点缓冲区创建-vertex-buffer-creation"&gt;顶点缓冲区创建 (Vertex Buffer Creation)
+&lt;/h1&gt;&lt;h2 id="创建buffer对象"&gt;创建Buffer对象
+&lt;/h2&gt;&lt;p&gt;相对来说比较简单&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBuffer vertexBuffer&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createVertexBuffer&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBufferCreateInfo bufferInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vertices&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;])&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; vertices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;usage &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_BUFFER_USAGE_VERTEX_BUFFER_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sharingMode &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_SHARING_MODE_EXCLUSIVE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkCreateBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;bufferInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;vertexBuffer&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to create vertex buffer!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;当然要记得，有创建就有销毁 &lt;code&gt;vkDestroyBuffer(device, vertexBuffer, nullptr);&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;一些字段解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;VK_BUFFER_USAGE_VERTEX_BUFFER_BIT&lt;/code&gt;：明确告诉 Vulkan，这个缓冲区将用作 &lt;strong&gt;顶点数据&lt;/strong&gt; 的来源。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VK_SHARING_MODE_EXCLUSIVE&lt;/code&gt;：表示缓冲区将 &lt;strong&gt;只被一个队列族&lt;/strong&gt;（例如，只被图形队列）使用。这是最简单和最常见的设置。如果需要在多个队列族（如图形和计算队列）之间共享，则需要使用 &lt;code&gt;VK_SHARING_MODE_CONCURRENT&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;值得注意的是，&lt;code&gt;vkCreateBuffer&lt;/code&gt; &lt;strong&gt;只创建了缓冲区对象本身&lt;/strong&gt;，它代表了 GPU 内存中的一个 &lt;strong&gt;区域定义&lt;/strong&gt;。它 &lt;strong&gt;并没有&lt;/strong&gt; 实际分配 GPU 内存并将顶点数据复制进去。后续步骤通常包括：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;查询内存需求（&lt;code&gt;vkGetBufferMemoryRequirements&lt;/code&gt;）。&lt;/li&gt;
+&lt;li&gt;分配合适的设备内存（&lt;code&gt;vkAllocateMemory&lt;/code&gt;）。&lt;/li&gt;
+&lt;li&gt;将缓冲区绑定到分配的内存（&lt;code&gt;vkBindBufferMemory&lt;/code&gt;）。&lt;/li&gt;
+&lt;li&gt;将实际的顶点数据从 CPU 传输到 GPU 内存中（通常通过 &lt;strong&gt;映射内存&lt;/strong&gt; 或 &lt;strong&gt;暂存缓冲区&lt;/strong&gt;）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="内存需求memory-requirements"&gt;内存需求(Memory Requirements)
+&lt;/h2&gt;&lt;p&gt;Buffer对象还需要绑定内存。获取内存需求：（注意，这步得到的是 &lt;code&gt;memRequirements&lt;/code&gt; ）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkMemoryRequirements memRequirements&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkGetBufferMemoryRequirements&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;memRequirements&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这个步骤实际会返回 &lt;code&gt;memRequirements.memoryTypeBits&lt;/code&gt; ，这个flag标记了设备上可以支持这个vertexBuffe使用的类型编号。&lt;/p&gt;
+&lt;p&gt;在物理设备中，查找合适的内存（符合需求的；不同的内存类型，允许的操作和性能也不一样）。（注意，这步开始查询的则是 &lt;code&gt;memProperties&lt;/code&gt;）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; &lt;span style="color:#6639ba"&gt;findMemoryType&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; typeFilter&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkMemoryPropertyFlags properties&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkPhysicalDeviceMemoryProperties memProperties&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkGetPhysicalDeviceMemoryProperties&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;physicalDevice&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;memProperties&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; memProperties&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypeCount&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i&lt;span style="color:#0550ae"&gt;++&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;((&lt;/span&gt;typeFilter &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; i&lt;span style="color:#1f2328"&gt;))&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;memProperties&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypes&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;].&lt;/span&gt;propertyFlags &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; properties&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;==&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; properties&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; i&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to find suitable memory type!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;代码解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;函数参数：
+&lt;ul&gt;
+&lt;li&gt;typeFilter： 位掩码。指定了哪些内存类型 &lt;strong&gt;可以&lt;/strong&gt; 用于特定的资源（例如，你之前创建的 &lt;code&gt;VkBuffer&lt;/code&gt;）。如果第 $i$ 位被设置，则第 $i$ 种内存类型是可用的。
+&lt;ul&gt;
+&lt;li&gt;这个本身的掩码是由物理设备提供的，由第一步得到。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;properties：位掩码。指定你对内存的 &lt;strong&gt;必需属性&lt;/strong&gt;，例如内存是否可由 CPU 访问 (可映射)、是否为快速的设备本地内存等。
+&lt;ul&gt;
+&lt;li&gt;这个我们根据需求来传入，比如
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT&lt;/code&gt; ：&lt;strong&gt;主机（CPU）可见。&lt;/strong&gt; 允许 CPU 通过 &lt;code&gt;vkMapMemory&lt;/code&gt; 直接读写这块内存。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VK_MEMORY_PROPERTY_HOST_COHERENT_BIT&lt;/code&gt; ：&lt;strong&gt;主机一致性。&lt;/strong&gt; 保证 CPU 写入的数据能立即被 GPU 读取，避免手动调用 &lt;code&gt;vkFlushMappedMemoryRanges&lt;/code&gt;。通常和上面的标签一起使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;函数返回值：可以使用的内存类型索引。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;vkGetPhysicalDeviceMemoryProperties&lt;/code&gt; : 获取设备内存属性&lt;/li&gt;
+&lt;li&gt;循环：遍历和筛选内存类型。
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;(typeFilter &amp;amp; (1 &amp;lt;&amp;lt; i)&lt;/code&gt; 检查内存类型索引为i的，是否是vertexBuffer可以用的。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;(memProperties.memoryTypes[i].propertyFlags &amp;amp; properties) == properties&lt;/code&gt; 检查我们传入的必须属性的掩码是否满足。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="内存分配memory-allocation"&gt;内存分配(Memory Allocation)
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkMemoryAllocateInfo allocInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;allocationSize &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; memRequirements&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypeIndex &lt;span style="color:#0550ae"&gt;=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; findMemoryType&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;memRequirements&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypeBits&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_MEMORY_PROPERTY_HOST_COHERENT_BIT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkAllocateMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;allocInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;vertexBufferMemory&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to allocate vertex buffer memory!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkBindBufferMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这个代码比较直观。相当于把之前创建的Buffer对象，分配一个Memory给它。(最后一个代码将allocate的内存绑定给buffer对象)&lt;/p&gt;
+&lt;h2 id="填充顶点缓冲区-filling-the-vertex-buffer"&gt;填充顶点缓冲区 (Filling the Vertex Buffer)
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt;&lt;span style="color:#0550ae"&gt;*&lt;/span&gt; data&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkMapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; memcpy&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;(),&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkUnmapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这段代码的目的是将 CPU 内存中存储的顶点数据（在 vertices 容器中）映射到 GPU 可访问的内存区域，然后将数据 复制 过去，最后 解除映射。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;vkMapMemory&lt;/code&gt; : 这是一个 Vulkan 函数，用于将 &lt;strong&gt;设备内存&lt;/strong&gt; (device memory) 映射到应用程序（CPU）的地址空间。（实际：让操作系统将GPU地址映射到进程的虚拟地址空间；操作系统会创建页表、并调用CPU硬件指令告诉CPU这个地址的特殊性：它是I/O设备地址，采用 WC , Write-Combining的方式处理写入，随后到达这个地址的写入指令会被CPU发送到PCIe总线）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;memcpy&lt;/code&gt; ： 复制，将我们准备好的数据复制到GPU中。（由于复制数据的指令，CPU提前知道了这个地址的特殊性，于是触发了PCIe的总线上数据的发送）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;vkUnmapMemory&lt;/code&gt; : 这是一个 Vulkan 函数，用于解除对设备内存的映射。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注意，上面的过程是由于创建显存空间的时候设置了 &lt;code&gt;HOST_COHERENT_BIT&lt;/code&gt; 。否则则需要单独的动作来进行上传。&lt;/p&gt;
+&lt;h2 id="绑定绘制-binding-the-vertex-buffer"&gt;绑定+绘制 (Binding the Vertex Buffer)
+&lt;/h2&gt;&lt;p&gt;实际是是一个录制的指令，会绑定到上下文的图形管线上。（图形管线定义了VertexInput)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdBindPipeline&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_PIPELINE_BIND_POINT_GRAPHICS&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; graphicsPipeline&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkBuffer vertexBuffers&lt;span style="color:#1f2328"&gt;[]&lt;/span&gt; &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;vertexBuffer&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkDeviceSize offsets&lt;span style="color:#1f2328"&gt;[]&lt;/span&gt; &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdBindVertexBuffers&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffers&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; offsets&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdDraw&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vertices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;()),&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;commandBuffer&lt;/code&gt; : 指令写入的buffer&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;firstBinding&lt;/code&gt; (0): &lt;strong&gt;起始绑定点索引。&lt;/strong&gt; 它指定了从管线输入的哪个槽位开始绑定缓冲区。通常从 &lt;code&gt;0&lt;/code&gt; 开始。这对应于你在管线创建时，&lt;code&gt;VkPipelineVertexInputStateCreateInfo&lt;/code&gt; 中定义的 &lt;code&gt;VkVertexInputBindingDescription&lt;/code&gt; 数组的索引。 (&lt;strong&gt;这需要对应到正确VertexInputDescription&lt;/strong&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;bindingCount&lt;/code&gt; (1):&lt;strong&gt;要绑定的缓冲区数量。&lt;/strong&gt; 示例中只绑定了一个顶点缓冲区，所以是 &lt;code&gt;1&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pBuffers&lt;/code&gt; : &lt;strong&gt;缓冲区数组指针。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pOffsets&lt;/code&gt; : &lt;strong&gt;缓冲区偏移量数组指针。&lt;/strong&gt; 这是一个与 &lt;code&gt;pBuffers&lt;/code&gt; 一一对应的数组，指定从每个缓冲区的哪个字节偏移量开始读取顶点数据。
+从接口来说，蛮C语言风格的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;vkCmdDraw(commandBuffer, static_cast&amp;lt;uint32_t&amp;gt;(vertices.size()), 1, 0, 0);&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;commandBuffer&lt;/code&gt; : 指令写入的buffer&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;vertexCount&lt;/code&gt; : &lt;strong&gt;要绘制的顶点数量。&lt;/strong&gt; 这指示了管线应该处理多少个顶点数据。在你的示例中，它等于 &lt;code&gt;vertices&lt;/code&gt; 数组中元素的总数。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;instanceCount&lt;/code&gt;: &lt;strong&gt;实例化数量。&lt;/strong&gt; 表示要重复绘制的次数。&lt;code&gt;1&lt;/code&gt; 表示只绘制一次。如果这个值大于 1，GPU 会将同样的几何体绘制多次，这常用于批量渲染相同的对象（如粒子、草地）。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;firstVertex&lt;/code&gt; : &lt;strong&gt;起始顶点索引。&lt;/strong&gt; 这是在顶点缓冲区中开始读取数据的索引。&lt;code&gt;0&lt;/code&gt; 表示从数组的第一个顶点开始。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;firstInstance&lt;/code&gt;: &lt;strong&gt;起始实例化索引。&lt;/strong&gt; 通常为 &lt;code&gt;0&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这是一个&lt;strong&gt;非索引绘制 (Non-Indexed Draw)&lt;/strong&gt; 命令。这意味着 Vulkan 会按顺序读取顶点缓冲区中的数据，每 $N$ 个顶点（由图元拓扑决定，如 3 个顶点组成一个三角形）构成一个图元，然后绘制它。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;绘制动作实际的逻辑操作取决于InputAssembly环节的设置&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;比如InputAssembly设置了三角形带。实际是定义了一种组合模式，类似 &lt;code&gt;0,1,2;1,2,3;....&lt;/code&gt; 这样的组合模式，来组成图元。&lt;strong&gt;InputAssembly实际决定的是 &lt;code&gt;0,1,2;1,2,3;&lt;/code&gt; 这种组合模式，也即拓扑规则&lt;/strong&gt; 。更具体来说：（如果InputAssembly中设置了三角形）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非索引绘制。 &lt;code&gt;V_0,V_1,V_2&lt;/code&gt; 组成三角形（按照组合模式，直接取顶点）&lt;/li&gt;
+&lt;li&gt;索引绘制。 &lt;code&gt;V_I0,V_I1,V_I2&lt;/code&gt; 组成三角形 （按照组合模式，先取索引，再取顶点）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="效果展示"&gt;效果展示
+&lt;/h2&gt;&lt;p&gt;到这里，前两节如果都按照教程操作成功，那么可以正常绘制三角形。
+&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a802-VertexBuffers-1764249822704.png"
+loading="lazy"
+alt="Vulkan入门02-VertexBuffers-1764249822704"
+&gt;&lt;/p&gt;
+&lt;h1 id="暂存缓冲区staging-buffer"&gt;暂存缓冲区(Staging Buffer)
+&lt;/h1&gt;&lt;p&gt;我们创建的显存，properties指定的是：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这不是最有效率的显存。最有效率的是 &lt;code&gt;VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;/code&gt; ，但通常CPU无法访问。&lt;/p&gt;
+&lt;p&gt;本小节优化这个部分。创建两个 Vertex Vuffer。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;staging buffer&lt;/code&gt; : 让CPU方便访问的。（我们把数据复制到这里）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;final vertex buffer&lt;/code&gt; : 选择更有效率的显存。（调用指令，将数据从staging buffer传输到 final vertex buffer）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="传输队列transfer-queue"&gt;传输队列(Transfer queue)
+&lt;/h2&gt;&lt;p&gt;我们描述的传输操作，需要专门的队列来支持（显卡特性）。不过具备 &lt;code&gt;VK_QUEUE_GRAPHICS_BIT&lt;/code&gt; 或者 &lt;code&gt;VK_QUEUE_COMPUTE_BIT&lt;/code&gt; 的队列能力的，默认支持 &lt;code&gt;VK_QUEUE_TRANSFER_BIT&lt;/code&gt; 这个能力。&lt;/p&gt;
+&lt;h2 id="重构"&gt;重构
+&lt;/h2&gt;&lt;p&gt;把创建Buffer单独分离出一个函数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createBuffer&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;VkDeviceSize size&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkBufferUsageFlags usage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkMemoryPropertyFlags properties&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkBuffer&lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; buffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkDeviceMemory&lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; bufferMemory&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBufferCreateInfo bufferInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; size&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;usage &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; usage&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sharingMode &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_SHARING_MODE_EXCLUSIVE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkCreateBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;bufferInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;buffer&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to create buffer!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkMemoryRequirements memRequirements&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkGetBufferMemoryRequirements&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; buffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;memRequirements&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkMemoryAllocateInfo allocInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;allocationSize &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; memRequirements&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypeIndex &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; findMemoryType&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;memRequirements&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;memoryTypeBits&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; properties&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkAllocateMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;allocInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;bufferMemory&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to allocate buffer memory!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkBindBufferMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; buffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 0代表偏移量
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="使用暂存缓冲区"&gt;使用暂存缓冲区
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createVertexBuffer&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDeviceSize bufferSize &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vertices&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;])&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; vertices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBuffer stagingBuffer&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDeviceMemory stagingBufferMemory&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_BUFFER_USAGE_VERTEX_BUFFER_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_MEMORY_PROPERTY_HOST_COHERENT_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkMapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; memcpy&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;(),&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;bufferSize&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkUnmapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_BUFFER_USAGE_VERTEX_BUFFER_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vertexBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; copyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkFreeMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;显然，创建了两块显存。一个是用来作为 StagingBuffer要求CPU可见。另一个用来作为，VertexBuffer，要求性能更好。同时再用途上执行了一个为src，另一个为dst+VertexBuffer&lt;/p&gt;
+&lt;p&gt;接下来实现buffer传输的功能&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;copyBuffer&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;VkBuffer srcBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkBuffer dstBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkDeviceSize size&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkCommandBufferAllocateInfo allocInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;level &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_COMMAND_BUFFER_LEVEL_PRIMARY&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;commandPool &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; commandPool&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;commandBufferCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkCommandBuffer commandBuffer&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkAllocateCommandBuffers&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;allocInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkCommandBufferBeginInfo beginInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; beginInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; beginInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;flags &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkBeginCommandBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;beginInfo&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBufferCopy copyRegion&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; copyRegion&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;srcOffset &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// Optional
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; copyRegion&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;dstOffset &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// Optional
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; copyRegion&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; size&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkCmdCopyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; srcBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; dstBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;copyRegion&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkSubmitInfo submitInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; submitInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_SUBMIT_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; submitInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;commandBufferCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; submitInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pCommandBuffers &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkQueueSubmit&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;graphicsQueue&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;submitInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_NULL_HANDLE&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkQueueWaitIdle&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;graphicsQueue&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkFreeCommandBuffers&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; commandPool&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;实际上和渲染类似，我们需要把指令提交给传输队列，等待传输队列idle（等待执行完毕）&lt;/p&gt;
+&lt;h2 id="总结"&gt;总结
+&lt;/h2&gt;&lt;p&gt;目前代码为每一个Buffer都执行了 &lt;code&gt;vkAllocateMemory&lt;/code&gt; 。实际我们不会这么做，而是创建一个大的，然后自己管理offset。因为设备通常不允许创建很多的buffer。&lt;/p&gt;
+&lt;h1 id="索引缓冲区index-buffer"&gt;索引缓冲区(Index Buffer)
+&lt;/h1&gt;&lt;h2 id="创建ib数据"&gt;创建IB数据
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;const&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;Vertex&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; vertices &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;{{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.5f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;},&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;const&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint16_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; indices &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;3&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt; &lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="创建-indexbuffer"&gt;创建 IndexBuffer
+&lt;/h2&gt;&lt;p&gt;相对容易，类似VertexBuffer。但不需要太多配置。直接创建即可。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createIndexBuffer&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDeviceSize bufferSize &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;indices&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;])&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; indices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkBuffer stagingBuffer&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDeviceMemory stagingBufferMemory&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_BUFFER_USAGE_TRANSFER_SRC_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_MEMORY_PROPERTY_HOST_COHERENT_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;void&lt;/span&gt;&lt;span style="color:#0550ae"&gt;*&lt;/span&gt; data&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkMapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; memcpy&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; indices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;(),&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkUnmapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_BUFFER_USAGE_TRANSFER_DST_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_BUFFER_USAGE_INDEX_BUFFER_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; indexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; indexBufferMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; copyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; indexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkFreeMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; stagingBufferMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="使用indexbuffer"&gt;使用IndexBuffer
+&lt;/h2&gt;&lt;p&gt;相对容易，绘制前，绑定一下。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdBindVertexBuffers&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; vertexBuffers&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; offsets&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdBindIndexBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; indexBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_INDEX_TYPE_UINT16&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;注意这里的数据类型，要指定对。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;绘制使用新的命令。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdDrawIndexed&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;indices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;()),&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="效果"&gt;效果
+&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a802-VertexBuffers-1764252524778.png"
+loading="lazy"
+alt="Vulkan入门02-VertexBuffers-1764252524778"
+&gt;&lt;/p&gt;</description></item></channel></rss>

@@ -1,4 +1,301 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Fri, 21 Nov 2025 12:53:06 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan程序中Intel驱动总是被调用（未解决）</title><link>https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/</link><pubDate>Fri, 21 Nov 2025 12:53:06 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/</guid><description>&lt;p&gt;这篇文章是闲暇时候的探索，并没有真正解决问题。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 26 Nov 2025 00:28:26 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;h2 id="正文开始"&gt;正文开始
+&lt;/h2&gt;&lt;h1 id="宽字符串-l-老特性"&gt;宽字符串 L&amp;quot;&amp;quot; (老特性)
+&lt;/h1&gt;&lt;p&gt;这个是老特性了。L代表宽字符串。它的字符集取决于你使用的编译器和平台，但它的核心是对应于 &lt;code&gt;wchar_t&lt;/code&gt; 类型的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在 Windows 平台上使用 MSVC 编译器，&lt;code&gt;L&amp;quot;&amp;quot;&lt;/code&gt; 的处理方式通常如下：
+&lt;ul&gt;
+&lt;li&gt;类型 &lt;code&gt;wchat_t&lt;/code&gt; ，2字节，UTF-16 Little Endian&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;其他平台：
+&lt;ul&gt;
+&lt;li&gt;类型 &lt;code&gt;wchat_t&lt;/code&gt; ，4字节，UTF-32 (有机器本身的字节序决定是BE还是LE)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;于是，&lt;strong&gt;在跨平台 C++ 开发中，如果使用标准 &lt;code&gt;wchar_t&lt;/code&gt; 和 &lt;code&gt;L&amp;quot;&amp;quot;&lt;/code&gt; 宽字符串，你确实很难获得真正的“一致性”。&lt;/strong&gt; 它们在不同平台上的底层实现和编码是天然不一致的。&lt;/p&gt;
+&lt;h1 id="明确编码字面量c11"&gt;明确编码字面量(C++11)
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;推荐的现代 C++ 解决方案&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;为了解决 &lt;code&gt;L&amp;quot;&amp;quot;&lt;/code&gt; 的不一致性，C++11 引入了新的明确编码字面量。这些字面量是&lt;strong&gt;跨平台一致的&lt;/strong&gt;：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;字面量前缀&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;对应的类型&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;编码标准&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;字节大小&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;跨平台一致性&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;u8&amp;quot;&amp;quot;&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;const char*&lt;/code&gt; (C++20 是 &lt;code&gt;const char8_t*&lt;/code&gt;)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;UTF-8&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;1-4 字节（变长）&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;最高&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;u&amp;quot;&amp;quot;&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;const char16_t*&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;UTF-16&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;2 字节（定长或变长）&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;高&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;&lt;code&gt;U&amp;quot;&amp;quot;&lt;/code&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;const char32_t*&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;UTF-32&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;4 字节（定长）&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;高&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;所以，如果代码中有字符串存储非ASCII编码，更推荐使用 &lt;code&gt;u8&amp;quot;&amp;quot;&lt;/code&gt; 来确定编码类型。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;C++20中，新增： &lt;strong&gt;&lt;code&gt;char8_t&lt;/code&gt; 和 &lt;code&gt;u8&amp;quot;&amp;quot;&lt;/code&gt; 的类型改变&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;引入了独立的 &lt;strong&gt;&lt;code&gt;char8_t&lt;/code&gt;&lt;/strong&gt; 类型，并将 &lt;code&gt;u8&amp;quot;&amp;quot;&lt;/code&gt; 字面量的类型正式改为 &lt;code&gt;const char8_t*&lt;/code&gt;，从而更好地支持 UTF-8 编码。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="raw-string-literals-c11"&gt;Raw String Literals (C++11)
+&lt;/h1&gt;&lt;p&gt;它的主要目的是解决在常规字符串字面量中处理&lt;strong&gt;转义字符（Escape Characters）&lt;/strong&gt; 带来的麻烦，特别是在涉及文件路径、正则表达式、HTML/XML/JSON 片段等包含大量反斜杠 或引号 的场景。&lt;/p&gt;
+&lt;p&gt;语法结构：
+&lt;/p&gt;
+$$\text{Prefix} \ R \ \text{Delimiter} \ ( \ \text{Content} \ ) \ \text{Delimiter}$$&lt;ul&gt;
+&lt;li&gt;Prefix: 指定字符串编码 (L, u, U, u8)&lt;/li&gt;
+&lt;li&gt;R: 代表Raw String。即内部内容不会被转移。&lt;/li&gt;
+&lt;li&gt;Delimiter： 一个可选的字符串（最多 16 个字符），用于标记字符串的开始和结束，防止内容中包含 &lt;code&gt;)&lt;/code&gt; 或 &lt;code&gt;&amp;quot;&lt;/code&gt; 导致提前结束。
+&lt;ul&gt;
+&lt;li&gt;比如 ： &lt;code&gt;R&amp;quot;(C:\Windows)&amp;quot;&lt;/code&gt; 和 &lt;code&gt;R##(C:\Windows)##&lt;/code&gt; 这两种是等价的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="字符串新函数"&gt;字符串新函数
+&lt;/h1&gt;&lt;h2 id="c11"&gt;C++11
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;std::to_string&lt;/code&gt;&lt;/strong&gt; 用于将数字类型（如 &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;double&lt;/code&gt;）转换为 &lt;code&gt;std::string&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;std::stoi&lt;/code&gt;, &lt;code&gt;std::stod&lt;/code&gt;&lt;/strong&gt; 用于将 &lt;code&gt;std::string&lt;/code&gt; 转换为各种数字类型（如 &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;double&lt;/code&gt;, &lt;code&gt;long&lt;/code&gt;）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="c17"&gt;C++17
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;std::to_chars&lt;/code&gt; 将数字转化为字符串。无异常版本。不处理locale。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;std::from_chars&lt;/code&gt; 将字符串转化为数字。无异常版本。不处理locale。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;不处理locale：不会添加千位分隔符、小数点始终是句点（&lt;code&gt;.&lt;/code&gt;）&lt;/p&gt;
+&lt;h2 id="c20"&gt;C++20
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;std::basic_string::starts_with&lt;/code&gt; / &lt;code&gt;ends_with&lt;/code&gt;&lt;/strong&gt; 提供了检查字符串是否以特定前缀或后缀开始/结束的便捷方法。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;std::string::contains&lt;/code&gt;&lt;/strong&gt; 提供了检查字符串是否包含特定子字符串的便捷方法。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="user-defined-literals-udls-c11"&gt;User-Defined Literals, UDLs (C++11)
+&lt;/h1&gt;&lt;p&gt;用户定义的字面量 (User-Defined Literals, UDLs)&lt;/p&gt;
+&lt;p&gt;用户定义的字面量（UDLs）允许程序员创建新的后缀，用于扩展标准字面量（如整数、浮点数、字符和字符串）的含义。简而言之，您可以使用自定义后缀将字面量直接转换为自定义类型或执行特定操作。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 示例：定义一个长度单位
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;long&lt;/span&gt; &lt;span style="color:#cf222e"&gt;double&lt;/span&gt; &lt;span style="color:#cf222e"&gt;operator&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&lt;/span&gt; _cm&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;long&lt;/span&gt; &lt;span style="color:#cf222e"&gt;double&lt;/span&gt; val&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; val &lt;span style="color:#0550ae"&gt;/&lt;/span&gt; &lt;span style="color:#0550ae"&gt;100.0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 转换为米
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;chrono&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;using&lt;/span&gt; &lt;span style="color:#cf222e"&gt;namespace&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;chrono&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 1. 定义一个用于 &amp;#34;ms&amp;#34; 的 UDL，将数字转换为毫秒
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;constexpr&lt;/span&gt; milliseconds &lt;span style="color:#cf222e"&gt;operator&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&lt;/span&gt; _ms&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;unsigned&lt;/span&gt; &lt;span style="color:#cf222e"&gt;long&lt;/span&gt; &lt;span style="color:#cf222e"&gt;long&lt;/span&gt; ms&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#6639ba"&gt;milliseconds&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;ms&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 使用 UDLs，代码更具可读性
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#cf222e"&gt;auto&lt;/span&gt; duration &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;500&lt;/span&gt;ms &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;s&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 500毫秒 + 2秒
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 完整的 duration 是 2500 毫秒
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; duration&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;count&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34; 毫秒&amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="stdstring-字面量后缀-s-c14"&gt;&lt;code&gt;std::string&lt;/code&gt; 字面量后缀 &lt;code&gt;s&lt;/code&gt; (C++14)
+&lt;/h1&gt;&lt;p&gt;它是一种特殊的 UDL，由标准库定义。它的作用是：当一个字符串字面量（C 风格字符串 &lt;code&gt;const char*&lt;/code&gt;）后面紧跟后缀 &lt;strong&gt;&lt;code&gt;s&lt;/code&gt;&lt;/strong&gt; 时，编译器会将其自动转换为一个 &lt;code&gt;std::string&lt;/code&gt; 对象。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// C++14 之前：需要显式构造
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string my_string &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;Hello World&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;string&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 必须包含此命名空间，std::string 的 UDLs 在其中
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;using&lt;/span&gt; &lt;span style="color:#cf222e"&gt;namespace&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string_literals&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 1. 使用 &amp;#39;s&amp;#39; 后缀创建 std::string 对象
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string s1 &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;C++&amp;#34;&lt;/span&gt;s&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;s1 的类型是 std::string: &amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; s1 &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 2. 字符串拼接，确保至少一个操作数是 std::string
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// &amp;#34;Hello&amp;#34; 是 const char*，不能直接和 &amp;#34; World!&amp;#34; 拼接
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// std::string s2 = &amp;#34;Hello&amp;#34; + &amp;#34; World!&amp;#34;; // 错误！
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// &amp;#39;s&amp;#39; 后缀确保左操作数是 std::string，从而启用 std::string 的 operator+
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string s2 &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Hello&amp;#34;&lt;/span&gt;s &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34; World!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;s2 的内容: &amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; s2 &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="stdstring_view-字符串视图-c17"&gt;std::string_view (字符串视图) （C++17)
+&lt;/h1&gt;&lt;p&gt;&lt;code&gt;std::string_view&lt;/code&gt; 是一个&lt;strong&gt;轻量级、只读&lt;/strong&gt;的对象，它代表对现有字符序列（无论是 &lt;code&gt;std::string&lt;/code&gt;、C 风格字符串，还是其他字符数组）的引用。它只存储两个信息：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;一个指向字符序列起始位置的&lt;strong&gt;指针&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;字符序列的&lt;strong&gt;长度&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在 C++17 之前，当您将一个字符串（尤其是 &lt;code&gt;std::string&lt;/code&gt;）作为参数传递给函数时，通常会导致字符串内容被&lt;strong&gt;完整拷贝&lt;/strong&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;process&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string s&lt;span style="color:#1f2328"&gt;);&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 拷贝！低效！
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;使用 &lt;code&gt;std::string_view&lt;/code&gt;，您可以在&lt;strong&gt;不进行任何数据拷贝&lt;/strong&gt;的情况下查看和操作字符串数据，显著提升性能：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;string&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;string_view&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;using&lt;/span&gt; &lt;span style="color:#cf222e"&gt;namespace&lt;/span&gt; std&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 使用 string_view 作为函数参数，避免不必要的拷贝
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;print_part&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;string_view sv&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;View Content: &amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; sv &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cout &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;View Length: &amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; sv&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;length&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&amp;lt;&lt;/span&gt; endl&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;int&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string s &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;C++ Programming Language&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;const&lt;/span&gt; &lt;span style="color:#cf222e"&gt;char&lt;/span&gt;&lt;span style="color:#0550ae"&gt;*&lt;/span&gt; c_str &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Legacy C String&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 1. 从 std::string 创建 view
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 零拷贝：sv_s 只是引用了 s 的数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string_view sv_s &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; s&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; print_part&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;sv_s&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 2. 从 C 风格字符串创建 view
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 零拷贝：sv_c 只是引用了 c_str 的数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string_view sv_c &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; c_str&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; print_part&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;sv_c&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 3. 截取（子串）操作也是零拷贝
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 截取 &amp;#34;Programming&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;string_view sv_sub &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; sv_s&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;substr&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;11&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; print_part&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;sv_sub&lt;span style="color:#1f2328"&gt;);&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 仅调整了指针和长度，未创建新字符串
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description></item><item><title>Vulkan程序中Intel驱动总是被调用（未解决）</title><link>https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/</link><pubDate>Fri, 21 Nov 2025 12:53:06 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/</guid><description>&lt;p&gt;这篇文章是闲暇时候的探索，并没有真正解决问题。&lt;/p&gt;
 &lt;h2 id="正文开始"&gt;正文开始
 &lt;/h2&gt;&lt;p&gt;之前调试神秘日志的时候，打印堆栈和文件操作，发现有大量intel驱动程序的调用，并且打开了特别多的文件。不知道为什么。&lt;/p&gt;
 &lt;p&gt;我们这次也深入研究一下。先手动在程序中设定环境变量： （环境变量设定笔记：TODO ）&lt;/p&gt;
