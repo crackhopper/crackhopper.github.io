@@ -1,5 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>String on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/string/</link><description>Recent content in String on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 26 Nov 2025 00:28:26 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/string/index.xml" rel="self" type="application/rss+xml"/><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;h2 id="正文开始"&gt;正文开始
-&lt;/h2&gt;&lt;h1 id="宽字符串-l-老特性"&gt;宽字符串 L&amp;quot;&amp;quot; (老特性)
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>String on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/string/</link><description>Recent content in String on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 26 Nov 2025 00:28:26 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/string/index.xml" rel="self" type="application/rss+xml"/><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;p&gt;C++11之后，字符串有很多新特性。这里主要罗列了所有特性，需要重点关注&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;明确编码字面量&lt;/li&gt;
+&lt;li&gt;Raw String Literals&lt;/li&gt;
+&lt;li&gt;User-Defined Literals&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;std::string_view&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;以及一些 便利函数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="宽字符串-l-老特性"&gt;宽字符串 L&amp;quot;&amp;quot; (老特性)
 &lt;/h1&gt;&lt;p&gt;这个是老特性了。L代表宽字符串。它的字符集取决于你使用的编译器和平台，但它的核心是对应于 &lt;code&gt;wchar_t&lt;/code&gt; 类型的：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在 Windows 平台上使用 MSVC 编译器，&lt;code&gt;L&amp;quot;&amp;quot;&lt;/code&gt; 的处理方式通常如下：

@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/cpp/</link><description>Recent content in Cpp on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/notes/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;h2 id="正文开始"&gt;正文开始
-&lt;/h2&gt;&lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/cpp/</link><description>Recent content in Cpp on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;p&gt;继续深入 Vulkan 的绘制教程。当然我这里内容会比官方文档更深入一些。&lt;/p&gt;
+&lt;p&gt;如标题所示，主要讲VB的使用。&lt;/p&gt;
+&lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
 &lt;/h1&gt;&lt;h2 id="vertex-shader的修改"&gt;Vertex Shader的修改
 &lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
 &lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
@@ -891,8 +892,15 @@ alt="Vulkan入门02-VertexBuffers-1764249822704"
 &lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a802-VertexBuffers-1764252524778.png"
 loading="lazy"
 alt="Vulkan入门02-VertexBuffers-1764252524778"
-&gt;&lt;/p&gt;</description></item><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;h2 id="正文开始"&gt;正文开始
-&lt;/h2&gt;&lt;h1 id="宽字符串-l-老特性"&gt;宽字符串 L&amp;quot;&amp;quot; (老特性)
+&gt;&lt;/p&gt;</description></item><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;p&gt;C++11之后，字符串有很多新特性。这里主要罗列了所有特性，需要重点关注&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;明确编码字面量&lt;/li&gt;
+&lt;li&gt;Raw String Literals&lt;/li&gt;
+&lt;li&gt;User-Defined Literals&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;std::string_view&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;以及一些 便利函数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="宽字符串-l-老特性"&gt;宽字符串 L&amp;quot;&amp;quot; (老特性)
 &lt;/h1&gt;&lt;p&gt;这个是老特性了。L代表宽字符串。它的字符集取决于你使用的编译器和平台，但它的核心是对应于 &lt;code&gt;wchar_t&lt;/code&gt; 类型的：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在 Windows 平台上使用 MSVC 编译器，&lt;code&gt;L&amp;quot;&amp;quot;&lt;/code&gt; 的处理方式通常如下：
@@ -1188,15 +1196,16 @@ $$\text{Prefix} \ R \ \text{Delimiter} \ ( \ \text{Content} \ ) \ \text{Delimite
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description></item><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;基于官方文档： &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
-&gt;https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery&lt;/a&gt; 的翻译和整理。&lt;/p&gt;
-&lt;p&gt;其中，特别用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
-&lt;p&gt;快速总结(指定layer的做法)&lt;/p&gt;
+&lt;/div&gt;</description></item><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;这篇文章是我解决Vulkan神秘日志问题的副产品，主要基于文档 &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
+&gt;LoaderAndLayerInterface.md&lt;/a&gt;
+，讲解了Vulkan的Layer发现机制。&lt;/p&gt;
+&lt;p&gt;快速总结(指定layer的加载做法)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 环境变量，强制只加载指定的layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=~implicit~&lt;/code&gt; 禁用所有 implicit layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=*wegame*&lt;/code&gt; 禁用wegame layer。&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;p.s. 用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
 &lt;h1 id="layer-discoverylayer-发现"&gt;&lt;strong&gt;Layer Discovery（Layer 发现）&lt;/strong&gt;
 &lt;/h1&gt;&lt;p&gt;Layer 可以分为两类：&lt;/p&gt;
 &lt;ul&gt;
@@ -1330,7 +1339,7 @@ alt="Vulkan的ICD机制-1763443585935"
 &lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~
 set VK_LOADER_LAYERS_ALLOW=*steam*,*Mesa*
 &lt;/code&gt;&lt;/pre&gt;&lt;h1 id="更多"&gt;更多
-&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item><item><title>记录调试Vulkan程序打印奇怪日志的问题</title><link>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</link><pubDate>Mon, 17 Nov 2025 21:52:05 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</guid><description>&lt;p&gt;为什么好好的vulkan程序会突然打印神秘的日志？是代码的扭曲，还是SDK的沦丧？且看我慢慢分解。&lt;/p&gt;
+&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/18/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item><item><title>记录调试Vulkan程序打印奇怪日志的问题</title><link>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</link><pubDate>Mon, 17 Nov 2025 21:52:05 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</guid><description>&lt;p&gt;为什么好好的vulkan程序会突然打印神秘的日志？是代码的扭曲，还是SDK的沦丧？且看我慢慢分解。&lt;/p&gt;
 &lt;h2 id="起因"&gt;起因
 &lt;/h2&gt;&lt;p&gt;最近开始学习 &lt;code&gt;Vulkan&lt;/code&gt; 图形接口，依照 &lt;a class="link" href="https://vulkan-tutorial.com/" target="_blank" rel="noopener"
 &gt;https://vulkan-tutorial.com/&lt;/a&gt; 的教程配合ChatGpt, Gemni, DeepSeek，学起来速度飞起，不亦乐乎。最后，在用了2-3天的时候，成功画出了第一个三角形。&lt;/p&gt;
@@ -1356,7 +1365,7 @@ alt="记录调试Vulkan程序打印奇怪日志的问题-1763388065279"
 &lt;p&gt;看来定位不到核心的原因，我是没办法解决这个问题了。&lt;/p&gt;
 &lt;p&gt;考虑到，程序无非就是二进制在CPU上跑，我直接动态调试二进制程序不就可以了？于是开启了我的WinDbg之路。&lt;/p&gt;
 &lt;h2 id="windbg"&gt;WinDbg
-&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;关于 WinDbg 的使用，更多参见&lt;/strong&gt; &lt;a class="link" href="https://crackhopper.github.io/notes/windbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95/" &gt;WinDbg的初级用法&lt;/a&gt;&lt;/p&gt;
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;关于 WinDbg 的使用，更多参见&lt;/strong&gt; &lt;a class="link" href="https://crackhopper.github.io/2025/11/17/windbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95/" &gt;WinDbg的初级用法&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id="问题定位"&gt;问题定位
 &lt;/h1&gt;&lt;h2 id="增加断点处的行为scripting"&gt;增加断点处的行为(scripting)
 &lt;/h2&gt;&lt;p&gt;首先，我们在创建文件的位置，增加一些脚本，打印一下文件名。&lt;/p&gt;
@@ -1969,7 +1978,7 @@ LegalTrademarks: Tencent
 这是 Vulkan &lt;strong&gt;Layer 机制&lt;/strong&gt;的正常行为，而不是驱动“偷偷加载”。&lt;/p&gt;
 &lt;h3 id="原因"&gt;原因
 &lt;/h3&gt;&lt;p&gt;vulkan初始化的时候，会检查注册表，加载所有 &lt;code&gt;Implicit Layer&lt;/code&gt; 的配置（manifest）。这样同样也会加载对应的dll。这就是为什么 WeGame 的Layer被加载了。（vulkan的这个功能似乎很有安全问题啊！）&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;关于validation layer发现机制，更多参见&lt;/strong&gt;： &lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/" &gt;Vulkan的Layer发现机制和debug&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;关于validation layer发现机制，更多参见&lt;/strong&gt;： &lt;a class="link" href="https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/" &gt;Vulkan的Layer发现机制和debug&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id="神秘日志问题解决"&gt;神秘日志问题解决！
 &lt;/h1&gt;&lt;h2 id="方法一"&gt;方法一
 &lt;/h2&gt;&lt;p&gt;仅把我使用的layer，对应的json和dll，存放到项目目录中。用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 指定程序仅加载我指定的layer。&lt;/p&gt;
@@ -1995,7 +2004,9 @@ LegalTrademarks: Tencent
 &lt;/div&gt;
 &lt;/div&gt;&lt;h1 id="遗留问题未解决intel驱动总被调用"&gt;遗留问题未解决！intel驱动总被调用
 &lt;/h1&gt;&lt;p&gt;由于内容比较多，单独开了一个帖子来记录。这个问题当前没找到解决方案。&lt;/p&gt;
-&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/" &gt;Vulkan程序中Intel驱动总是被调用（未解决）&lt;/a&gt;&lt;/p&gt;</description></item><item><title>cmake入门</title><link>https://crackhopper.github.io/notes/cmake%E5%85%A5%E9%97%A8/</link><pubDate>Sat, 15 Feb 2020 20:48:22 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/cmake%E5%85%A5%E9%97%A8/</guid><description>&lt;h1 id="简介"&gt;简介
+&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/" &gt;Vulkan程序中Intel驱动总是被调用（未解决）&lt;/a&gt;&lt;/p&gt;</description></item><item><title>cmake入门</title><link>https://crackhopper.github.io/2020/02/15/cmake%E5%85%A5%E9%97%A8/</link><pubDate>Sat, 15 Feb 2020 20:48:22 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2020/02/15/cmake%E5%85%A5%E9%97%A8/</guid><description>&lt;p&gt;很早的文章啦。主要其实浅显讲了讲如何用 cmake 配置 opencv 库。&lt;/p&gt;
+&lt;p&gt;当时其实比较深入的阅读了cmake的文档。不过在AI时代，不是那么有必要通读文档了。&lt;/p&gt;
+&lt;h1 id="简介"&gt;简介
 &lt;/h1&gt;&lt;p&gt;CMake是一个主要用来管理C++项目的工具。主要特点是：更好的解决C++项目跨平台编译带来的配置问题。&lt;/p&gt;
 &lt;p&gt;CMake提供很多实用的功能，本文简单介绍我项目里常用的一些特性。&lt;/p&gt;
 &lt;p&gt;如何安装CMake这里就不介绍了，可以自行搜索。安装好后要确保在命令行可以执行cmake命令。&lt;/p&gt;

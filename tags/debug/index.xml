@@ -63,7 +63,7 @@
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;因为是release外加关闭了implicit layers。所以没有任何validation layers干扰。但是，vulkan还是会产生大量 igvk64模块的调用。&lt;/p&gt;
 &lt;h2 id="ai解释"&gt;AI解释
 &lt;/h2&gt;&lt;p&gt;&lt;code&gt;igvk64&lt;/code&gt; 很可能是 Intel 的 Vulkan ICD / 驱动相关模块（或 Intel GPU 的 Vulkan 支持库/监控库）。Vulkan loader 在进程初始化 / 创建实例时会把系统里注册的所有 ICD（以及某些层）都载入并初始化——因此即便你最后用的是 NVIDIA 的物理设备，Intel 的 ICD 也可能会被加载并执行初始化代码（查询注册表、查询温度/设备信息、打开设备/日志文件等），这就会看到大量 &lt;code&gt;CreateFileW&lt;/code&gt; / 注册表读取 等操作，堆栈里就会出现 &lt;code&gt;igvk64&lt;/code&gt; 的函数。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;关于ICD机制，更多参见：&lt;/strong&gt; &lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;关于ICD机制，更多参见：&lt;/strong&gt; &lt;a class="link" href="https://crackhopper.github.io/2025/11/18/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id="手动加载icd后"&gt;手动加载ICD后
 &lt;/h2&gt;&lt;p&gt;新增环境变量设定：&lt;/p&gt;
 &lt;pre tabindex="0"&gt;&lt;code&gt;VK_DRIVER_FILES=C:\WINDOWS\System32\DriverStore\FileRepository\nvmi.inf_amd64_c6ae241e95feb82d\nv-vk64.json
@@ -344,15 +344,16 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;GLFWwindow&lt;span style="color:#0550ae"&gt;*&lt;/span&gt; window &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; glfwCreateWindow&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;WIDTH&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; HEIGHT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Vulkan App&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;目前AI提供的代码并没有用。因为目前出现问题的时候就是这么设置的。暂时卡在这里，后续可以考虑用windows原生API创建窗口，以及从堆栈看，可能d3d11可以做一些配置，避免其使用intel显卡&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;基于官方文档： &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
-&gt;https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery&lt;/a&gt; 的翻译和整理。&lt;/p&gt;
-&lt;p&gt;其中，特别用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
-&lt;p&gt;快速总结(指定layer的做法)&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;目前AI提供的代码并没有用。因为目前出现问题的时候就是这么设置的。暂时卡在这里，后续可以考虑用windows原生API创建窗口，以及从堆栈看，可能d3d11可以做一些配置，避免其使用intel显卡&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;这篇文章是我解决Vulkan神秘日志问题的副产品，主要基于文档 &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
+&gt;LoaderAndLayerInterface.md&lt;/a&gt;
+，讲解了Vulkan的Layer发现机制。&lt;/p&gt;
+&lt;p&gt;快速总结(指定layer的加载做法)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 环境变量，强制只加载指定的layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=~implicit~&lt;/code&gt; 禁用所有 implicit layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=*wegame*&lt;/code&gt; 禁用wegame layer。&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;p.s. 用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
 &lt;h1 id="layer-discoverylayer-发现"&gt;&lt;strong&gt;Layer Discovery（Layer 发现）&lt;/strong&gt;
 &lt;/h1&gt;&lt;p&gt;Layer 可以分为两类：&lt;/p&gt;
 &lt;ul&gt;
@@ -486,4 +487,4 @@ alt="Vulkan的ICD机制-1763443585935"
 &lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~
 set VK_LOADER_LAYERS_ALLOW=*steam*,*Mesa*
 &lt;/code&gt;&lt;/pre&gt;&lt;h1 id="更多"&gt;更多
-&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>
+&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/18/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>

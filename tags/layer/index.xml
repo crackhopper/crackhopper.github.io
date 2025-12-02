@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Layer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/layer/</link><description>Recent content in Layer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 19 Nov 2025 15:35:53 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/layer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/notes/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;基于官方文档： &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
-&gt;https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery&lt;/a&gt; 的翻译和整理。&lt;/p&gt;
-&lt;p&gt;其中，特别用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
-&lt;p&gt;快速总结(指定layer的做法)&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Layer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/layer/</link><description>Recent content in Layer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 19 Nov 2025 15:35:53 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/layer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan的Layer发现机制</title><link>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</link><pubDate>Wed, 19 Nov 2025 15:35:53 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/</guid><description>&lt;p&gt;这篇文章是我解决Vulkan神秘日志问题的副产品，主要基于文档 &lt;a class="link" href="https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader/%2B/HEAD/loader/LoaderAndLayerInterface.md#layer-discovery" target="_blank" rel="noopener"
+&gt;LoaderAndLayerInterface.md&lt;/a&gt;
+，讲解了Vulkan的Layer发现机制。&lt;/p&gt;
+&lt;p&gt;快速总结(指定layer的加载做法)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 环境变量，强制只加载指定的layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=~implicit~&lt;/code&gt; 禁用所有 implicit layer。&lt;/li&gt;
 &lt;li&gt;利用 &lt;code&gt;VK_LOADER_LAYERS_DISABLE=*wegame*&lt;/code&gt; 禁用wegame layer。&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;p.s. 用quote块和一些插图是我添加的评论和注释。&lt;/p&gt;
 &lt;h1 id="layer-discoverylayer-发现"&gt;&lt;strong&gt;Layer Discovery（Layer 发现）&lt;/strong&gt;
 &lt;/h1&gt;&lt;p&gt;Layer 可以分为两类：&lt;/p&gt;
 &lt;ul&gt;
@@ -140,4 +141,4 @@ alt="Vulkan的ICD机制-1763443585935"
 &lt;/h3&gt;&lt;pre tabindex="0"&gt;&lt;code&gt;set VK_LOADER_LAYERS_DISABLE=~implicit~
 set VK_LOADER_LAYERS_ALLOW=*steam*,*Mesa*
 &lt;/code&gt;&lt;/pre&gt;&lt;h1 id="更多"&gt;更多
-&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/notes/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>
+&lt;/h1&gt;&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/18/vulkan%E7%9A%84icd%E6%9C%BA%E5%88%B6/" &gt;Vulkan的ICD机制&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>
