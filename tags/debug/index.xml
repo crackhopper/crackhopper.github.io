@@ -390,7 +390,7 @@ Desktop loader 不会使用这些 introspection 函数，但 layer 仍应包含�
 &lt;p&gt;对于上述键中 &lt;strong&gt;DWORD 值为 0&lt;/strong&gt; 的项，loader 会打开该项名称所对应的 JSON manifest 文件。&lt;br&gt;
 &lt;strong&gt;每个项必须是 manifest 文件的绝对路径名。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;示例图：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84Layer%e5%8f%91%e7%8e%b0%e6%9c%ba%e5%88%b6-1763537962866.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84Layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6-1763537962866.png"
 loading="lazy"
 alt="Vulkan的Layer发现机制-1763537962866"
 &gt;&lt;/p&gt;
@@ -405,11 +405,11 @@ alt="Vulkan的Layer发现机制-1763537962866"
 软件组织编号为： `5C4C3332-344D-483C-8739-259E934C9CC8`
 上面两个key的截图为：
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443508236.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443508236"
 &gt;
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443585935.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443585935"
 &gt;&lt;/p&gt;

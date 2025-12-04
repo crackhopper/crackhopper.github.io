@@ -80,31 +80,31 @@
 HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Class\{SoftwareComponent GUID}\000X\VulkanDriverName
 &lt;/code&gt;&lt;/pre&gt;&lt;h2 id="显卡设备"&gt;显卡设备
 &lt;/h2&gt;&lt;p&gt;对于显卡驱动开说，这里的 Adapter GUID是固定的，为 &lt;code&gt;4D36E968-E325-11CE-BFC1-08002BE10318&lt;/code&gt; 。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443508236.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443508236"
 &gt;&lt;/p&gt;
 &lt;p&gt;对应设备管理器：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444512168.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763444512168.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763444512168"
 &gt;&lt;/p&gt;
 &lt;p&gt;在我们的case下，这里的两个真实显卡会配置： &lt;code&gt;VulkanDriverName&lt;/code&gt; 和 &lt;code&gt;VulkanDriverNameWow&lt;/code&gt; 这两个key，分别指定64位和32位的 ICD的json配置文件。&lt;/p&gt;
 &lt;h2 id="软件组织设备"&gt;软件组织设备
 &lt;/h2&gt;&lt;p&gt;SoftwareComponent GUID也是固定的(“软件组件设备”，用于管理软件模块或驱动包中的附加功能。 &lt;strong&gt;为了让操作系统可以像管理硬件设备一样管理驱动包中的软件模块&lt;/strong&gt;)，为 &lt;code&gt;5C4C3332-344D-483C-8739-259E934C9CC8&lt;/code&gt; （&lt;strong&gt;SoftwareComponent 可以作为非标准设备或附加模块的“容器”，让操作系统统一管理&lt;/strong&gt;。）
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443585935.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443585935"
 &gt;
 对应设备管理器：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763444471920.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763444471920.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763444471920"
 &gt;&lt;/p&gt;
 &lt;h1 id="使用windbg定位到loader获取icd的位置"&gt;使用WinDbg定位到Loader获取ICD的位置
 &lt;/h1&gt;&lt;p&gt;上面是我阅读文档得到的信息。不过，既然咱都学会了 windbg，是不是可以从二进制中看到vulkan如何加载这个json的呢？&lt;/p&gt;
 &lt;h2 id="思路1注册表访问函数上打断点失败"&gt;思路1：注册表访问函数上打断点（失败）
-&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763561340860.png"
+&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763561340860.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763561340860"
 &gt;&lt;/p&gt;

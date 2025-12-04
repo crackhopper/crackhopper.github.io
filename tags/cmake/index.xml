@@ -156,7 +156,7 @@
 &lt;p&gt;&lt;code&gt;vulkan-1.dll&lt;/code&gt; &lt;strong&gt;本身不是&lt;/strong&gt; Vulkan 的图形实现。它是一个薄薄的层（Layer）。真正的、有巨大差异的实现代码位于厂商的 &lt;strong&gt;私有驱动 DLL&lt;/strong&gt; 中（如 &lt;code&gt;nvoglv64.dll&lt;/code&gt;），这些驱动 DLL 会被 &lt;code&gt;vulkan-1.dll&lt;/code&gt; 加载和调用。&lt;/p&gt;
 &lt;h3 id="链接方式"&gt;链接方式
 &lt;/h3&gt;&lt;p&gt;在安装好的Vulkan的SDK中，可以找到对应的导出库，&lt;code&gt;vulkan-1.lib&lt;/code&gt; ：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a8-%e7%bb%98%e5%88%b6%e4%b8%89%e8%a7%92%e5%bd%a2-1764083080360.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A8-%E7%BB%98%E5%88%B6%E4%B8%89%E8%A7%92%E5%BD%A2-1764083080360.png"
 loading="lazy"
 alt="Vulkan入门-绘制三角形-1764083080360"
 &gt;&lt;/p&gt;
@@ -407,6 +407,243 @@ alt="Vulkan入门-绘制三角形-1764083080360"
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="完整的cmake配置"&gt;完整的cmake配置
+&lt;/h2&gt;&lt;p&gt;主CMakeLists.txt&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;58
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;59
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;60
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;61
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#6639ba"&gt;cmake_minimum_required&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VERSION&lt;/span&gt; &lt;span style="color:#0a3069"&gt;3.16&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;project&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;VulkanGLFWDemo&lt;/span&gt; &lt;span style="color:#0a3069"&gt;LANGUAGES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;C&lt;/span&gt; &lt;span style="color:#0a3069"&gt;CXX&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 设定 C++ 20
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;CMAKE_CXX_STANDARD&lt;/span&gt; &lt;span style="color:#0a3069"&gt;20&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;CMAKE_CXX_STANDARD_REQUIRED&lt;/span&gt; &lt;span style="color:#0a3069"&gt;ON&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 设置编译器编码选项
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;if&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;MSVC&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# MSVC: 明确指定使用 UTF-8
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;add_compile_options&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/utf-8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;else&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# GCC/Clang: 设置源码字符集
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;add_compile_options&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;-finput-charset=UTF-8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;add_compile_options&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;-fexec-charset=UTF-8&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;endif&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 定义一个预编译宏，方便我们自己使用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_definitions&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;-D_UTF8_SOURCE&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# Vulkan
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;find_package&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;Vulkan&lt;/span&gt; &lt;span style="color:#0a3069"&gt;REQUIRED&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;if&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;NOT&lt;/span&gt; &lt;span style="color:#0a3069"&gt;Vulkan_FOUND&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;message&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;FATAL_ERROR&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Vulkan SDK not found&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;endif&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# GLFW
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 使用源码方式构建
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;external/glfw-3.4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 主项目
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;SOURCES&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;src/main.cpp&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;src/utils.cpp&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_executable&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;PROJECT_NAME&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;SOURCES&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;PROJECT_NAME&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0a3069"&gt;PRIVATE&lt;/span&gt; &lt;span style="color:#0a3069"&gt;Vulkan::Vulkan&lt;/span&gt; &lt;span style="color:#0a3069"&gt;glfw&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 下面这个目录方便引入一些header-only的库
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_include_directories&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;PROJECT_NAME&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0a3069"&gt;PRIVATE&lt;/span&gt; &lt;span style="color:#0a3069"&gt;include&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# Windows 特殊：定义宏
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 关闭MSVC的安全警告，例如，用 strcpy_s 替代 strcpy，用 scanf_s 替代 scanf
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 提高可移植性
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# -------------------------------
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;WIN32&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;target_compile_definitions&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;PROJECT_NAME&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0a3069"&gt;PRIVATE&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;_CRT_SECURE_NO_WARNINGS&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;endif&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 引入shader编译的target
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_subdirectory&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;shaders&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_dependencies&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;PROJECT_NAME&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0a3069"&gt;CompileShaders&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;shader目录&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cmake" data-lang="cmake"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 添加使用 glslc.exe 编译shader 为 .spv 的目标
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;find_program&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;GLSLC_EXECUTABLE&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;NAMES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;glslc&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;HINTS&lt;/span&gt; &lt;span style="color:#0550ae"&gt;$ENV{&lt;/span&gt;&lt;span style="color:#953800"&gt;VULKAN_SDK&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/Bin&lt;/span&gt; &lt;span style="color:#0550ae"&gt;$ENV{&lt;/span&gt;&lt;span style="color:#953800"&gt;VULKAN_SDK&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;/x86_64/bin&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;REQUIRED&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 定义 shader 目录和输出目录
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;SHADER_DIR&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;CMAKE_CURRENT_SOURCE_DIR&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;SHADER_OUTPUT_DIR&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;CMAKE_CURRENT_BINARY_DIR&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;file&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;MAKE_DIRECTORY&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;SHADER_OUTPUT_DIR&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 自动查找所有着色器文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;file&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;GLOB&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SHADER_FILES&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${SHADER_DIR}/*.vert&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${SHADER_DIR}/*.frag&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# ...可以添加更多类型，如.comp, .geom等
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;SPV_FILES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 用于存储所有生成的.spv文件路径
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;foreach&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;SHADER_FILE&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;SHADER_FILES&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 获取着色器文件的完整文件名（例如: shader.vert）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;get_filename_component&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;BASE_NAME&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;SHADER_FILE&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt; &lt;span style="color:#0a3069"&gt;NAME&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;message&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;STATUS&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Shader file: ${SHADER_FILE}&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 构造输出 .spv 文件的完整路径
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 示例: .../shaders/shader.vert.spv
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;set&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;OUTPUT_SPV&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${SHADER_OUTPUT_DIR}/${BASE_NAME}.spv&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;message&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;STATUS&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Output SPV file: ${OUTPUT_SPV}&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 将生成的 .spv 文件添加到列表中
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;list&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;APPEND&lt;/span&gt; &lt;span style="color:#0a3069"&gt;SPV_FILES&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${OUTPUT_SPV}&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;# 定义自定义编译命令
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;add_custom_command&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;OUTPUT&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${OUTPUT_SPV}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;COMMAND&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${GLSLC_EXECUTABLE}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;-o&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${OUTPUT_SPV}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${SHADER_FILE}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;DEPENDS&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;${SHADER_FILE}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;COMMENT&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Compiling shader: ${BASE_NAME}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;VERBATIM&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;endforeach&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;# 创建目标依赖所有生成的 .spv 文件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;add_custom_target&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;CompileShaders&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;DEPENDS&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;SPV_FILES&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
 &lt;/div&gt;&lt;h1 id="glfw窗口初始化"&gt;GLFW窗口初始化
 &lt;/h1&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
 &lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
@@ -566,7 +803,7 @@ alt="Vulkan入门-绘制三角形-1764083080360"
 &lt;h3 id="启用的设备扩展-extensions"&gt;启用的设备扩展 (extensions)
 &lt;/h3&gt;&lt;p&gt;主要填充字符串数组。类似： &lt;code&gt;VK_KHR_swapchain&lt;/code&gt; 这种&lt;/p&gt;
 &lt;p&gt;对比VkInstance的扩展：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a8-%e7%bb%98%e5%88%b6%e4%b8%89%e8%a7%92%e5%bd%a2-1764135429992.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A8-%E7%BB%98%E5%88%B6%E4%B8%89%E8%A7%92%E5%BD%A2-1764135429992.png"
 loading="lazy"
 alt="Vulkan入门-绘制三角形-1764135429992"
 &gt;&lt;/p&gt;
@@ -643,12 +880,12 @@ alt="Vulkan入门-绘制三角形-1764135429992"
 &lt;li&gt;&lt;strong&gt;线程友好设计&lt;/strong&gt; ： 逻辑设备提供：明确的 queue ownership、明确的同步边界。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;直接用 PhysicalDevice 的问题：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a8-%e7%bb%98%e5%88%b6%e4%b8%89%e8%a7%92%e5%bd%a2-1764134227084.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A8-%E7%BB%98%E5%88%B6%E4%B8%89%E8%A7%92%E5%BD%A2-1764134227084.png"
 loading="lazy"
 alt="Vulkan入门-绘制三角形-1764134227084"
 &gt;&lt;/p&gt;
 &lt;p&gt;对比OpenGL：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a8-%e7%bb%98%e5%88%b6%e4%b8%89%e8%a7%92%e5%bd%a2-1764134269682.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A8-%E7%BB%98%E5%88%B6%E4%B8%89%E8%A7%92%E5%BD%A2-1764134269682.png"
 loading="lazy"
 alt="Vulkan入门-绘制三角形-1764134269682"
 &gt;&lt;/p&gt;
@@ -659,7 +896,7 @@ alt="Vulkan入门-绘制三角形-1764134269682"
 &lt;li&gt;SwapChain：Vulkan 中专门用于 &lt;strong&gt;窗口渲染的图像队列&lt;/strong&gt;。它维护一组 &lt;strong&gt;可以显示到 surface 的图像（images）&lt;/strong&gt;。&lt;/li&gt;
 &lt;li&gt;ImageView：&lt;code&gt;VkImageView&lt;/code&gt; 是对 &lt;code&gt;VkImage&lt;/code&gt; 的一种“视图”或“接口”。Swapchain 中的每一张图像都是 &lt;code&gt;VkImage&lt;/code&gt;，但是 Vulkan 的渲染操作（Framebuffer、Pipeline）不能直接操作 &lt;code&gt;VkImage&lt;/code&gt;，需要通过 &lt;code&gt;VkImageView&lt;/code&gt;。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a8-%e7%bb%98%e5%88%b6%e4%b8%89%e8%a7%92%e5%bd%a2-1764135952685.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A8-%E7%BB%98%E5%88%B6%E4%B8%89%E8%A7%92%E5%BD%A2-1764135952685.png"
 loading="lazy"
 alt="Vulkan入门-绘制三角形-1764135952685"
 &gt;&lt;/p&gt;
@@ -1027,7 +1264,8 @@ subpass.pColorAttachments = &amp;amp;colorAttachmentRef;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dependency&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;dstAccessMask &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;类比：&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;一句话解释: &lt;strong&gt;在 src stage / access 完成前，dst stage / access 不能执行&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;类比：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;subpass:
 &lt;ul&gt;
@@ -1048,8 +1286,15 @@ subpass.pColorAttachments = &amp;amp;colorAttachmentRef;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;用一句话简单描述：
-&lt;strong&gt;当下一个人（将要进入 dstStage&amp;amp;&amp;amp;dstAccess 所定义的状态时），需要看一下上一个人（src是否在 srcStage &amp;amp;&amp;amp; srcAccess 所定义的状态；如果在，则等待其离开）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;简化的过程描述：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当下一个人（将要进入 dstStage&amp;amp;&amp;amp;dstAccess 所定义的状态时）&lt;/li&gt;
+&lt;li&gt;检查barrier：看上一个人（src是否在 srcStage &amp;amp;&amp;amp; srcAccess 所定义的状态）。
+&lt;ul&gt;
+&lt;li&gt;触发barrier：如果上一个人正处于对应阶段的对应操作，则等待其离开。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;代码里的，效果来说：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;当subpass执行到要对颜色附件写入阶段，并且要获取AccessMask的动作时：&lt;/li&gt;

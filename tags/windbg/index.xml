@@ -364,7 +364,7 @@
 &lt;/div&gt;&lt;p&gt;用windows的包管理器下载即可。（类似苹果的HomeBrew，windows下我一般除了 winget，还会用到 chocolate 和 scoop）&lt;/p&gt;
 &lt;h2 id="启动调试"&gt;启动调试
 &lt;/h2&gt;&lt;p&gt;点击文件：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763393136760.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763393136760.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763393136760"
 &gt;&lt;/p&gt;
@@ -795,7 +795,7 @@ vmovaps ymm0, [rax] ; rax 必须 32 字节对齐
 &lt;h1 id="实操演练"&gt;实操演练
 &lt;/h1&gt;&lt;p&gt;我们的目标是找到异常写日志的代码。选择一个合适的方式，加载exe启动后，看到如下页面。&lt;/p&gt;
 &lt;p&gt;启动对应exe：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763395254791.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763395254791.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763395254791"
 &gt;&lt;/p&gt;
@@ -889,7 +889,7 @@ start end module name
 &lt;/table&gt;
 &lt;h3 id="ui配置"&gt;UI配置
 &lt;/h3&gt;&lt;p&gt;页面中的View选项可以调出很多好用的窗口。根据自己的需求配置即可。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763519564490.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763519564490.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763519564490"
 &gt;&lt;/p&gt;
@@ -931,7 +931,7 @@ ntdll!LdrpDoDebuggerBreak+0x35:
 &lt;pre tabindex="0"&gt;&lt;code&gt;bp kernel32!CreateFileA;
 bp kernel32!CreateFileW;
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;右下角面板可以打开 Breakpoint 选项卡：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763396928280.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763396928280.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763396928280"
 &gt;&lt;/p&gt;
@@ -943,7 +943,7 @@ alt="WinDbg的初级用法-1763396928280"
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个断点中断后，会以 unicode字符串的方式打印 rcx指针指向的地址。这是非常常用的技巧。&lt;/p&gt;
 &lt;h2 id="中断到createfile"&gt;中断到CreateFile
 &lt;/h2&gt;&lt;p&gt;下面进入我们第一次中断的情况：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763397056640.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763397056640.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763397056640"
 &gt;&lt;/p&gt;
@@ -1453,7 +1453,7 @@ KERNELBASE!CreateFileW:
 &lt;/ul&gt;
 &lt;h4 id="如何查看具体汇编代码ui方式"&gt;&lt;strong&gt;如何查看具体汇编代码&lt;/strong&gt;（UI方式）
 &lt;/h4&gt;&lt;p&gt;可以打开 Disaseembly 面板。（当然如果有源代码+pdb文件，甚至可以直接打开源代码，类似普通在 vscode 中调试一样）&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763521358979.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763521358979.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763521358979"
 &gt;&lt;/p&gt;

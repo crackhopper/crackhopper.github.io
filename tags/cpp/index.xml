@@ -1,4 +1,8 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/cpp/</link><description>Recent content in Cpp on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;p&gt;继续深入 Vulkan 的绘制教程。当然我这里内容会比官方文档更深入一些。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/cpp/</link><description>Recent content in Cpp on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
+loading="lazy"
+alt="Vulkan入门02-VertexBuffers-1764252524778"
+&gt;&lt;/p&gt;
+&lt;p&gt;继续深入 Vulkan 的绘制教程。当然我这里内容会比官方文档更深入一些。&lt;/p&gt;
 &lt;p&gt;如标题所示，主要讲VB的使用。&lt;/p&gt;
 &lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
 &lt;/h1&gt;&lt;h2 id="vertex-shader的修改"&gt;Vertex Shader的修改
@@ -589,7 +593,7 @@
 &lt;/ul&gt;
 &lt;h2 id="效果展示"&gt;效果展示
 &lt;/h2&gt;&lt;p&gt;到这里，前两节如果都按照教程操作成功，那么可以正常绘制三角形。
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a802-VertexBuffers-1764249822704.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764249822704.png"
 loading="lazy"
 alt="Vulkan入门02-VertexBuffers-1764249822704"
 &gt;&lt;/p&gt;
@@ -889,7 +893,7 @@ alt="Vulkan入门02-VertexBuffers-1764249822704"
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="效果"&gt;效果
-&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e5%85%a5%e9%97%a802-VertexBuffers-1764252524778.png"
+&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
 loading="lazy"
 alt="Vulkan入门02-VertexBuffers-1764252524778"
 &gt;&lt;/p&gt;</description></item><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;p&gt;C++11之后，字符串有很多新特性。这里主要罗列了所有特性，需要重点关注&lt;/p&gt;
@@ -1242,7 +1246,7 @@ Desktop loader 不会使用这些 introspection 函数，但 layer 仍应包含�
 &lt;p&gt;对于上述键中 &lt;strong&gt;DWORD 值为 0&lt;/strong&gt; 的项，loader 会打开该项名称所对应的 JSON manifest 文件。&lt;br&gt;
 &lt;strong&gt;每个项必须是 manifest 文件的绝对路径名。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;示例图：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84Layer%e5%8f%91%e7%8e%b0%e6%9c%ba%e5%88%b6-1763537962866.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84Layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6-1763537962866.png"
 loading="lazy"
 alt="Vulkan的Layer发现机制-1763537962866"
 &gt;&lt;/p&gt;
@@ -1257,11 +1261,11 @@ alt="Vulkan的Layer发现机制-1763537962866"
 软件组织编号为： `5C4C3332-344D-483C-8739-259E934C9CC8`
 上面两个key的截图为：
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443508236.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443508236.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443508236"
 &gt;
-&lt;img src="https://crackhopper.github.io/images/Vulkan%e7%9a%84ICD%e6%9c%ba%e5%88%b6-1763443585935.png"
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E7%9A%84ICD%E6%9C%BA%E5%88%B6-1763443585935.png"
 loading="lazy"
 alt="Vulkan的ICD机制-1763443585935"
 &gt;&lt;/p&gt;
@@ -1344,16 +1348,16 @@ set VK_LOADER_LAYERS_ALLOW=*steam*,*Mesa*
 &lt;/h2&gt;&lt;p&gt;最近开始学习 &lt;code&gt;Vulkan&lt;/code&gt; 图形接口，依照 &lt;a class="link" href="https://vulkan-tutorial.com/" target="_blank" rel="noopener"
 &gt;https://vulkan-tutorial.com/&lt;/a&gt; 的教程配合ChatGpt, Gemni, DeepSeek，学起来速度飞起，不亦乐乎。最后，在用了2-3天的时候，成功画出了第一个三角形。&lt;/p&gt;
 &lt;p&gt;随后，我发现程序有一个奇怪的地方：&lt;/p&gt;
-&lt;img src="https://crackhopper.github.io/images/记录调试Vulkan程序打印奇怪日志的问题-1763387839953.png" alt="记录调试Vulkan程序打印奇怪日志的问题-1763387839953" width="700x416" loading="lazy" /&gt;
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387839953.png" alt="记录调试Vulkan程序打印奇怪日志的问题-1763387839953" width="700x416" loading="lazy" /&gt;
 &lt;p&gt;这个文件的全名是： &lt;code&gt;VulkanGLFWDemo.20251117-xxxxxx-xxxx.log&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;我的代码基本上就是照着tutorial复刻的，有改动，但都是在自己理解的情况下做的一些简单改动。绝对没有日志打印的操作。&lt;/p&gt;
 &lt;p&gt;怀着好奇心，我打开这个文件，想看看到底是啥日志。夸张的事情来了：
-&lt;img src="https://crackhopper.github.io/images/%e8%ae%b0%e5%bd%95%e8%b0%83%e8%af%95Vulkan%e7%a8%8b%e5%ba%8f%e6%89%93%e5%8d%b0%e5%a5%87%e6%80%aa%e6%97%a5%e5%bf%97%e7%9a%84%e9%97%ae%e9%a2%98-1763387971733.png"
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387971733.png"
 loading="lazy"
 alt="记录调试Vulkan程序打印奇怪日志的问题-1763387971733"
 &gt;&lt;/p&gt;
 &lt;p&gt;虽然后缀是 &lt;code&gt;.log&lt;/code&gt; 但是是个二进制文件！但二进制文件咱就看不了了么？显然不是，用hex editor插件打开。我要看看二进制中是不是有什么字符串，能让我猜出来到底咋回事。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/%e8%ae%b0%e5%bd%95%e8%b0%83%e8%af%95Vulkan%e7%a8%8b%e5%ba%8f%e6%89%93%e5%8d%b0%e5%a5%87%e6%80%aa%e6%97%a5%e5%bf%97%e7%9a%84%e9%97%ae%e9%a2%98-1763388065279.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763388065279.png"
 loading="lazy"
 alt="记录调试Vulkan程序打印奇怪日志的问题-1763388065279"
 &gt;&lt;/p&gt;
@@ -1378,7 +1382,7 @@ bp KERNELBASE!CreateFileW &amp;#34;r rcx; du @rcx; k L3; g&amp;#34;
 &lt;li&gt;&lt;code&gt;g&lt;/code&gt; ： 不停止，继续执行。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;接着让我们运行看下会发生什么，将我们的断点配置如下：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763438550768.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763438550768.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763438550768"
 &gt;&lt;/p&gt;

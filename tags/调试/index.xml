@@ -18,7 +18,7 @@
 &lt;/div&gt;&lt;p&gt;用windows的包管理器下载即可。（类似苹果的HomeBrew，windows下我一般除了 winget，还会用到 chocolate 和 scoop）&lt;/p&gt;
 &lt;h2 id="启动调试"&gt;启动调试
 &lt;/h2&gt;&lt;p&gt;点击文件：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763393136760.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763393136760.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763393136760"
 &gt;&lt;/p&gt;
@@ -449,7 +449,7 @@ vmovaps ymm0, [rax] ; rax 必须 32 字节对齐
 &lt;h1 id="实操演练"&gt;实操演练
 &lt;/h1&gt;&lt;p&gt;我们的目标是找到异常写日志的代码。选择一个合适的方式，加载exe启动后，看到如下页面。&lt;/p&gt;
 &lt;p&gt;启动对应exe：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763395254791.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763395254791.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763395254791"
 &gt;&lt;/p&gt;
@@ -543,7 +543,7 @@ start end module name
 &lt;/table&gt;
 &lt;h3 id="ui配置"&gt;UI配置
 &lt;/h3&gt;&lt;p&gt;页面中的View选项可以调出很多好用的窗口。根据自己的需求配置即可。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763519564490.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763519564490.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763519564490"
 &gt;&lt;/p&gt;
@@ -585,7 +585,7 @@ ntdll!LdrpDoDebuggerBreak+0x35:
 &lt;pre tabindex="0"&gt;&lt;code&gt;bp kernel32!CreateFileA;
 bp kernel32!CreateFileW;
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;右下角面板可以打开 Breakpoint 选项卡：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763396928280.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763396928280.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763396928280"
 &gt;&lt;/p&gt;
@@ -597,7 +597,7 @@ alt="WinDbg的初级用法-1763396928280"
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这个断点中断后，会以 unicode字符串的方式打印 rcx指针指向的地址。这是非常常用的技巧。&lt;/p&gt;
 &lt;h2 id="中断到createfile"&gt;中断到CreateFile
 &lt;/h2&gt;&lt;p&gt;下面进入我们第一次中断的情况：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763397056640.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763397056640.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763397056640"
 &gt;&lt;/p&gt;
@@ -1107,7 +1107,7 @@ KERNELBASE!CreateFileW:
 &lt;/ul&gt;
 &lt;h4 id="如何查看具体汇编代码ui方式"&gt;&lt;strong&gt;如何查看具体汇编代码&lt;/strong&gt;（UI方式）
 &lt;/h4&gt;&lt;p&gt;可以打开 Disaseembly 面板。（当然如果有源代码+pdb文件，甚至可以直接打开源代码，类似普通在 vscode 中调试一样）&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763521358979.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763521358979.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763521358979"
 &gt;&lt;/p&gt;
@@ -1148,16 +1148,16 @@ tt bm- ntdll.dll - Time travel to the previous instruction that is in ntdll.dll
 &lt;/h2&gt;&lt;p&gt;最近开始学习 &lt;code&gt;Vulkan&lt;/code&gt; 图形接口，依照 &lt;a class="link" href="https://vulkan-tutorial.com/" target="_blank" rel="noopener"
 &gt;https://vulkan-tutorial.com/&lt;/a&gt; 的教程配合ChatGpt, Gemni, DeepSeek，学起来速度飞起，不亦乐乎。最后，在用了2-3天的时候，成功画出了第一个三角形。&lt;/p&gt;
 &lt;p&gt;随后，我发现程序有一个奇怪的地方：&lt;/p&gt;
-&lt;img src="https://crackhopper.github.io/images/记录调试Vulkan程序打印奇怪日志的问题-1763387839953.png" alt="记录调试Vulkan程序打印奇怪日志的问题-1763387839953" width="700x416" loading="lazy" /&gt;
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387839953.png" alt="记录调试Vulkan程序打印奇怪日志的问题-1763387839953" width="700x416" loading="lazy" /&gt;
 &lt;p&gt;这个文件的全名是： &lt;code&gt;VulkanGLFWDemo.20251117-xxxxxx-xxxx.log&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;我的代码基本上就是照着tutorial复刻的，有改动，但都是在自己理解的情况下做的一些简单改动。绝对没有日志打印的操作。&lt;/p&gt;
 &lt;p&gt;怀着好奇心，我打开这个文件，想看看到底是啥日志。夸张的事情来了：
-&lt;img src="https://crackhopper.github.io/images/%e8%ae%b0%e5%bd%95%e8%b0%83%e8%af%95Vulkan%e7%a8%8b%e5%ba%8f%e6%89%93%e5%8d%b0%e5%a5%87%e6%80%aa%e6%97%a5%e5%bf%97%e7%9a%84%e9%97%ae%e9%a2%98-1763387971733.png"
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387971733.png"
 loading="lazy"
 alt="记录调试Vulkan程序打印奇怪日志的问题-1763387971733"
 &gt;&lt;/p&gt;
 &lt;p&gt;虽然后缀是 &lt;code&gt;.log&lt;/code&gt; 但是是个二进制文件！但二进制文件咱就看不了了么？显然不是，用hex editor插件打开。我要看看二进制中是不是有什么字符串，能让我猜出来到底咋回事。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/%e8%ae%b0%e5%bd%95%e8%b0%83%e8%af%95Vulkan%e7%a8%8b%e5%ba%8f%e6%89%93%e5%8d%b0%e5%a5%87%e6%80%aa%e6%97%a5%e5%bf%97%e7%9a%84%e9%97%ae%e9%a2%98-1763388065279.png"
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763388065279.png"
 loading="lazy"
 alt="记录调试Vulkan程序打印奇怪日志的问题-1763388065279"
 &gt;&lt;/p&gt;
@@ -1182,7 +1182,7 @@ bp KERNELBASE!CreateFileW &amp;#34;r rcx; du @rcx; k L3; g&amp;#34;
 &lt;li&gt;&lt;code&gt;g&lt;/code&gt; ： 不停止，继续执行。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;接着让我们运行看下会发生什么，将我们的断点配置如下：
-&lt;img src="https://crackhopper.github.io/images/WinDbg%e7%9a%84%e5%88%9d%e7%ba%a7%e7%94%a8%e6%b3%95-1763438550768.png"
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763438550768.png"
 loading="lazy"
 alt="WinDbg的初级用法-1763438550768"
 &gt;&lt;/p&gt;

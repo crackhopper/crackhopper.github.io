@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Uniformbuffer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/uniformbuffer/</link><description>Recent content in Uniformbuffer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 03 Dec 2025 21:54:56 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/uniformbuffer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门03-UniformBuffers</title><link>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</link><pubDate>Wed, 03 Dec 2025 21:54:56 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A803-UniformBuffers-1764830357797.png"
+loading="lazy"
+alt="Vulkan入门03-UniformBuffers-1764830357797"
+&gt;&lt;/p&gt;
+&lt;p&gt;通过 &lt;code&gt;VertexBuffer&lt;/code&gt; ，我们可以给每个顶点赋值数据，并传递给 vertex shader 让其可以使用（通过drawcall启动pipeline）。那么，对于全局的变量（想传递给每个shader），应该怎么做呢？举例来说：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MVP矩阵 (model-view-project matrix)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="描述符集布局descriptor-set-layout"&gt;描述符集布局(Descriptor Set Layout)
+&lt;/h1&gt;&lt;h2 id="描述符-descriptor"&gt;描述符 (Descriptor)
+&lt;/h2&gt;&lt;p&gt;定义 着色器访问 GPU 资源（Buffer / Image）的方式。它是 &lt;strong&gt;CPU ↔ GPU资源 ↔ Shader&lt;/strong&gt; 的桥梁。&lt;/p&gt;
+&lt;p&gt;使用描述符(Descriptor) 主要分为3个步骤：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;指定 Descriptor Set Layout (布局) （当pipeline创建时）。
+&lt;ul&gt;
+&lt;li&gt;布局：binding = 0 是一个 uniform buffer； binding = 1 是一个 sampler&lt;/li&gt;
+&lt;li&gt;类比：RenderPass定义附件格式，但不是具体的附件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;从 Descriptor Pool 分配 Descriptor Set。真正创建一个描述符集合
+&lt;ul&gt;
+&lt;li&gt;Descriptor Set，指向某个 &lt;code&gt;VkBuffer&lt;/code&gt; 或者 &lt;code&gt;VkImageView&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;类比：FrameBuffer绑定一个具体的ImageView&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;在绘制时绑定 Descriptor Set。（类似绘制绑定VB，IB，FB）
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;vkCmdBindDescriptorSets(...)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;有各种各样的 Descriptor。我们这里只关注 UBO (Uniform Buffer Object)&lt;/p&gt;
+&lt;h2 id="我们要做什么"&gt;我们要做什么
+&lt;/h2&gt;&lt;p&gt;我们有一个C数据&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;struct&lt;/span&gt; &lt;span style="color:#1f2328"&gt;UniformBufferObject&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 model&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 view&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 proj&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;注意，基于 &lt;code&gt;glm:mat4&lt;/code&gt; 定义的类型，和glsl中的 &lt;code&gt;mat4&lt;/code&gt; 类型在数据层面时完全匹配的。（这方便了我们直接memcpy）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;希望把这个数据，复制到一个 &lt;code&gt;VkBuffer&lt;/code&gt; 中，并且可以再VS中以下面的方式访问：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#version 450&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;uniform&lt;/span&gt; UniformBufferObject &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 model&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 view&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 proj&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec2&lt;/span&gt; inPosition&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;in&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;location &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;out&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec3&lt;/span&gt; fragColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; main&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; gl_Position &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;proj &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;view &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;model &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; &lt;span style="color:#cf222e"&gt;vec4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;inPosition&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; fragColor &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; inColor&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;这里几个变量定义的顺序不重要。&lt;code&gt;binding&lt;/code&gt; 指令和 &lt;code&gt;location&lt;/code&gt; 指令类似。（回忆：&lt;code&gt;location&lt;/code&gt; ，实际创建pipeline的InputVertex时，指定顶点属性配置中，指定的）（所以，可以容易才想到，UBO的binding，应该也是创建pipeline的Descriptor Set配置的时候，具体指定某一个Descriptor的 &lt;code&gt;binding&lt;/code&gt; ）&lt;/li&gt;
+&lt;li&gt;注意：&lt;code&gt;binding&lt;/code&gt; 并不是全局唯一。&lt;code&gt;layout(set = 0, binding = 0) uniform UniformBufferObject { ... } ubo;&lt;/code&gt; 上面代码省略了默认的set。用类比解释：
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;set&lt;/code&gt; : 柜子&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;binding&lt;/code&gt; ： 柜子里的抽屉&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;先暂时放一个整体的连线图：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;C++ struct
+↓ memcpy
+VkBuffer (size = sizeof(UBO)) 【这里还涉及到 VkDeviceMemory, vkMapMemory】
+↓
+VkDescriptorBufferInfo 【后续操作前，需要在管线中先定义好布局】
+↓
+VkWriteDescriptorSet (binding = 0)
+↓
+VkDescriptorSet 【渲染前，创建buffer后；完成Descriptor的创建】
+↓
+vkCmdBindDescriptorSets【渲染时，绑定具体的DescriptorSet】
+↓
+Shader: layout(set=0, binding=0) uniform ...【shader可以访问Descriptor资源】
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="描述符集布局的创建"&gt;描述符集布局的创建
+&lt;/h2&gt;&lt;p&gt;在创建 pipeline之前，要先创建 &lt;strong&gt;描述符集布局&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;initVulkan&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDescriptorSetLayout&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createGraphicsPipeline&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkDescriptorSetLayout descriptorSetLayout&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createDescriptorSetLayout&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 整个函数仅创建了1个descriptorSetLayout (set=0)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 这里仅仅是定义 1 个DescriptorSetLayout下的1个binding。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VkDescriptorSetLayoutBinding uboLayoutBinding&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 在 descriptor set 中的索引（编号）。这与 shader 中
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// layout(set=0, binding = 0) 对应。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uboLayoutBinding&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 该 binding 的类型，这里是 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER，
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 说明这个 binding 期待一个 Uniform Buffer（或一组 uniform buffers，
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 如果 descriptorCount &amp;gt; 1）。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uboLayoutBinding&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 这个binding可以绑定相同单个描述符还是描述符数组
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// =1 时是单个 descriptor；&amp;gt;1 时该 binding 是一个 descriptor 数组。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// shader 端需要声明成 uniform 块数组才能访问多个元素。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 比如 N个同类型 uniform buffers。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uboLayoutBinding&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 哪些着色器阶段可以访问这个binding。这里定义 Vertex Shader 阶段
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uboLayoutBinding&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;stageFlags &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_SHADER_STAGE_VERTEX_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 仅对 sampler 类型有意义 （暂时不讲）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uboLayoutBinding&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pImmutableSamplers &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// Optional
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 1个 DescriptorSetLayout 可以做多个 Binding （下面只做了1个binding）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VkDescriptorSetLayoutCreateInfo layoutInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;bindingCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; layoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pBindings &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;uboLayoutBinding&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkCreateDescriptorSetLayout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;layoutInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;descriptorSetLayout&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to create descriptor set layout!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createGraphicsPipeline&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkPipelineLayoutCreateInfo pipelineLayoutInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; pipelineLayoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 创建 pipeline layout的时候，可以创建多个 DescriptorSetLayout
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 我们这里仅绑定了1个
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; pipelineLayoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;setLayoutCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; pipelineLayoutInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pSetLayouts &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;descriptorSetLayout&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;cleanup&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cleanupSwapChain&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyDescriptorSetLayout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorSetLayout&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="uniform-buffer创建"&gt;Uniform buffer创建
+&lt;/h2&gt;&lt;p&gt;上一节，做到了shader能用。但GPU上数据并没有做。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;UniformBuffer的数量：每一帧使用一个独立的 uniform buffer&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;回顾StagingBuffer的作用：&lt;strong&gt;大数据、偶尔更新、希望数据在 DEVICE_LOCAL 中&lt;/strong&gt; ，而UniformBuffer特点则是小数据，常更新。因此更适合 &lt;code&gt;HOST_VISIBLE&lt;/code&gt; 内存。&lt;/p&gt;
+&lt;p&gt;相关代码如下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;58
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;59
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;60
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;61
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 确保每帧都有1个UBO
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// Buffer对象句柄。描述 buffer 资源 （更类似于meta信息）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 用途（vertex/uniform/storage）、大小、可以被绑定到 descriptor
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkBuffer&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; uniformBuffers&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// GPU显存句柄。代表实际的显存块。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 需要用 vkAllocateMemory 来创建。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 可用 vkBindBufferMemory 绑定到 VkBuffer (这样可以用VkBuffer对象来配合函数，操作GPU显存；被shader和descriptor访问使用；类似 vkImageView 和 vkImage 的关系)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 可用 vkMapMemory 获取到 uniformBuffersMapped 这里的指针。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkDeviceMemory&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; uniformBuffersMemory&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// GPU显存映射后的进程空间的虚拟地址 (实际要复制的dst；复制后会被驱动自动/手动同步到显存)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt;&lt;span style="color:#0550ae"&gt;*&amp;gt;&lt;/span&gt; uniformBuffersMapped&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;initVulkan&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createVertexBuffer&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createIndexBuffer&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createUniformBuffers&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createUniformBuffers&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDeviceSize bufferSize &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;UniformBufferObject&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; uniformBuffers&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;resize&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; uniformBuffersMemory&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;resize&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; uniformBuffersMapped&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;resize&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t i &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i&lt;span style="color:#0550ae"&gt;++&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 之前写过的便利函数，方便创建和绑定VkBuffer、VkDeviceMemory
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 用途为UBO
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; &lt;span style="color:#57606a"&gt;// CPU可见
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VK_MEMORY_PROPERTY_HOST_COHERENT_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 写入后 GPU 自动可见，无需手动 flush
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; uniformBuffers&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; uniformBuffersMemory&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 使用持久映射（persistent mapping）技术：vkMapMemory 返回的指针在整个应用生命周期内有效
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// CPU 可以直接写入 UBO 数据，GPU 可以访问，无需每帧重复映射
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; vkMapMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; uniformBuffersMemory&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; bufferSize&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;uniformBuffersMapped&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;cleanup&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t i &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i&lt;span style="color:#0550ae"&gt;++&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; uniformBuffers&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkFreeMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; uniformBuffersMemory&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// Descriptor 实际持有 Uniform Buffer，因此要后释放。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; vkDestroyDescriptorSetLayout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorSetLayout&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="uniform-buffer"&gt;Uniform Buffer
+&lt;/h1&gt;&lt;h2 id="更新uniformbuffer"&gt;更新UniformBuffer
+&lt;/h2&gt;&lt;p&gt;比较简单直观：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#define GLM_FORCE_RADIANS
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;#34;glm/glm.hpp&amp;#34;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;glm/gtc/matrix_transform.hpp&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; drawFrame&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; updateUniformBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;currentFrame&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkSubmitInfo submitInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; submitInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_SUBMIT_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; updateUniformBuffer&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; currentImage&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;static&lt;/span&gt; &lt;span style="color:#cf222e"&gt;auto&lt;/span&gt; startTime &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;chrono&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;high_resolution_clock&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;now&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;auto&lt;/span&gt; currentTime &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;chrono&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;high_resolution_clock&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;now&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;float&lt;/span&gt; time &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;chrono&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;duration&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;float&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;chrono&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;seconds&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;period&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;currentTime &lt;span style="color:#0550ae"&gt;-&lt;/span&gt; startTime&lt;span style="color:#1f2328"&gt;).&lt;/span&gt;count&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; UniformBufferObject ubo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 按照经过的时间进行旋转（恒定角速度）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 模型变换：围绕 Z 轴旋转（恒定角速度）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;model &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;rotate&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; time &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;radians&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;90.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec3&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 视图变换：摄像机从 (2,2,2) 看向原点
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;view &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;lookAt&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec3&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;2.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec3&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec3&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 投影变换：45° 视角，近平面0.1，远平面10
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;proj &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;perspective&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;radians&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;45.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;width &lt;span style="color:#0550ae"&gt;/&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;float&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;height&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0.1f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;10.0f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 由于GLM库默认给OpenGL设计的，Vulkan里需要flip Y坐标。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;proj&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;][&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 对于 HOST_COHERENT 内存，写入后 GPU 可直接访问，无需 flush
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; memcpy&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;uniformBuffersMapped&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;currentImage&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;ubo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;ubo&lt;span style="color:#1f2328"&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="描述符集descriptor-set"&gt;描述符集(Descriptor Set)
+&lt;/h1&gt;&lt;p&gt;我们还没有具体创建这个对象来关联 UBO 和对应的pipeline的 Layout。&lt;/p&gt;
+&lt;h2 id="描述符池-descriptor-pool-创建"&gt;描述符池 (Descriptor Pool) 创建
+&lt;/h2&gt;&lt;p&gt;描述符集(Descriptor Set) 无法直接创建。需要类似command buffer一样，从pool中创建。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;initVulkan&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createUniformBuffers&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDescriptorPool&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkDescriptorPool descriptorPool&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createDescriptorPool&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDescriptorPoolSize poolSize&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 描述符类型：统一缓冲区（Uniform Buffer）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; poolSize&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;type &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 描述符数量：每个帧一个，这里通常和同时渲染的帧数相同
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; poolSize&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDescriptorPoolCreateInfo poolInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; poolInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; poolInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;poolSizeCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; poolInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pPoolSizes &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;poolSize&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 描述符集最大数量，决定可以从池中分配多少个 descriptor set
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; poolInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;maxSets &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkCreateDescriptorPool&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;poolInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;descriptorPool&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to create descriptor pool!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;一个描述符池，可以管理多个类型的描述符的创建最大数量。（每个类型对应一个 descriptorCount) &lt;strong&gt;set里descriptor的个数限制&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;一个描述符池，提供了可以创建的描述符的总最大数量（maxSets） &lt;strong&gt;set的个数限制&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="描述符集descriptor-set和描述符descriptor创建"&gt;描述符集(Descriptor Set)和描述符(Descriptor)创建
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;58
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;59
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;60
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;61
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;62
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;63
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;64
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;65
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;66
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;67
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;68
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;69
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;70
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;initVulkan&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDescriptorPool&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDescriptorSets&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkDescriptorSet&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; descriptorSets&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createDescriptorSets&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vector&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkDescriptorSetLayout&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; layouts&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorSetLayout&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 分配描述符集的信息
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VkDescriptorSetAllocateInfo allocInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 指定从哪个池分配
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorPool &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; descriptorPool&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 分配数量
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorSetCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// // 指向每个 Descriptor Set 的布局
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; allocInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pSetLayouts &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; layouts&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; descriptorSets&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;resize&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;vkAllocateDescriptorSets&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;allocInfo&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorSets&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;data&lt;span style="color:#1f2328"&gt;())&lt;/span&gt; &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; VK_SUCCESS&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;throw&lt;/span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;runtime_error&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;failed to allocate descriptor sets!&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 到这里，descriptorSets数组已经都被分配好了
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 绑定每个 descriptor set 对应的 uniform buffer
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;size_t i &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; MAX_FRAMES_IN_FLIGHT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; i&lt;span style="color:#0550ae"&gt;++&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkDescriptorBufferInfo bufferInfo&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 指向对应帧的 uniform buffer
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;buffer &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; uniformBuffers&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// buffer 偏移
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;offset &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// buffer 大小
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; bufferInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;range &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;sizeof&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;UniformBufferObject&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 更新描述符集 （其实就是更新上面的 绑定uniform的信息）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; VkWriteDescriptorSet descriptorWrite&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 指定要更新的 descriptor set
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;dstSet &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; descriptorSets&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 对应 layout 中 binding = 0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;dstBinding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 如果是数组描述符，这里是数组起始索引
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;dstArrayElement &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 描述符类型
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorType &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 更新一个描述符
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;descriptorCount &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 更新的内容：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 指向 buffer info
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pBufferInfo &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;bufferInfo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pImageInfo &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// Optional
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; descriptorWrite&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pTexelBufferView &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// Optional
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 调用 Vulkan API 更新 descriptor set，将 bufferInfo 绑定到 descriptor
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; vkUpdateDescriptorSets&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;descriptorWrite&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;cleanup&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyDescriptorPool&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorPool&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyDescriptorSetLayout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; descriptorSetLayout&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="渲染时使用描述符集"&gt;渲染时使用描述符集
+&lt;/h2&gt;&lt;p&gt;在drawcall前，绑定描述符集&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdBindDescriptorSets&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_PIPELINE_BIND_POINT_GRAPHICS&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; pipelineLayout&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;descriptorSets&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;currentFrame&lt;span style="color:#1f2328"&gt;],&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;vkCmdDrawIndexed&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;commandBuffer&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;static_cast&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;indices&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;size&lt;span style="color:#1f2328"&gt;()),&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;一些bug修复。由于我们flip Y，导致三角形面的方向也相反，从而被 &lt;code&gt;BACK_CULL&lt;/code&gt; 掉了。因此回到 pipeline创建的部分，修改&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rasterizer&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;cullMode &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_CULL_MODE_BACK_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rasterizer&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;frontFace &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_FRONT_FACE_COUNTER_CLOCKWISE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;到这里，可以看到渲染的画面了&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A803-UniformBuffers-1764830352161.png"
+loading="lazy"
+alt="Vulkan入门03-UniformBuffers-1764830352161"
+&gt;&lt;/p&gt;
+&lt;h2 id="对齐问题"&gt;对齐问题
+&lt;/h2&gt;&lt;p&gt;考虑下面两个：&lt;/p&gt;
+&lt;p&gt;内存中v.s. glsl中&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;struct&lt;/span&gt; &lt;span style="color:#1f2328"&gt;UniformBufferObject&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec2 foo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 model&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 view&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 proj&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; uniform UniformBufferObject &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vec2 foo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 model&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 view&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mat4 proj&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt; ubo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;其实回顾我们之前的学习，我们知道 shader中对内存布局有额外要求：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Scalars have to be aligned by N (= 4 bytes given 32 bit floats).&lt;/li&gt;
+&lt;li&gt;A &lt;code&gt;vec2&lt;/code&gt; must be aligned by 2N (= 8 bytes)&lt;/li&gt;
+&lt;li&gt;A &lt;code&gt;vec3&lt;/code&gt; or &lt;code&gt;vec4&lt;/code&gt; must be aligned by 4N (= 16 bytes)&lt;/li&gt;
+&lt;li&gt;A nested structure must be aligned by the base alignment of its members rounded up to a multiple of 16.&lt;/li&gt;
+&lt;li&gt;A &lt;code&gt;mat4&lt;/code&gt; matrix must have the same alignment as a &lt;code&gt;vec4&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;显然我们上面CPU布局和GPU内存布局不一致。（因为vec2，会占有8字节，而后面我们需要16字节对齐。所以我们必须手动对齐CPU的内存）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;struct&lt;/span&gt; &lt;span style="color:#1f2328"&gt;UniformBufferObject&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;vec2 foo&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;alignas&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;16&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 model&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 view&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; glm&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;mat4 proj&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;此外，GLM库提供了自动对齐的宏配置&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#define GLM_FORCE_RADIANS
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;#include&lt;/span&gt; &lt;span style="color:#57606a"&gt;&amp;lt;glm/glm.hpp&amp;gt;&lt;/span&gt;&lt;span style="color:#57606a"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这样GLM定义的对象，会按照GPU的规范进行自动对齐。但如果你嵌套使用自定义struct，那么对齐也会失效。（GLM仅能负责自己对象内部的对齐）。教程里举了个奇怪的例子，我们这里不举例子，知道有内存对齐问题以及手动对齐为主即可。&lt;/p&gt;
+&lt;h2 id="多个-descriptor-set"&gt;多个 Descriptor Set
+&lt;/h2&gt;&lt;p&gt;这个其实我们之前也提到过了。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-glsl" data-lang="glsl"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;layout&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;set &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; binding &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;0&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;uniform&lt;/span&gt; UniformBufferObject &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;1个pipiline 可以绑定 多个 Descriptor Set （每个set，可以根据UBO使用频率来规划）&lt;/li&gt;
+&lt;li&gt;1个Descriptor Set可以绑定多个Descriptor Set Binding （每个binding可以对应一种单个/数组类型的UBO/其他资源）&lt;/li&gt;
+&lt;li&gt;每个binding实际运行时，绑定1个Descriptor / 1个Descriptor数组 。&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
