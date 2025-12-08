@@ -1,0 +1,292 @@
+<!doctype html><html lang=zh-cn dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="\n本节基于简单的 tinyobjloader 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。\n此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。\n"><title>Vulkan入门06-Loading models</title><link rel=canonical href=https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/><link rel=stylesheet href=/scss/style.min.4d36f8dc1fd48129e1635deb4b8eb2870fa09474f7280c4cb606d40b2526994b.css><meta property='og:title' content="Vulkan入门06-Loading models"><meta property='og:description' content="\n本节基于简单的 tinyobjloader 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。\n此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。\n"><meta property='og:url' content='https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/'><meta property='og:site_name' content='crackhopper的技术博客'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='vulkan'><meta property='article:tag' content='3d'><meta property='article:tag' content='obj'><meta property='article:tag' content='tinyobjloader'><meta property='article:published_time' content='2025-12-08T19:33:46+08:00'><meta property='article:modified_time' content='2025-12-08T19:33:46+08:00'><meta name=twitter:title content="Vulkan入门06-Loading models"><meta name=twitter:description content="\n本节基于简单的 tinyobjloader 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。\n此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。\n"><link rel=stylesheet href=/css/custom.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_337fe2b325ec916d.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>crackhopper的技术博客</a></h1><h2 class=site-description>C++, Graphics, Game, AI/ML</h2></div></header><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>文章</span></a></li><li><a href=/about/><svg class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+<span>关于我</span></a></li><li><a href=/projects/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>项目</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>归档</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ul><li><a href=#tinyobjloader集成>tinyobjloader集成</a></li><li><a href=#顶点重复问题-vertex-duduplication>顶点重复问题 (vertex duduplication)</a></li></ul></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/>Vulkan入门06-Loading models</a></h2></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2025-12-08T19:33:46+08:00>Dec 08, 2025</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>3 minute read</time></div></footer></div></header><section class=article-content><p><img src=/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png loading=lazy alt="Vulkan入门06-Loading models-1765192359210"></p><p>本节基于简单的 <code>tinyobjloader</code> 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。</p><p>此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。</p><h1 id=tinyobjloader集成>tinyobjloader集成</h1><p>因为这是一个header only的库，直接下载 <code>tiny_obj_loader.h</code> ( <a class=link href=https://github.com/tinyobjloader/tinyobjloader/blob/release/tiny_obj_loader.h target=_blank rel=noopener>https://github.com/tinyobjloader/tinyobjloader/blob/release/tiny_obj_loader.h</a>
+)，是存入到 includes 目录下的 tinyobjloader 下即可。</p><p>此外，我们还需要模型数据。因为本章节不考虑光照，所以我们最好是找一个预先烘焙了光照纹理的模型。 <a class=link href=https://sketchfab.com/ target=_blank rel=noopener>https://sketchfab.com/</a> 这个网站上有很多免费可用的模型。我们本节的渲染采用了下面的两个模型：</p><ul><li>obj模型文件: <a class=link href=https://vulkan-tutorial.com/resources/viking_room.obj target=_blank rel=noopener>https://vulkan-tutorial.com/resources/viking_room.obj</a></li><li>对应纹理贴图： <a class=link href=https://vulkan-tutorial.com/resources/viking_room.png target=_blank rel=noopener>https://vulkan-tutorial.com/resources/viking_room.png</a></li></ul><p>下载好之后，分别存入 models 和 textures 文件夹中。最后整体的目录结构为：
+<img src=/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765190629645.png loading=lazy alt="Vulkan入门06-Loading models-1765190629645"></p><p>接着我们写代码使用库来加载这些数据</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">55
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">56
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">57
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">58
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">59
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">60
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">61
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">62
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">63
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">64
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">65
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">66
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">67
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">68
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">69
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">70
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">71
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">72
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">73
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">74
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">75
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">76
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">77
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">78
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">79
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">80
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">81
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">82
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">83
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">84
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">85
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#57606a>#define TINYOBJLOADER_IMPLEMENTATION
+</span></span></span><span style=display:flex><span><span style=color:#57606a>#include</span> <span style=color:#57606a>&lt;tinyobjloader/tiny_obj_loader.h&gt;</span><span style=color:#57606a>
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>const</span> std<span style=color:#0550ae>::</span>string MODEL_PATH <span style=color:#0550ae>=</span> <span style=color:#0a3069>&#34;models/viking_room.obj&#34;</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>const</span> std<span style=color:#0550ae>::</span>string TEXTURE_PATH <span style=color:#0550ae>=</span> <span style=color:#0a3069>&#34;textures/viking_room.png&#34;</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 纹理贴图换成模型的纹理。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createTextureImage<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> texChannels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// 加载图像像素为一个指针
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>// stbi_uc *pixels = stbi_load(&#34;textures/texture.jpg&#34;, &amp;texWidth, &amp;texHeight,
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>//                            &amp;texChannels, STBI_rgb_alpha);
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    stbi_uc<span style=color:#0550ae>*</span> pixels <span style=color:#0550ae>=</span> stbi_load<span style=color:#1f2328>(</span>TEXTURE_PATH<span style=color:#1f2328>.</span>c_str<span style=color:#1f2328>(),</span> <span style=color:#0550ae>&amp;</span>texWidth<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>texHeight<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>texChannels<span style=color:#1f2328>,</span> STBI_rgb_alpha<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    VkDeviceSize imageSize <span style=color:#0550ae>=</span> texWidth <span style=color:#0550ae>*</span> texHeight <span style=color:#0550ae>*</span> <span style=color:#0550ae>4</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 顶点数据动态加载
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>std<span style=color:#0550ae>::</span>vector<span style=color:#0550ae>&lt;</span>Vertex<span style=color:#0550ae>&gt;</span> vertices<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>std<span style=color:#0550ae>::</span>vector<span style=color:#0550ae>&lt;</span><span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span> indices<span style=color:#1f2328>;</span> <span style=color:#57606a>// 注意更改到了 uint32_t
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>VkBuffer vertexBuffer<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>VkDeviceMemory vertexBufferMemory<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 对应在更改 indexbuffer的数据类型
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> <span style=color:#6639ba>recordCommandBuffer</span><span style=color:#1f2328>(</span>VkCommandBuffer commandBuffer<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> imageIndex<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    vkCmdBindIndexBuffer<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>,</span> indexBuffer<span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> VK_INDEX_TYPE_UINT32<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>	
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>initVulkan</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    loadModel<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    createVertexBuffer<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    createIndexBuffer<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 加载模型的函数 
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> loadModel<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    tinyobj<span style=color:#0550ae>::</span>attrib_t attrib<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    std<span style=color:#0550ae>::</span>vector<span style=color:#0550ae>&lt;</span>tinyobj<span style=color:#0550ae>::</span>shape_t<span style=color:#0550ae>&gt;</span> shapes<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    std<span style=color:#0550ae>::</span>vector<span style=color:#0550ae>&lt;</span>tinyobj<span style=color:#0550ae>::</span>material_t<span style=color:#0550ae>&gt;</span> materials<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    std<span style=color:#0550ae>::</span>string warn<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    std<span style=color:#0550ae>::</span>string err<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span><span style=color:#0550ae>!</span>tinyobj<span style=color:#0550ae>::</span>LoadObj<span style=color:#1f2328>(</span><span style=color:#0550ae>&amp;</span>attrib<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>shapes<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>materials<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>warn<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>err<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>                          MODEL_PATH<span style=color:#1f2328>.</span>c_str<span style=color:#1f2328>()))</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>      <span style=color:#cf222e>throw</span> std<span style=color:#0550ae>::</span>runtime_error<span style=color:#1f2328>(</span>err<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// OBJ 文件，包含： 位置(positions)、法项(normals)、纹理坐标(texture coords) 
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>// 保存在 `attrib.vertices` , `attrib.normals` 和 `attrib.texcoords` (整体的数据)
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>// 
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>// `shapes` 包含了所有对象以及它们的面(face)的索引信息。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#57606a>// 每个面包含了一组顶点，每个顶点包含了对应的 position, normal 和 texture coords 信息。 OBJ文件还可以对每个face定义对应的material 和 texture。我们暂时i忽略这些。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// 我们接下来要把所有的face拼接到一个顶点数据中。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>	<span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> <span style=color:#cf222e>auto</span><span style=color:#0550ae>&amp;</span> <span style=color:#900;font-weight:700>shape</span> <span style=color:#1f2328>:</span> shapes<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	    <span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> <span style=color:#cf222e>auto</span><span style=color:#0550ae>&amp;</span> <span style=color:#900;font-weight:700>index</span> <span style=color:#1f2328>:</span> shape<span style=color:#1f2328>.</span>mesh<span style=color:#1f2328>.</span>indices<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	        Vertex vertex<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>	        <span style=color:#57606a>// 由于 attrib.vertices 中是展开保存的数据，所以我们要用 3*idx+i 的方式取数值
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>			vertex<span style=color:#1f2328>.</span>pos <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>			    attrib<span style=color:#1f2328>.</span>vertices<span style=color:#1f2328>[</span><span style=color:#0550ae>3</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>vertex_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>],</span>
+</span></span><span style=display:flex><span>			    attrib<span style=color:#1f2328>.</span>vertices<span style=color:#1f2328>[</span><span style=color:#0550ae>3</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>vertex_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>],</span>
+</span></span><span style=display:flex><span>			    attrib<span style=color:#1f2328>.</span>vertices<span style=color:#1f2328>[</span><span style=color:#0550ae>3</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>vertex_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>2</span><span style=color:#1f2328>]</span>
+</span></span><span style=display:flex><span>			<span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>			<span style=color:#57606a>// 纹理坐标类似
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>			vertex<span style=color:#1f2328>.</span>texCoord <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>			    attrib<span style=color:#1f2328>.</span>texcoords<span style=color:#1f2328>[</span><span style=color:#0550ae>2</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>texcoord_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>],</span>
+</span></span><span style=display:flex><span>			    attrib<span style=color:#1f2328>.</span>texcoords<span style=color:#1f2328>[</span><span style=color:#0550ae>2</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>texcoord_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>]</span>
+</span></span><span style=display:flex><span>			<span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>			vertex<span style=color:#1f2328>.</span>color <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span><span style=color:#0550ae>1.0f</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>1.0f</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>1.0f</span><span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>			
+</span></span><span style=display:flex><span>			<span style=color:#57606a>// 暂时我们不考虑去除重复的顶点数据。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>	        vertices<span style=color:#1f2328>.</span>push_back<span style=color:#1f2328>(</span>vertex<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>	        
+</span></span><span style=display:flex><span>	        <span style=color:#57606a>// 这里也直接新增索引值。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>	        indices<span style=color:#1f2328>.</span>push_back<span style=color:#1f2328>(</span>indices<span style=color:#1f2328>.</span>size<span style=color:#1f2328>());</span>
+</span></span><span style=display:flex><span>	    <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><img src=/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192161220.png loading=lazy alt="Vulkan入门06-Loading models-1765192161220"></p><p>这个里面 OBJ 文件中纹理坐标的定义和vulkan中不一致，尤其是y坐标。因此我们需要flip y坐标，修复为：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>vertex<span style=color:#1f2328>.</span>texCoord <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    attrib<span style=color:#1f2328>.</span>texcoords<span style=color:#1f2328>[</span><span style=color:#0550ae>2</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>texcoord_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>],</span>
+</span></span><span style=display:flex><span>    <span style=color:#0550ae>1.0f</span> <span style=color:#0550ae>-</span> attrib<span style=color:#1f2328>.</span>texcoords<span style=color:#1f2328>[</span><span style=color:#0550ae>2</span> <span style=color:#0550ae>*</span> index<span style=color:#1f2328>.</span>texcoord_index <span style=color:#0550ae>+</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>]</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>};</span>
+</span></span></code></pre></td></tr></table></div></div><p><img src=/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png loading=lazy alt="Vulkan入门06-Loading models-1765192359210"></p><p>当模型旋转起来的时候，背面会比较有意思（因为模型并没考虑到从那个方向观看）
+<img src=/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192467007.png loading=lazy alt="Vulkan入门06-Loading models-1765192467007"></p><h1 id=顶点重复问题-vertex-duduplication>顶点重复问题 (vertex duduplication)</h1><p>我们每次用到索引的时候，都是新建一个顶点，新建一个索引。这样并没有利用到索引的优势（可以复用顶点数据）。因此我们调整 <code>loadModel</code> 代码：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">46
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#57606a>#include</span> <span style=color:#57606a>&lt;unordered_map&gt;</span><span style=color:#57606a>
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 为了计算 glm 数据结构的hash，需要引入
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#57606a>#define GLM_ENABLE_EXPERIMENTAL
+</span></span></span><span style=display:flex><span><span style=color:#57606a>#include</span> <span style=color:#57606a>&lt;glm/gtx/hash.hpp&gt;</span><span style=color:#57606a>
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> loadModel<span style=color:#1f2328>(){</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>	<span style=color:#57606a>// 这里面我们用一个 unorder_map (hashmap) ，以顶点作为key，来确保顶点数据唯一性。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>	std<span style=color:#0550ae>::</span>unordered_map<span style=color:#0550ae>&lt;</span>Vertex<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span> uniqueVertices<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> <span style=color:#cf222e>auto</span><span style=color:#0550ae>&amp;</span> <span style=color:#900;font-weight:700>shape</span> <span style=color:#1f2328>:</span> shapes<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	    <span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> <span style=color:#cf222e>auto</span><span style=color:#0550ae>&amp;</span> <span style=color:#900;font-weight:700>index</span> <span style=color:#1f2328>:</span> shape<span style=color:#1f2328>.</span>mesh<span style=color:#1f2328>.</span>indices<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	        Vertex vertex<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	        <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	        <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>uniqueVertices<span style=color:#1f2328>.</span>count<span style=color:#1f2328>(</span>vertex<span style=color:#1f2328>)</span> <span style=color:#0550ae>==</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	            uniqueVertices<span style=color:#1f2328>[</span>vertex<span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> <span style=color:#cf222e>static_cast</span><span style=color:#0550ae>&lt;</span><span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span><span style=color:#1f2328>(</span>vertices<span style=color:#1f2328>.</span>size<span style=color:#1f2328>());</span>
+</span></span><span style=display:flex><span>	            vertices<span style=color:#1f2328>.</span>push_back<span style=color:#1f2328>(</span>vertex<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>	        <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	        indices<span style=color:#1f2328>.</span>push_back<span style=color:#1f2328>(</span>uniqueVertices<span style=color:#1f2328>[</span>vertex<span style=color:#1f2328>]);</span>
+</span></span><span style=display:flex><span>	    <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 为了支持 unorder_map 的key需要的trait，我们需要重载opcerator== 
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>struct</span> <span style=color:#1f2328>Vertex</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>bool</span> <span style=color:#cf222e>operator</span><span style=color:#0550ae>==</span><span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> Vertex <span style=color:#0550ae>&amp;</span>other<span style=color:#1f2328>)</span> <span style=color:#cf222e>const</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	    <span style=color:#cf222e>return</span> pos <span style=color:#0550ae>==</span> other<span style=color:#1f2328>.</span>pos <span style=color:#0550ae>&amp;&amp;</span> color <span style=color:#0550ae>==</span> other<span style=color:#1f2328>.</span>color <span style=color:#0550ae>&amp;&amp;</span>
+</span></span><span style=display:flex><span>	           texCoord <span style=color:#0550ae>==</span> other<span style=color:#1f2328>.</span>texCoord<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 为了支持 unorder_map 的key需要的trait，我们还需要特化 std::hash&lt;T&gt; ，提供计算hash的方法
+</span></span></span><span style=display:flex><span><span style=color:#57606a>// 下面的计算方法是参照 https://en.cppreference.com/w/cpp/utility/hash.html 提供的一个快速便携计算hash的方法
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>namespace</span> std <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>template</span><span style=color:#0550ae>&lt;&gt;</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>hash</span><span style=color:#0550ae>&lt;</span>Vertex<span style=color:#0550ae>&gt;</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>        size_t <span style=color:#6639ba>operator</span><span style=color:#1f2328>()(</span>Vertex <span style=color:#cf222e>const</span><span style=color:#0550ae>&amp;</span> vertex<span style=color:#1f2328>)</span> <span style=color:#cf222e>const</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>            <span style=color:#cf222e>return</span> <span style=color:#1f2328>((</span>hash<span style=color:#0550ae>&lt;</span>glm<span style=color:#0550ae>::</span>vec3<span style=color:#0550ae>&gt;</span><span style=color:#1f2328>()(</span>vertex<span style=color:#1f2328>.</span>pos<span style=color:#1f2328>)</span> <span style=color:#0550ae>^</span>
+</span></span><span style=display:flex><span>                   <span style=color:#1f2328>(</span>hash<span style=color:#0550ae>&lt;</span>glm<span style=color:#0550ae>::</span>vec3<span style=color:#0550ae>&gt;</span><span style=color:#1f2328>()(</span>vertex<span style=color:#1f2328>.</span>color<span style=color:#1f2328>)</span> <span style=color:#0550ae>&lt;&lt;</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>))</span> <span style=color:#0550ae>&gt;&gt;</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>)</span> <span style=color:#0550ae>^</span>
+</span></span><span style=display:flex><span>                   <span style=color:#1f2328>(</span>hash<span style=color:#0550ae>&lt;</span>glm<span style=color:#0550ae>::</span>vec2<span style=color:#0550ae>&gt;</span><span style=color:#1f2328>()(</span>vertex<span style=color:#1f2328>.</span>texCoord<span style=color:#1f2328>)</span> <span style=color:#0550ae>&lt;&lt;</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>        <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div></section><footer class=article-footer><section class=article-tags><a href=/tags/vulkan/>Vulkan</a>
+<a href=/tags/3d/>3d</a>
+<a href=/tags/obj/>Obj</a>
+<a href=/tags/tinyobjloader/>Tinyobjloader</a></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css integrity=sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js integrity=sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js integrity=sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05 crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{const e=[".main-article",".widget--toc"];e.forEach(e=>{const t=document.querySelector(e);t&&renderMathInElement(t,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}],ignoredClasses:["gist"]})})})</script></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A805-depth-buffering/><div class=article-details><h2 class=article-title>Vulkan入门05-Depth buffering</h2></div></a></article><article><a href=/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/><div class=article-details><h2 class=article-title>Vulkan入门04-Texture mapping</h2></div></a></article><article><a href=/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/><div class=article-details><h2 class=article-title>Vulkan入门03-UniformBuffers</h2></div></a></article><article><a href=/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/><div class=article-details><h2 class=article-title>Vulkan入门02-VertexBuffers</h2></div></a></article><article><a href=/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/><div class=article-details><h2 class=article-title>Vulkan程序中Intel驱动总是被调用（未解决）</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2025 crackhopper的技术博客</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.32.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.0fcb739c1f88ce461c9640077fd21d8ce903946f1aef209dd01192827d26a90c.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
