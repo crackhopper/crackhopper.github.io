@@ -172,10 +172,7 @@ alt="Vulkan入门04-Texture mapping-1764816362517"
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;开始之前，在创建 textures 文件夹，并放入一个 CC0 的image （512 x 512 ） &lt;code&gt;texture.jpg&lt;/code&gt; 如下：
-&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A804-Texture%20mapping-1764816362517.png"
-loading="lazy"
-alt="Vulkan入门04-Texture mapping-1764816362517"
-&gt;&lt;/p&gt;
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A804-Texture%20mapping-1764816362517.png" alt="Vulkan入门04-Texture mapping-1764816362517" width="142x142" loading="lazy" /&gt;&lt;/p&gt;
 &lt;p&gt;接下来我们来创建TextureImage:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
 &lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
