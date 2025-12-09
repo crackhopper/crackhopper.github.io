@@ -1,0 +1,527 @@
+<!doctype html><html lang=zh-cn dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="\nMipmap: (Mip, Multum In Parvo拉丁语，在小中包含很多（Much in a little）)\n把同一张纹理的多个不同分辨率版本 全部打包（或预计算）在一起 渲染时根据物体大小自动选用合适的层级 本节主要讲解如何创建mipmap（使用vulkan的blit函数；随后矫正layout，调整采样器；整体实现的代码上并不复杂）\n"><title>Vulkan入门07-Generating Mipmaps</title><link rel=canonical href=https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/><link rel=stylesheet href=/scss/style.min.4d36f8dc1fd48129e1635deb4b8eb2870fa09474f7280c4cb606d40b2526994b.css><meta property='og:title' content="Vulkan入门07-Generating Mipmaps"><meta property='og:description' content="\nMipmap: (Mip, Multum In Parvo拉丁语，在小中包含很多（Much in a little）)\n把同一张纹理的多个不同分辨率版本 全部打包（或预计算）在一起 渲染时根据物体大小自动选用合适的层级 本节主要讲解如何创建mipmap（使用vulkan的blit函数；随后矫正layout，调整采样器；整体实现的代码上并不复杂）\n"><meta property='og:url' content='https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/'><meta property='og:site_name' content='crackhopper的技术博客'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='vulkan'><meta property='article:tag' content='mipmap'><meta property='article:tag' content='texture'><meta property='article:tag' content='sampler'><meta property='article:published_time' content='2025-12-09T12:40:32+08:00'><meta property='article:modified_time' content='2025-12-09T12:40:32+08:00'><meta name=twitter:title content="Vulkan入门07-Generating Mipmaps"><meta name=twitter:description content="\nMipmap: (Mip, Multum In Parvo拉丁语，在小中包含很多（Much in a little）)\n把同一张纹理的多个不同分辨率版本 全部打包（或预计算）在一起 渲染时根据物体大小自动选用合适的层级 本节主要讲解如何创建mipmap（使用vulkan的blit函数；随后矫正layout，调整采样器；整体实现的代码上并不复杂）\n"><link rel=stylesheet href=/css/custom.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_337fe2b325ec916d.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>crackhopper的技术博客</a></h1><h2 class=site-description>C++, Graphics, Game, AI/ML</h2></div></header><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>文章</span></a></li><li><a href=/about/><svg class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+<span>关于我</span></a></li><li><a href=/projects/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>项目</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>归档</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ul><li><a href=#图像创建>图像创建</a></li><li><a href=#生成mipmap>生成mipmap</a><ul><li><a href=#检查-linear-filter支持>检查 linear filter支持</a></li></ul></li><li><a href=#采样器>采样器</a></li><li><a href=#为什么-mipmap-在复杂场景中好>为什么 mipmap 在复杂场景中“好”</a></li></ul></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/>Vulkan入门07-Generating Mipmaps</a></h2></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2025-12-09T12:40:32+08:00>Dec 09, 2025</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>6 minute read</time></div></footer></div></header><section class=article-content><p><img src=/images/Vulkan%E5%85%A5%E9%97%A807-Generating%20Mipmaps-1765248326505.png loading=lazy alt="Vulkan入门07-Generating Mipmaps-1765248326505"></p><p>Mipmap: (Mip, Multum In Parvo拉丁语，在小中包含很多（Much in a little）)</p><ul><li>把同一张纹理的多个不同分辨率版本</li><li>全部打包（或预计算）在一起</li><li>渲染时根据物体大小自动选用合适的层级</li></ul><p>本节主要讲解如何创建mipmap（使用vulkan的blit函数；随后矫正layout，调整采样器；整体实现的代码上并不复杂）</p><h1 id=图像创建>图像创建</h1><p>在Vulkan中，每个 mip 图像保存在 <code>VkImage</code> 中不同的 mip level中。 mip level 0 是原始图像，level 0 之后的level，通常也被叫做 mip chain。</p><p>当创建 <code>VkImage</code> 的时候，可以指定 mip level 的数目。每次个mip level比它的上一级level，长度和宽度都为 1/2 。因此根据图像大小，如果要做mipmap，我们可以预先计算出mip level的数量：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">55
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">56
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">57
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">58
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">59
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">60
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">61
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">62
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">63
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">64
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">65
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">66
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">67
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>VkImage textureImage<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 根据加载的texture的宽高，计算 mip levels
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createTextureImage<span style=color:#1f2328>(){</span>
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>int</span> texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> texChannels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	stbi_uc<span style=color:#0550ae>*</span> pixels <span style=color:#0550ae>=</span> stbi_load<span style=color:#1f2328>(</span>
+</span></span><span style=display:flex><span>		TEXTURE_PATH<span style=color:#1f2328>.</span>c_str<span style=color:#1f2328>(),</span> <span style=color:#0550ae>&amp;</span>texWidth<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>texHeight<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>texChannels<span style=color:#1f2328>,</span> STBI_rgb_alpha<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>	mipLevels <span style=color:#0550ae>=</span> <span style=color:#cf222e>static_cast</span><span style=color:#0550ae>&lt;</span><span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span><span style=color:#1f2328>(</span>
+</span></span><span style=display:flex><span>		std<span style=color:#0550ae>::</span>floor<span style=color:#1f2328>(</span>std<span style=color:#0550ae>::</span>log2<span style=color:#1f2328>(</span>std<span style=color:#0550ae>::</span>max<span style=color:#1f2328>(</span>texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>))))</span> <span style=color:#0550ae>+</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 其他位置也需要修改： image, view, layout （需要指定 mip levels）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createImage</span><span style=color:#1f2328>(</span><span style=color:#cf222e>uint32_t</span> width<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> height<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VkFormat format<span style=color:#1f2328>,</span> VkImageTiling tiling<span style=color:#1f2328>,</span> VkImageUsageFlags usage<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VkMemoryPropertyFlags properties<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VkImage<span style=color:#0550ae>&amp;</span> image<span style=color:#1f2328>,</span> VkDeviceMemory<span style=color:#0550ae>&amp;</span> imageMemory<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    imageInfo<span style=color:#1f2328>.</span>mipLevels <span style=color:#0550ae>=</span> mipLevels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>VkImageView <span style=color:#6639ba>createImageView</span><span style=color:#1f2328>(</span>VkImage image<span style=color:#1f2328>,</span> VkFormat format<span style=color:#1f2328>,</span> VkImageAspectFlags aspectFlags<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    viewInfo<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>levelCount <span style=color:#0550ae>=</span> mipLevels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> transitionImageLayout<span style=color:#1f2328>(</span>VkImage image<span style=color:#1f2328>,</span> VkFormat format<span style=color:#1f2328>,</span> VkImageLayout oldLayout<span style=color:#1f2328>,</span> VkImageLayout newLayout<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>levelCount <span style=color:#0550ae>=</span> mipLevels<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#57606a>// 以及所有调用函数的位置，也要修改：
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处调用不用mipmap，填入mip level = 1
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>createImage<span style=color:#1f2328>(</span>
+</span></span><span style=display:flex><span>	swapChainExtent<span style=color:#1f2328>.</span>width<span style=color:#1f2328>,</span> swapChainExtent<span style=color:#1f2328>.</span>height<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> depthFormat<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> depthImage<span style=color:#1f2328>,</span> depthImageMemory<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处需要指定 mip level
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>createImage<span style=color:#1f2328>(</span>texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>,</span> VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>		VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>		VK_IMAGE_USAGE_TRANSFER_DST_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_SAMPLED_BIT<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> textureImage<span style=color:#1f2328>,</span> textureImageMemory<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处调用不用mipmap，填入mip level = 1
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>swapChainImageViews<span style=color:#1f2328>[</span>i<span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> createImageView<span style=color:#1f2328>(</span>swapChainImages<span style=color:#1f2328>[</span>i<span style=color:#1f2328>],</span> swapChainImageFormat<span style=color:#1f2328>,</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处调用不用mipmap，填入mip level = 1
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>depthImageView <span style=color:#0550ae>=</span> createImageView<span style=color:#1f2328>(</span>depthImage<span style=color:#1f2328>,</span> depthFormat<span style=color:#1f2328>,</span> VK_IMAGE_ASPECT_DEPTH_BIT<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处需要指定 mip level
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>textureImageView <span style=color:#0550ae>=</span> createImageView<span style=color:#1f2328>(</span>textureImage<span style=color:#1f2328>,</span> VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处调用不用mipmap，填入mip level = 1
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>transitionImageLayout<span style=color:#1f2328>(</span>depthImage<span style=color:#1f2328>,</span> depthFormat<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_UNDEFINED<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 此处需要指定 mip level
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>transitionImageLayout<span style=color:#1f2328>(</span>textureImage<span style=color:#1f2328>,</span> VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_UNDEFINED<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>);</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=生成mipmap>生成mipmap</h1><p>staging buffer只能填充 mip level 0，其他level仍然是undefined。为了填充这些level，我们需要从level0生成。我们将会使用 <code>VkCmdBlitImage</code> 命令，多次调用这个指令来生成各个level的mip图像。（注释 ：<strong>BLIT/BLT, BLock Image Transfer</strong>，指 <strong>在图像（image）之间进行成块的数据拷贝</strong>，可以在拷贝过程中做 <strong>缩放（scale）、翻转、格式转换（有限）</strong> ）‘</p><p>为了方便对图像处理，我们需要创建的时候指定对应的flags：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">6
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>createImage<span style=color:#1f2328>(</span>texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VK_IMAGE_USAGE_TRANSFER_SRC_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_TRANSFER_DST_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_SAMPLED_BIT<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> textureImage<span style=color:#1f2328>,</span> textureImageMemory<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span></code></pre></td></tr></table></div></div><p>和其他的图像操作类似，<code>vkCmdBlitImage</code> 操作也依赖图像的布局。为了更优的性能，我们需要把输入图像的布局调整为 <code>VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code> ，输出图像的布局调整成 <code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> 。</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">  9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 55
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 56
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 57
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 58
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 59
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 60
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 61
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 62
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 63
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 64
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 65
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 66
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 67
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 68
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 69
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 70
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 71
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 72
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 73
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 74
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 75
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 76
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 77
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 78
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 79
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 80
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 81
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 82
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 83
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 84
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 85
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 86
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 87
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 88
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 89
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 90
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 91
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 92
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 93
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 94
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 95
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 96
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 97
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 98
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 99
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">100
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">101
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">102
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">103
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">104
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">105
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">106
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">107
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">108
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">109
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">110
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">111
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">112
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">113
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">114
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">115
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">116
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">117
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">118
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">119
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">120
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">121
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">122
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">123
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">124
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">125
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">126
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">127
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>generateMipmaps</span><span style=color:#1f2328>(</span>VkImage image<span style=color:#1f2328>,</span> <span style=color:#cf222e>int32_t</span> texWidth<span style=color:#1f2328>,</span> <span style=color:#cf222e>int32_t</span> texHeight<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    VkCommandBuffer commandBuffer <span style=color:#0550ae>=</span> beginSingleTimeCommands<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    VkImageMemoryBarrier barrier<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>sType <span style=color:#0550ae>=</span> VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>image <span style=color:#0550ae>=</span> image<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>srcQueueFamilyIndex <span style=color:#0550ae>=</span> VK_QUEUE_FAMILY_IGNORED<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>dstQueueFamilyIndex <span style=color:#0550ae>=</span> VK_QUEUE_FAMILY_IGNORED<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>aspectMask <span style=color:#0550ae>=</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>baseArrayLayer <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>layerCount <span style=color:#0550ae>=</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>levelCount <span style=color:#0550ae>=</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// 复用上面的barrier，来做若干次转化
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>int32_t</span> mipWidth <span style=color:#0550ae>=</span> texWidth<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>int32_t</span> mipHeight <span style=color:#0550ae>=</span> texHeight<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>uint32_t</span> i <span style=color:#0550ae>=</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span> i <span style=color:#0550ae>&lt;</span> mipLevels<span style=color:#1f2328>;</span> i<span style=color:#0550ae>++</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 注意循环从1开始
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>baseMipLevel <span style=color:#0550ae>=</span> i <span style=color:#0550ae>-</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 上一级mip level计算结束后，其布局为 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>oldLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 本次执行前，上一级mip level需要切换为 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>newLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 上一级mip level计算结束的动作，VK_ACCESS_TRANSFER_WRITE_BIT;
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>srcAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_TRANSFER_WRITE_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 本次执行前，上一级mip level需要准备好VK_ACCESS_TRANSFER_READ_BIT
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>dstAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_TRANSFER_READ_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 记录这个barrier，让布局转化生效。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		vkCmdPipelineBarrier<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    VK_PIPELINE_STAGE_TRANSFER_BIT<span style=color:#1f2328>,</span> VK_PIPELINE_STAGE_TRANSFER_BIT<span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>barrier<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>		    
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 布局准备好了，我们可以执行 blit了
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// source level: i-1 , dest level: i
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		VkImageBlit blit<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 表示源区域的定义：
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// 区域覆盖的像素为 [offset0, offset1)。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 源区域的最小角（offset0）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// 包含(x,y,z)的坐标，表示源区域的起始 texel（**inclusive**）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// 这里设置为 (0,0,0) 表示从源 mip 的左上角（或原点）开始。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcOffsets<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span> <span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 源区域的最大角（offset1），表示源区域的结束坐标（**exclusive**）。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// 这里表示 到 源 mip 的右下角结束。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcOffsets<span style=color:#1f2328>[</span><span style=color:#0550ae>1</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span> mipWidth<span style=color:#1f2328>,</span> mipHeight<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span> <span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 指定源图像子资源的“面”(aspect)。对于彩色纹理通常是 COLOR_BIT。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcSubresource<span style=color:#1f2328>.</span>aspectMask <span style=color:#0550ae>=</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 源子资源使用的 mip 级别。这里是 i-1，说明源是上一级（更高分辨率）的 mip 级别。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcSubresource<span style=color:#1f2328>.</span>mipLevel <span style=color:#0550ae>=</span> i <span style=color:#0550ae>-</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 源的起始 array layer（针对 array textures 或 cubemaps），
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// 这里从 layer 0 开始。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcSubresource<span style=color:#1f2328>.</span>baseArrayLayer <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 源使用的层数（从 baseArrayLayer 开始的连续层数）。这里是 1，表示只 blit 单层。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>srcSubresource<span style=color:#1f2328>.</span>layerCount <span style=color:#0550ae>=</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 目标区域和一些参数定义，可以参见源区域定义来类比。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		blit<span style=color:#1f2328>.</span>dstOffsets<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span> <span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>		blit<span style=color:#1f2328>.</span>dstOffsets<span style=color:#1f2328>[</span><span style=color:#0550ae>1</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span> 
+</span></span><span style=display:flex><span>			mipWidth <span style=color:#0550ae>&gt;</span> <span style=color:#0550ae>1</span> <span style=color:#0550ae>?</span> 
+</span></span><span style=display:flex><span>				mipWidth <span style=color:#0550ae>/</span> <span style=color:#0550ae>2</span> <span style=color:#0550ae>:</span> 
+</span></span><span style=display:flex><span>				<span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>			mipHeight <span style=color:#0550ae>&gt;</span> <span style=color:#0550ae>1</span> <span style=color:#0550ae>?</span> 
+</span></span><span style=display:flex><span>				mipHeight <span style=color:#0550ae>/</span> <span style=color:#0550ae>2</span> <span style=color:#0550ae>:</span> 
+</span></span><span style=display:flex><span>				<span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>			<span style=color:#0550ae>1</span> 
+</span></span><span style=display:flex><span>		<span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>		blit<span style=color:#1f2328>.</span>dstSubresource<span style=color:#1f2328>.</span>aspectMask <span style=color:#0550ae>=</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		blit<span style=color:#1f2328>.</span>dstSubresource<span style=color:#1f2328>.</span>mipLevel <span style=color:#0550ae>=</span> i<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		blit<span style=color:#1f2328>.</span>dstSubresource<span style=color:#1f2328>.</span>baseArrayLayer <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		blit<span style=color:#1f2328>.</span>dstSubresource<span style=color:#1f2328>.</span>layerCount <span style=color:#0550ae>=</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 执行blit操作
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		vkCmdBlitImage<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>			<span style=color:#57606a>// 源图像，源图像布局
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    image<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>			<span style=color:#57606a>// 目标图像，目标图像布局
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    image<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> <span style=color:#57606a>// region count
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    <span style=color:#0550ae>&amp;</span>blit<span style=color:#1f2328>,</span> <span style=color:#57606a>/// blit参数列表（对应 region count）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    VK_FILTER_LINEAR <span style=color:#57606a>// 使用的滤波器
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 注意，blit操作必须被提交到具备 graphics能力的队列。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// blit结束后，再将layout转化为 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		barrier<span style=color:#1f2328>.</span>oldLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		barrier<span style=color:#1f2328>.</span>newLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		barrier<span style=color:#1f2328>.</span>srcAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_TRANSFER_READ_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		barrier<span style=color:#1f2328>.</span>dstAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_SHADER_READ_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 向pipeline中插入barrier（指定具体的源阶段和目标阶段，然后插入barrier）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#57606a>// barrier中定义了等待的动作
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		vkCmdPipelineBarrier<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>		    VK_PIPELINE_STAGE_TRANSFER_BIT<span style=color:#1f2328>,</span><span style=color:#57606a>// 源阶段阶段掩码（必须完成）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT<span style=color:#1f2328>,</span> <span style=color:#57606a>// 目标阶段掩码（要进入）
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#57606a>// 队列内同步；如果有其他subpass依赖，这里要指定
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span> <span style=color:#57606a>// 用于全局（buffer/image 通用）的内存依赖
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span> <span style=color:#57606a>// 用于 buffer 的同步和 layout/ownership 管理
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		    <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>barrier<span style=color:#1f2328>);</span> <span style=color:#57606a>// 用于image同步。	
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		
+</span></span><span style=display:flex><span>		<span style=color:#57606a>// 循环中不断缩小 mipWidth和mipHeight    
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>		<span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>mipWidth <span style=color:#0550ae>&gt;</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>)</span> mipWidth <span style=color:#0550ae>/=</span> <span style=color:#0550ae>2</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>mipHeight <span style=color:#0550ae>&gt;</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>)</span> mipHeight <span style=color:#0550ae>/=</span> <span style=color:#0550ae>2</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>	<span style=color:#57606a>// 最后1个level，还没有做布局转化，补上
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    barrier<span style=color:#1f2328>.</span>subresourceRange<span style=color:#1f2328>.</span>baseMipLevel <span style=color:#0550ae>=</span> mipLevels <span style=color:#0550ae>-</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>oldLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>newLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>srcAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_TRANSFER_WRITE_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    barrier<span style=color:#1f2328>.</span>dstAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_SHADER_READ_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    vkCmdPipelineBarrier<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>        VK_PIPELINE_STAGE_TRANSFER_BIT<span style=color:#1f2328>,</span> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT<span style=color:#1f2328>,</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>        <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>        <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>        <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>barrier<span style=color:#1f2328>);</span>	
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    endSingleTimeCommands<span style=color:#1f2328>(</span>commandBuffer<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>回忆我们的texture的创建过程：</p><ul><li>调整image布局： VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</li><li>从staging buffer上传到image： <code>copyBufferToImage</code></li><li>调整image布局： VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL<br>我们把最后一个步骤替换为生成mipmap。（这个操作最后转化了我们需要的layout）</li></ul><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>transitionImageLayout<span style=color:#1f2328>(</span>textureImage<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	VK_IMAGE_LAYOUT_UNDEFINED<span style=color:#1f2328>,</span> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	mipLevels<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>copyBufferToImage<span style=color:#1f2328>(</span>
+</span></span><span style=display:flex><span>	stagingBuffer<span style=color:#1f2328>,</span> textureImage<span style=color:#1f2328>,</span> 
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>static_cast</span><span style=color:#0550ae>&lt;</span><span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span><span style=color:#1f2328>(</span>texWidth<span style=color:#1f2328>),</span> <span style=color:#cf222e>static_cast</span><span style=color:#0550ae>&lt;</span><span style=color:#cf222e>uint32_t</span><span style=color:#0550ae>&gt;</span><span style=color:#1f2328>(</span>texHeight<span style=color:#1f2328>));</span>
+</span></span><span style=display:flex><span>generateMipmaps<span style=color:#1f2328>(</span>textureImage<span style=color:#1f2328>,</span> texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=检查-linear-filter支持>检查 linear filter支持</h2><p>我们上面的blit操作需要 texture image format 支持 linear filtering。可以用 <code>vkGetPhysicalDeviceFormatProperties</code> 方法来检查。我们补充这个部分。</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createTextureImage</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>	<span style=color:#57606a>// 增加一个参数
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    generateMipmaps<span style=color:#1f2328>(</span>textureImage<span style=color:#1f2328>,</span> VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>generateMipmaps</span><span style=color:#1f2328>(</span>VkImage image<span style=color:#1f2328>,</span> VkFormat imageFormat<span style=color:#1f2328>,</span> <span style=color:#cf222e>int32_t</span> texWidth<span style=color:#1f2328>,</span> <span style=color:#cf222e>int32_t</span> texHeight<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// Check if image format supports linear blitting
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    VkFormatProperties formatProperties<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    vkGetPhysicalDeviceFormatProperties<span style=color:#1f2328>(</span>
+</span></span><span style=display:flex><span>	    physicalDevice<span style=color:#1f2328>,</span> imageFormat<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>formatProperties<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>	    
+</span></span><span style=display:flex><span>	<span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span><span style=color:#0550ae>!</span><span style=color:#1f2328>(</span>formatProperties<span style=color:#1f2328>.</span>optimalTilingFeatures <span style=color:#0550ae>&amp;</span> 
+</span></span><span style=display:flex><span>		VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT<span style=color:#1f2328>))</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>	    <span style=color:#cf222e>throw</span> std<span style=color:#0550ae>::</span>runtime_error<span style=color:#1f2328>(</span><span style=color:#0a3069>&#34;textureimage format unsupport linear blitting!&#34;</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>	<span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>如果不支持，有两种办法：</p><ol><li>选择支持 linear filtering 的图像格式。</li><li>用第三方库，比如 <code>stb_image_resize</code> 来生成mipmap，然后上传到image中。</li></ol><h1 id=采样器>采样器</h1><p><code>VkImage</code> 包含 mipmap数据， <code>VkSampler</code> 则控制渲染的时候如何读取数据。Vulkan
+支持我们指定： <code>minLod</code>, <code>maxLod</code>, <code>mipLodBias</code> 以及 <code>mipmapMod</code> （Lod，即Level of Details，层次细节；lod越大越远）。当我们对一个texture进行采样的时候，采样器选择一个miplevel，选择的方式参考下面的伪代码：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>lod <span style=color:#0550ae>=</span> getLodLevelFromScreenSize<span style=color:#1f2328>();</span> <span style=color:#57606a>//smaller when the object is close, may be negative
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>lod <span style=color:#0550ae>=</span> clamp<span style=color:#1f2328>(</span>lod <span style=color:#0550ae>+</span> mipLodBias<span style=color:#1f2328>,</span> minLod<span style=color:#1f2328>,</span> maxLod<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>level <span style=color:#0550ae>=</span> clamp<span style=color:#1f2328>(</span>floor<span style=color:#1f2328>(</span>lod<span style=color:#1f2328>),</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> texture<span style=color:#1f2328>.</span>mipLevels <span style=color:#0550ae>-</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>  <span style=color:#57606a>//clamped to the number of mip levels in the texture
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>mipmapMode <span style=color:#0550ae>==</span> VK_SAMPLER_MIPMAP_MODE_NEAREST<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    color <span style=color:#0550ae>=</span> sample<span style=color:#1f2328>(</span>level<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span> <span style=color:#cf222e>else</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    color <span style=color:#0550ae>=</span> blend<span style=color:#1f2328>(</span>sample<span style=color:#1f2328>(</span>level<span style=color:#1f2328>),</span> sample<span style=color:#1f2328>(</span>level <span style=color:#0550ae>+</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>));</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>采样动作本身，也被lod影响，伪代码：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">5
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>lod <span style=color:#0550ae>&lt;=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    color <span style=color:#0550ae>=</span> readTexture<span style=color:#1f2328>(</span>uv<span style=color:#1f2328>,</span> magFilter<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span> <span style=color:#cf222e>else</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    color <span style=color:#0550ae>=</span> readTexture<span style=color:#1f2328>(</span>uv<span style=color:#1f2328>,</span> minFilter<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>如果 对象 距离 camera 近，使用 <code>magFilter</code> ，而远则使用 <code>minFilter</code> 。通常lod是非负的，只有距离相机近的时候才会是0，不过通过指定 <code>mipLodBias</code> ，我们可以让Vulkan用更加小的lod和level。<ul><li>补充：语义来说，magFilter，maginificationFilter，纹理被放大，一个纹理 texel 被映射到多个屏幕像素（fragments）；minFilter， minificationFilter，纹理被缩小，多个纹理 texel 被映射到同一个屏幕像素（fragment）</li><li>lod&lt;=0时，距离相机很近，纹理被放大（多个像素对应一个纹理像素）</li><li>现代渲染常见的使用方式：<ul><li>mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; // trilinear</li><li>minFilter = VK_FILTER_LINEAR;</li><li>magFilter = VK_FILTER_LINEAR;</li><li>而 mipLodBias 取值：负（更锐利，更高分辨率），正（更模糊）；常见范围 -0.5~+0.5</li></ul></li></ul></li></ul><p>接下来我们修改代码，创建采样器</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">8
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createTextureSampler</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    samplerInfo<span style=color:#1f2328>.</span>mipmapMode <span style=color:#0550ae>=</span> VK_SAMPLER_MIPMAP_MODE_LINEAR<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    samplerInfo<span style=color:#1f2328>.</span>minLod <span style=color:#0550ae>=</span> <span style=color:#0550ae>0.0f</span><span style=color:#1f2328>;</span> <span style=color:#57606a>// Optional
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    samplerInfo<span style=color:#1f2328>.</span>maxLod <span style=color:#0550ae>=</span> VK_LOD_CLAMP_NONE<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    samplerInfo<span style=color:#1f2328>.</span>mipLodBias <span style=color:#0550ae>=</span> <span style=color:#0550ae>0.0f</span><span style=color:#1f2328>;</span> <span style=color:#57606a>// Optional
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>此时，运行程序看到结果：（我们通过修改 samplerInfo 可以开启或关闭 mipmap）</p><p><img src=/images/Vulkan%E5%85%A5%E9%97%A807-Generating%20Mipmaps-1765254853080.png loading=lazy alt="Vulkan入门07-Generating Mipmaps-1765254853080"></p><p>实际上，开启不开启mipmap的差距并不明显。复杂的场景，就能看出差别了，mipmap的速度也会更快。</p><h1 id=为什么-mipmap-在复杂场景中好>为什么 mipmap 在复杂场景中“好”</h1><p>mipmap =（近似）低通滤波 + 下采样
+效果：</p><ul><li>消除 moiré</li><li>消除 shimmering（远处闪烁）</li><li>防止高频纹理污染画面</li></ul><p>没有 mipmap 的复杂场景：</p><ul><li>草地</li><li>地砖</li><li>屋顶</li><li>远处建筑<br>几乎一定会<strong>闪＋花＋嘈杂</strong></li></ul><p>实时渲染的典型配置</p><pre tabindex=0><code>minFilter = LINEAR
+mipmapMode = LINEAR
+anisotropy = 8~16
+</code></pre><p>在复杂场景中：</p><ul><li>斜视角</li><li>大面积地面</li><li>长距离可见性</li></ul><p>mipmap + 各向异性是<strong>唯一可扩展方案</strong></p><p><strong>注意场景： 非常近距离 + 高频纹理</strong></p><ul><li>摄像机贴脸观察</li><li>负 mipLodBias 不当</li><li>mip 级别切换明显
+表现：</li><li>轻微模糊</li><li>mip 边界可感知</li></ul><p>解决：</p><ul><li>负 <code>mipLodBias</code>（-0.25 ~ -0.5）</li><li>更高分辨率 base level</li><li>各向异性过滤</li></ul></section><footer class=article-footer><section class=article-tags><a href=/tags/vulkan/>Vulkan</a>
+<a href=/tags/mipmap/>Mipmap</a>
+<a href=/tags/texture/>Texture</a>
+<a href=/tags/sampler/>Sampler</a></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css integrity=sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js integrity=sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js integrity=sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05 crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{const e=[".main-article",".widget--toc"];e.forEach(e=>{const t=document.querySelector(e);t&&renderMathInElement(t,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}],ignoredClasses:["gist"]})})})</script></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/><div class=article-details><h2 class=article-title>Vulkan入门04-Texture mapping</h2></div></a></article><article><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/><div class=article-details><h2 class=article-title>Vulkan入门06-Loading models</h2></div></a></article><article><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A805-depth-buffering/><div class=article-details><h2 class=article-title>Vulkan入门05-Depth buffering</h2></div></a></article><article><a href=/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/><div class=article-details><h2 class=article-title>Vulkan入门03-UniformBuffers</h2></div></a></article><article><a href=/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/><div class=article-details><h2 class=article-title>Vulkan入门02-VertexBuffers</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2025 crackhopper的技术博客</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.32.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.0fcb739c1f88ce461c9640077fd21d8ce903946f1aef209dd01192827d26a90c.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
