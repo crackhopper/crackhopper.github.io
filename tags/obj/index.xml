@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Obj on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/obj/</link><description>Recent content in Obj on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Mon, 08 Dec 2025 19:33:46 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/obj/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门06-Loading models</title><link>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</link><pubDate>Mon, 08 Dec 2025 19:33:46 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png"
-loading="lazy"
-alt="Vulkan入门06-Loading models-1765192359210"
-&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Obj on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/obj/</link><description>Recent content in Obj on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Mon, 08 Dec 2025 19:33:46 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/obj/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门06-Loading models</title><link>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</link><pubDate>Mon, 08 Dec 2025 19:33:46 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png" alt="Vulkan入门06-Loading models-1765192359210" width="695x522" loading="lazy" /&gt;
 &lt;p&gt;本节基于简单的 &lt;code&gt;tinyobjloader&lt;/code&gt; 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。&lt;/p&gt;
 &lt;p&gt;此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。&lt;/p&gt;
 &lt;h1 id="tinyobjloader集成"&gt;tinyobjloader集成
@@ -217,10 +214,7 @@ alt="Vulkan入门06-Loading models-1765192161220"
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png"
-loading="lazy"
-alt="Vulkan入门06-Loading models-1765192359210"
-&gt;&lt;/p&gt;
+&lt;/div&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png" alt="Vulkan入门06-Loading models-1765192359210" width="695x522" loading="lazy" /&gt;
 &lt;p&gt;当模型旋转起来的时候，背面会比较有意思（因为模型并没考虑到从那个方向观看）
 &lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192467007.png"
 loading="lazy"

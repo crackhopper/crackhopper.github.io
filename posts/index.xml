@@ -1,7 +1,353 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Tue, 09 Dec 2025 12:40:32 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门07-Generating Mipmaps</title><link>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/</link><pubDate>Tue, 09 Dec 2025 12:40:32 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A807-Generating%20Mipmaps-1765248326505.png"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Tue, 09 Dec 2025 12:45:58 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门08-Multisampling</title><link>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A808-multisampling/</link><pubDate>Tue, 09 Dec 2025 12:45:58 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A808-multisampling/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765255768161.png" alt="Vulkan入门08-Multisampling-1765255768161" width="636x338" loading="lazy" /&gt;
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765255780014.png" alt="Vulkan入门08-Multisampling-1765255780014" width="636x331" loading="lazy" /&gt;
+&lt;p&gt;多重采样(MSAA)也是一个常用的采样技术。对比上一节的mipmap：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;MSAA ：减几何锯齿&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Mip + Filter ： 减纹理 aliasing&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本节主要讲如何vulkan中开启MSAA。具体步骤总结：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;查询设备，获取开启多重采样的样本频率。&lt;/li&gt;
+&lt;li&gt;创建支持multisample的Image。并设为渲染目标。&lt;/li&gt;
+&lt;li&gt;把屏幕作为另一个 color attachement，设定为 resolveAttachment （修改renderPass/frameBuffer创建）&lt;/li&gt;
+&lt;li&gt;管线中开启msaa（修改 pipeline创建）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id="获取设备可采样数"&gt;获取设备可采样数
+&lt;/h1&gt;&lt;p&gt;不同设备的MSAA样本数有差别。因此我们写一个辅助函数来获取设备的最大可以开启的采样数：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkSampleCountFlagBits &lt;span style="color:#6639ba"&gt;getMaxUsableSampleCount&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkPhysicalDeviceProperties physicalDeviceProperties&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkGetPhysicalDeviceProperties&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;physicalDevice&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;physicalDeviceProperties&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkSampleCountFlags counts &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; physicalDeviceProperties&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;limits&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;framebufferColorSampleCounts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; physicalDeviceProperties&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;limits&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;framebufferDepthSampleCounts&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_64_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_64_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_32_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_32_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_16_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_16_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_8_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_8_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_4_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_4_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;counts &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; VK_SAMPLE_COUNT_2_BIT&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_2_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; VK_SAMPLE_COUNT_1_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkSampleCountFlagBits msaaSamples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_SAMPLE_COUNT_1_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; pickPhysicalDevice&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;const&lt;/span&gt; &lt;span style="color:#cf222e"&gt;auto&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; &lt;span style="color:#900;font-weight:bold"&gt;device&lt;/span&gt; &lt;span style="color:#1f2328"&gt;:&lt;/span&gt; devices&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#1f2328"&gt;(&lt;/span&gt;isDeviceSuitable&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;))&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; physicalDevice &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; device&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; msaaSamples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; getMaxUsableSampleCount&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;break&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="设置渲染目标"&gt;设置渲染目标
+&lt;/h1&gt;&lt;p&gt;MSAA中，每个像素都在离屏(offscreen)的buffer中进行采样，随后再被渲染到屏幕上。这个新的buffer和常规我们渲染的image不同，它们有能力针对每个像素保存多个样本。当一个 mutilsampled buffer创建后，它必须解析（resolve）到默认帧缓冲区（默认帧缓冲区每个像素只存储一个样本） （补充说明：解析过程： &lt;strong&gt;从多个样本计算一个颜色&lt;/strong&gt;，然后存入 framebuffer。）&lt;/p&gt;
+&lt;p&gt;使用MSAA的时候，我们首先要渲染到我们创建好的多采样buffer中，随后再从这个buffer，resolve到最终的Image的buffer中。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;58
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;59
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;60
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;61
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;62
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;63
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;64
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;65
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;66
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;67
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;68
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;69
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;70
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;71
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;72
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;73
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;74
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;75
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 用来渲染的target
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;VkImage colorImage&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkDeviceMemory colorImageMemory&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;VkImageView colorImageView&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 调整创建Image函数，指定 sample数量
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createImage&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; width&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; height&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;uint32_t&lt;/span&gt; mipLevels&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkSampleCountFlagBits numSamples&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkFormat format&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkImageTiling tiling&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkImageUsageFlags usage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkMemoryPropertyFlags properties&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkImage&lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; image&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VkDeviceMemory&lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt; imageMemory&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; imageInfo&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;samples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; numSamples&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 调整相关代码
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;createImage&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;texWidth&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; texHeight&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; mipLevels&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_SAMPLE_COUNT_1_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_FORMAT_R8G8B8A8_SRGB&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_TILING_OPTIMAL&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_USAGE_TRANSFER_SRC_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_IMAGE_USAGE_TRANSFER_DST_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_IMAGE_USAGE_SAMPLED_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; textureImage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; textureImageMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 深度缓冲，也需要适配MSAA采样。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;createImage&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;width&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;height&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; msaaSamples&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; depthFormat&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_TILING_OPTIMAL&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; depthImage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; depthImageMemory&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 创建渲染目标
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; createColorResources&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkFormat colorFormat &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; swapChainImageFormat&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createImage&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;width&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; swapChainExtent&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;height&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; msaaSamples&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorFormat&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_TILING_OPTIMAL&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorImage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorImageMemory&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorImageView &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; createImageView&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;colorImage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorFormat&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; VK_IMAGE_ASPECT_COLOR_BIT&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; initVulkan&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createColorResources&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDepthResources&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 清理/重建数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; cleanupSwapChain&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyImageView&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorImageView&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkDestroyImage&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorImage&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; vkFreeMemory&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;device&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorImageMemory&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#cf222e"&gt;nullptr&lt;/span&gt;&lt;span style="color:#1f2328"&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; recreateSwapChain&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createImageViews&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createColorResources&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; createDepthResources&lt;span style="color:#1f2328"&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 修改渲染流程：attachment（&amp;#34;槽位&amp;#34;）配置修改
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; createRenderPass&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachment&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;samples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; msaaSamples&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachment&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;finalLayout &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; depthAttachment&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;samples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; msaaSamples&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 修改渲染数据
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; createFramebuffers&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;array&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkImageView&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;3&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; attachments &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorImageView&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#57606a"&gt;// 这里是渲染目标
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; depthImageView&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 这块会最后resolve上面的渲染结果，因此 createRenderPass 还有需要修改的地方，后面会讲
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; swapChainImageViews&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;// 渲染管线中开启MSAA
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; createGraphicsPipeline&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; multisampling&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;rasterizationSamples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; msaaSamples&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="添加新color-attachments"&gt;添加新Color Attachments
+&lt;/h2&gt;&lt;p&gt;现在渲染目标到了一个显存的Image中，我们最终需要渲染到屏幕上。因此MSAA还需要配置一个用来resolve的attachment&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;23
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createRenderPass&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkAttachmentDescription colorAttachmentResolve&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;format &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; swapChainImageFormat&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;samples &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_SAMPLE_COUNT_1_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;loadOp &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ATTACHMENT_LOAD_OP_DONT_CARE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;storeOp &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ATTACHMENT_STORE_OP_STORE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;stencilLoadOp &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ATTACHMENT_LOAD_OP_DONT_CARE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;stencilStoreOp &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ATTACHMENT_STORE_OP_DONT_CARE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;initialLayout &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_IMAGE_LAYOUT_UNDEFINED&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;finalLayout &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_IMAGE_LAYOUT_PRESENT_SRC_KHR&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; VkAttachmentReference colorAttachmentResolveRef&lt;span style="color:#1f2328"&gt;{};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolveRef&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;attachment &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; colorAttachmentResolveRef&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;layout &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; subpass&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;pResolveAttachments &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;amp;&lt;/span&gt;colorAttachmentResolveRef&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;// 这里是读取前，保证写入；不过和depth buffer的共享使用一样，也有一些问题，可以参见depth buffer笔记中最后一章
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; dependency&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;srcAccessMask &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT &lt;span style="color:#0550ae"&gt;|&lt;/span&gt; VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT&lt;span style="color:#1f2328"&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; std&lt;span style="color:#0550ae"&gt;::&lt;/span&gt;array&lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt;VkAttachmentDescription&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0550ae"&gt;3&lt;/span&gt;&lt;span style="color:#0550ae"&gt;&amp;gt;&lt;/span&gt; attachments &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;colorAttachment&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; depthAttachment&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; colorAttachmentResolve&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="渲染结果"&gt;渲染结果
+&lt;/h1&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765268690445.png"
 loading="lazy"
-alt="Vulkan入门07-Generating Mipmaps-1765248326505"
+alt="Vulkan入门08-Multisampling-1765268690445"
 &gt;&lt;/p&gt;
+&lt;p&gt;更细节对比：
+&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765268839864.png"
+loading="lazy"
+alt="Vulkan入门08-Multisampling-1765268839864"
+&gt;&lt;/p&gt;
+&lt;h1 id="质量提升"&gt;质量提升
+&lt;/h1&gt;&lt;p&gt;我们当前的 MSAA 实现存在一些局限性，可能会影响在更精细场景中输出图像的质量。例如，我们目前尚未解决由shader aliasing引起的潜在问题，即 MSAA 仅平滑几何体的边缘，而不会平滑内部填充。这可能导致在屏幕上渲染出平滑的多边形，但若纹理包含高对比度颜色，其外观仍会显得 aliased。解决这个问题的一种方法是通过启用 Sample Shading 来进一步提升图像质量，尽管这会带来额外的性能开销：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createLogicalDevice&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; deviceFeatures&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sampleRateShading &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_TRUE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// enable sample shading feature for the device
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;void&lt;/span&gt; &lt;span style="color:#6639ba"&gt;createGraphicsPipeline&lt;/span&gt;&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#1f2328"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; multisampling&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;sampleShadingEnable &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; VK_TRUE&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// enable sample shading in the pipeline
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; multisampling&lt;span style="color:#1f2328"&gt;.&lt;/span&gt;minSampleShading &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;.2f&lt;/span&gt;&lt;span style="color:#1f2328"&gt;;&lt;/span&gt; &lt;span style="color:#57606a"&gt;// min fraction for sample shading; closer to one is smoother
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;&lt;/span&gt; &lt;span style="color:#1f2328"&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;传统MSAA（Multisample Anti-Aliasing）&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;对每个像素在 &lt;strong&gt;采样位置&lt;/strong&gt;（sample points）进行深度/模板测试&lt;/li&gt;
+&lt;li&gt;执行fragment shader 1次，得到fragment的颜色。&lt;/li&gt;
+&lt;li&gt;在所有 sample 上做 resolve：然后根据采样命中率将fragment颜色和背景融合。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;优缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;优点：减少锯齿，同时 &lt;strong&gt;shader 执行次数少&lt;/strong&gt; → 性能较好&lt;/li&gt;
+&lt;li&gt;缺点：如果像素内部有多个不同的材质/纹理，需要对每个 sample 的颜色单独计算，MSAA 不能做到 ： 出现 “shader aliasing”&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;开启 Sample Shading&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对每个 sample 而不是每个像素执行 fragment shader&lt;/li&gt;
+&lt;li&gt;不再只计算一次 fragment color，而是对 MSAA 中的每个 sample 独立计算颜色&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这块的效果目前的场景很难对比出来。不给图例了。&lt;/p&gt;</description></item><item><title>Vulkan入门07-Generating Mipmaps</title><link>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/</link><pubDate>Tue, 09 Dec 2025 12:40:32 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A807-Generating%20Mipmaps-1765248326505.png" alt="Vulkan入门07-Generating Mipmaps-1765248326505" width="669x451" loading="lazy" /&gt;
 &lt;p&gt;Mipmap: (Mip, Multum In Parvo拉丁语，在小中包含很多（Much in a little）)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;把同一张纹理的多个不同分辨率版本&lt;/li&gt;
@@ -648,10 +994,7 @@ anisotropy = 8~16
 &lt;li&gt;负 &lt;code&gt;mipLodBias&lt;/code&gt;（-0.25 ~ -0.5）&lt;/li&gt;
 &lt;li&gt;更高分辨率 base level&lt;/li&gt;
 &lt;li&gt;各向异性过滤&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Vulkan入门06-Loading models</title><link>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</link><pubDate>Mon, 08 Dec 2025 19:33:46 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png"
-loading="lazy"
-alt="Vulkan入门06-Loading models-1765192359210"
-&gt;&lt;/p&gt;
+&lt;/ul&gt;</description></item><item><title>Vulkan入门06-Loading models</title><link>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</link><pubDate>Mon, 08 Dec 2025 19:33:46 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png" alt="Vulkan入门06-Loading models-1765192359210" width="695x522" loading="lazy" /&gt;
 &lt;p&gt;本节基于简单的 &lt;code&gt;tinyobjloader&lt;/code&gt; 库来加载OBJ文件。整体比较简单，只是把之前手写的顶点数据替换为动态从文件中读取。&lt;/p&gt;
 &lt;p&gt;此外，为了去除顶点的重复性，使用了 hashmap (unorder_set) ，并自定义hash函数来解决问题。&lt;/p&gt;
 &lt;h1 id="tinyobjloader集成"&gt;tinyobjloader集成
@@ -867,10 +1210,7 @@ alt="Vulkan入门06-Loading models-1765192161220"
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;};&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png"
-loading="lazy"
-alt="Vulkan入门06-Loading models-1765192359210"
-&gt;&lt;/p&gt;
+&lt;/div&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192359210.png" alt="Vulkan入门06-Loading models-1765192359210" width="695x522" loading="lazy" /&gt;
 &lt;p&gt;当模型旋转起来的时候，背面会比较有意思（因为模型并没考虑到从那个方向观看）
 &lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A806-Loading%20models-1765192467007.png"
 loading="lazy"
@@ -1751,7 +2091,33 @@ alt="Vulkan入门05-Depth buffering-1765179402245"
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description></item><item><title>Vulkan入门04-Texture mapping</title><link>https://crackhopper.github.io/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/</link><pubDate>Thu, 04 Dec 2025 09:51:00 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A804-Texture%20mapping-1764816362517.png"
+&lt;/div&gt;&lt;h2 id="疑惑点"&gt;疑惑点
+&lt;/h2&gt;&lt;h3 id="为什么1个depth-buffer就够了"&gt;为什么1个depth buffer就够了？
+&lt;/h3&gt;&lt;p&gt;&lt;a class="link" href="https://stackoverflow.com/questions/62371266/why-is-a-single-depth-buffer-sufficient-for-this-vulkan-swapchain-render-loop" target="_blank" rel="noopener"
+&gt;https://stackoverflow.com/questions/62371266/why-is-a-single-depth-buffer-sufficient-for-this-vulkan-swapchain-render-loop&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这个帖子给出了一个方案，避免了 depth buffer写入时的race condition。却没有解决 &lt;strong&gt;渲染语义上的正确性&lt;/strong&gt;。
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;适用范围有限&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;修复只在 &lt;strong&gt;场景静态或 camera 不动&lt;/strong&gt; 的情况下安全&lt;/li&gt;
+&lt;li&gt;对于动态场景、多摄像机、多视角渲染、快速移动等情况，结果会出错&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;为什么 per-frame depth buffer 才是安全的&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;为每个 frame / swap chain image 使用 &lt;strong&gt;独立 depth buffer&lt;/strong&gt; 可以保证：
+&lt;ol&gt;
+&lt;li&gt;内存访问安全（GPU 不会同时写同一 buffer）&lt;/li&gt;
+&lt;li&gt;渲染语义正确（每帧独立深度数据，深度测试结果只依赖当前帧 geometry）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;MAX_FRAMES_IN_FLIGHT &amp;gt; 1 时，每帧都可以并行渲染，不会互相干扰&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;个人想法：最好的做法还是不要节省这一点 depth buffer的存储空间了。老老实实根据frame数目，创建多个即可。&lt;/p&gt;</description></item><item><title>Vulkan入门04-Texture mapping</title><link>https://crackhopper.github.io/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/</link><pubDate>Thu, 04 Dec 2025 09:51:00 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A804-Texture%20mapping-1764816362517.png"
 loading="lazy"
 alt="Vulkan入门04-Texture mapping-1764816362517"
 &gt;&lt;/p&gt;
@@ -3399,11 +3765,9 @@ alt="Vulkan入门04-Texture mapping-1764828979224"
 &lt;/div&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A804-Texture%20mapping-1764828997270.png"
 loading="lazy"
 alt="Vulkan入门04-Texture mapping-1764828997270"
-&gt;&lt;/p&gt;</description></item><item><title>Vulkan入门03-UniformBuffers</title><link>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</link><pubDate>Wed, 03 Dec 2025 21:54:56 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A803-UniformBuffers-1764830357797.png"
-loading="lazy"
-alt="Vulkan入门03-UniformBuffers-1764830357797"
-&gt;&lt;/p&gt;
-&lt;p&gt;通过 &lt;code&gt;VertexBuffer&lt;/code&gt; ，我们可以给每个顶点赋值数据，并传递给 vertex shader 让其可以使用（通过drawcall启动pipeline）。那么，对于全局的变量（想传递给每个shader），应该怎么做呢？举例来说：&lt;/p&gt;
+&gt;&lt;/p&gt;</description></item><item><title>Vulkan入门03-UniformBuffers</title><link>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</link><pubDate>Wed, 03 Dec 2025 21:54:56 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A803-UniformBuffers-1764830357797.png" alt="Vulkan入门03-UniformBuffers-1764830357797" width="603x452" loading="lazy" /&gt;
+&lt;p&gt;通过 &lt;code&gt;VertexBuffer&lt;/code&gt; ，我们可以给每个顶点赋值数据，并传递给 vertex shader 让其可以使用。（通过drawcall启动pipeline）&lt;/p&gt;
+&lt;p&gt;那么，对于全局的变量（想传递给每个shader），应该怎么做呢？举例来说：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;MVP矩阵 (model-view-project matrix)&lt;/li&gt;
 &lt;/ul&gt;
@@ -6582,10 +6946,7 @@ X-Checksum: 123456
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#fff"&gt;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;}&lt;/span&gt;&lt;span style="color:#fff"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description></item><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
-loading="lazy"
-alt="Vulkan入门02-VertexBuffers-1764252524778"
-&gt;&lt;/p&gt;
+&lt;/div&gt;</description></item><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png" alt="Vulkan入门02-VertexBuffers-1764252524778" width="574x430" loading="lazy" /&gt;
 &lt;p&gt;继续深入 Vulkan 的绘制教程。当然我这里内容会比官方文档更深入一些。&lt;/p&gt;
 &lt;p&gt;如标题所示，主要讲VB的使用。&lt;/p&gt;
 &lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
@@ -7477,10 +7838,7 @@ alt="Vulkan入门02-VertexBuffers-1764249822704"
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="效果"&gt;效果
-&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
-loading="lazy"
-alt="Vulkan入门02-VertexBuffers-1764252524778"
-&gt;&lt;/p&gt;</description></item><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;p&gt;C++11之后，字符串有很多新特性。这里主要罗列了所有特性，需要重点关注&lt;/p&gt;
+&lt;/h2&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png" alt="Vulkan入门02-VertexBuffers-1764252524778" width="574x430" loading="lazy" /&gt;</description></item><item><title>C++字符串新特性</title><link>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</link><pubDate>Wed, 26 Nov 2025 00:28:26 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/26/c-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B0%E7%89%B9%E6%80%A7/</guid><description>&lt;p&gt;C++11之后，字符串有很多新特性。这里主要罗列了所有特性，需要重点关注&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;明确编码字面量&lt;/li&gt;
 &lt;li&gt;Raw String Literals&lt;/li&gt;

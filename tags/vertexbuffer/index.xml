@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Vertexbuffer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/vertexbuffer/</link><description>Recent content in Vertexbuffer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/vertexbuffer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
-loading="lazy"
-alt="Vulkan入门02-VertexBuffers-1764252524778"
-&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Vertexbuffer on crackhopper的技术博客</title><link>https://crackhopper.github.io/tags/vertexbuffer/</link><description>Recent content in Vertexbuffer on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Thu, 27 Nov 2025 22:17:18 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/tags/vertexbuffer/index.xml" rel="self" type="application/rss+xml"/><item><title>Vulkan入门02-VertexBuffers</title><link>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</link><pubDate>Thu, 27 Nov 2025 22:17:18 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/27/vulkan%E5%85%A5%E9%97%A802-vertexbuffers/</guid><description>&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png" alt="Vulkan入门02-VertexBuffers-1764252524778" width="574x430" loading="lazy" /&gt;
 &lt;p&gt;继续深入 Vulkan 的绘制教程。当然我这里内容会比官方文档更深入一些。&lt;/p&gt;
 &lt;p&gt;如标题所示，主要讲VB的使用。&lt;/p&gt;
 &lt;h1 id="顶点输入描述vertex-input-desciption"&gt;顶点输入描述(Vertex Input Desciption)
@@ -893,7 +890,4 @@ alt="Vulkan入门02-VertexBuffers-1764249822704"
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="效果"&gt;效果
-&lt;/h2&gt;&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png"
-loading="lazy"
-alt="Vulkan入门02-VertexBuffers-1764252524778"
-&gt;&lt;/p&gt;</description></item></channel></rss>
+&lt;/h2&gt;&lt;img src="https://crackhopper.github.io/images/Vulkan%E5%85%A5%E9%97%A802-VertexBuffers-1764252524778.png" alt="Vulkan入门02-VertexBuffers-1764252524778" width="574x430" loading="lazy" /&gt;</description></item></channel></rss>

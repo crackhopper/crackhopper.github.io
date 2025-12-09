@@ -1,0 +1,296 @@
+<!doctype html><html lang=zh-cn dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="\r多重采样(MSAA)也是一个常用的采样技术。对比上一节的mipmap：\nMSAA ：减几何锯齿 Mip + Filter ： 减纹理 aliasing 本节主要讲如何vulkan中开启MSAA。具体步骤总结：\n查询设备，获取开启多重采样的样本频率。 创建支持multisample的Image。并设为渲染目标。 把屏幕作为另一个 color attachement，设定为 resolveAttachment （修改renderPass/frameBuffer创建） 管线中开启msaa（修改 pipeline创建） "><title>Vulkan入门08-Multisampling</title><link rel=canonical href=https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A808-multisampling/><link rel=stylesheet href=/scss/style.min.4d36f8dc1fd48129e1635deb4b8eb2870fa09474f7280c4cb606d40b2526994b.css><meta property='og:title' content="Vulkan入门08-Multisampling"><meta property='og:description' content="\r多重采样(MSAA)也是一个常用的采样技术。对比上一节的mipmap：\nMSAA ：减几何锯齿 Mip + Filter ： 减纹理 aliasing 本节主要讲如何vulkan中开启MSAA。具体步骤总结：\n查询设备，获取开启多重采样的样本频率。 创建支持multisample的Image。并设为渲染目标。 把屏幕作为另一个 color attachement，设定为 resolveAttachment （修改renderPass/frameBuffer创建） 管线中开启msaa（修改 pipeline创建） "><meta property='og:url' content='https://crackhopper.github.io/2025/12/09/vulkan%E5%85%A5%E9%97%A808-multisampling/'><meta property='og:site_name' content='crackhopper的技术博客'><meta property='og:type' content='article'><meta property='article:section' content='Posts'><meta property='article:tag' content='vulkan'><meta property='article:tag' content='msaa'><meta property='article:tag' content='sample-shading'><meta property='article:published_time' content='2025-12-09T12:45:58+08:00'><meta property='article:modified_time' content='2025-12-09T12:45:58+08:00'><meta name=twitter:title content="Vulkan入门08-Multisampling"><meta name=twitter:description content="\r多重采样(MSAA)也是一个常用的采样技术。对比上一节的mipmap：\nMSAA ：减几何锯齿 Mip + Filter ： 减纹理 aliasing 本节主要讲如何vulkan中开启MSAA。具体步骤总结：\n查询设备，获取开启多重采样的样本频率。 创建支持multisample的Image。并设为渲染目标。 把屏幕作为另一个 color attachement，设定为 resolveAttachment （修改renderPass/frameBuffer创建） 管线中开启msaa（修改 pipeline创建） "><link rel=stylesheet href=/css/custom.css></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_337fe2b325ec916d.jpg width=300 height=300 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>crackhopper的技术博客</a></h1><h2 class=site-description>C++, Graphics, Game, AI/ML</h2></div></header><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>文章</span></a></li><li><a href=/about/><svg class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+<span>关于我</span></a></li><li><a href=/projects/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>项目</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>归档</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ul><li><a href=#获取设备可采样数>获取设备可采样数</a></li><li><a href=#设置渲染目标>设置渲染目标</a><ul><li><a href=#添加新color-attachments>添加新Color Attachments</a></li></ul></li><li><a href=#渲染结果>渲染结果</a></li><li><a href=#质量提升>质量提升</a></li></ul></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/2025/12/09/vulkan%E5%85%A5%E9%97%A808-multisampling/>Vulkan入门08-Multisampling</a></h2></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2025-12-09T12:45:58+08:00>Dec 09, 2025</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>3 minute read</time></div></footer></div></header><section class=article-content><img src=/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765255768161.png alt=Vulkan入门08-Multisampling-1765255768161 width=636x338 loading=lazy>
+<img src=/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765255780014.png alt=Vulkan入门08-Multisampling-1765255780014 width=636x331 loading=lazy><p>多重采样(MSAA)也是一个常用的采样技术。对比上一节的mipmap：</p><ul><li><strong>MSAA ：减几何锯齿</strong></li><li><strong>Mip + Filter ： 减纹理 aliasing</strong></li></ul><p>本节主要讲如何vulkan中开启MSAA。具体步骤总结：</p><ol><li>查询设备，获取开启多重采样的样本频率。</li><li>创建支持multisample的Image。并设为渲染目标。</li><li>把屏幕作为另一个 color attachement，设定为 resolveAttachment （修改renderPass/frameBuffer创建）</li><li>管线中开启msaa（修改 pipeline创建）</li></ol><h1 id=获取设备可采样数>获取设备可采样数</h1><p>不同设备的MSAA样本数有差别。因此我们写一个辅助函数来获取设备的最大可以开启的采样数：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>VkSampleCountFlagBits <span style=color:#6639ba>getMaxUsableSampleCount</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    VkPhysicalDeviceProperties physicalDeviceProperties<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    vkGetPhysicalDeviceProperties<span style=color:#1f2328>(</span>physicalDevice<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>physicalDeviceProperties<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    VkSampleCountFlags counts <span style=color:#0550ae>=</span> physicalDeviceProperties<span style=color:#1f2328>.</span>limits<span style=color:#1f2328>.</span>framebufferColorSampleCounts <span style=color:#0550ae>&amp;</span> physicalDeviceProperties<span style=color:#1f2328>.</span>limits<span style=color:#1f2328>.</span>framebufferDepthSampleCounts<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_64_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_64_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_32_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_32_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_16_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_16_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_8_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_8_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_4_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_4_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>counts <span style=color:#0550ae>&amp;</span> VK_SAMPLE_COUNT_2_BIT<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span> <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_2_BIT<span style=color:#1f2328>;</span> <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>return</span> VK_SAMPLE_COUNT_1_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>VkSampleCountFlagBits msaaSamples <span style=color:#0550ae>=</span> VK_SAMPLE_COUNT_1_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> pickPhysicalDevice<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    <span style=color:#cf222e>for</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>const</span> <span style=color:#cf222e>auto</span><span style=color:#0550ae>&amp;</span> <span style=color:#900;font-weight:700>device</span> <span style=color:#1f2328>:</span> devices<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>isDeviceSuitable<span style=color:#1f2328>(</span>device<span style=color:#1f2328>))</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>            physicalDevice <span style=color:#0550ae>=</span> device<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>            msaaSamples <span style=color:#0550ae>=</span> getMaxUsableSampleCount<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>            <span style=color:#cf222e>break</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>        <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=设置渲染目标>设置渲染目标</h1><p>MSAA中，每个像素都在离屏(offscreen)的buffer中进行采样，随后再被渲染到屏幕上。这个新的buffer和常规我们渲染的image不同，它们有能力针对每个像素保存多个样本。当一个 mutilsampled buffer创建后，它必须解析（resolve）到默认帧缓冲区（默认帧缓冲区每个像素只存储一个样本） （补充说明：解析过程： <strong>从多个样本计算一个颜色</strong>，然后存入 framebuffer。）</p><p>使用MSAA的时候，我们首先要渲染到我们创建好的多采样buffer中，随后再从这个buffer，resolve到最终的Image的buffer中。</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">31
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">32
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">33
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">34
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">35
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">36
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">37
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">38
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">39
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">40
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">41
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">42
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">43
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">44
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">45
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">46
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">47
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">48
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">49
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">50
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">51
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">52
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">53
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">54
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">55
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">56
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">57
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">58
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">59
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">60
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">61
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">62
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">63
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">64
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">65
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">66
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">67
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">68
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">69
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">70
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">71
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">72
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">73
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">74
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">75
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#57606a>// 用来渲染的target
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>VkImage colorImage<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>VkDeviceMemory colorImageMemory<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>VkImageView colorImageView<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 调整创建Image函数，指定 sample数量
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createImage</span><span style=color:#1f2328>(</span><span style=color:#cf222e>uint32_t</span> width<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> height<span style=color:#1f2328>,</span> <span style=color:#cf222e>uint32_t</span> mipLevels<span style=color:#1f2328>,</span> VkSampleCountFlagBits numSamples<span style=color:#1f2328>,</span> VkFormat format<span style=color:#1f2328>,</span> VkImageTiling tiling<span style=color:#1f2328>,</span> VkImageUsageFlags usage<span style=color:#1f2328>,</span> VkMemoryPropertyFlags properties<span style=color:#1f2328>,</span> VkImage<span style=color:#0550ae>&amp;</span> image<span style=color:#1f2328>,</span> VkDeviceMemory<span style=color:#0550ae>&amp;</span> imageMemory<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    imageInfo<span style=color:#1f2328>.</span>samples <span style=color:#0550ae>=</span> numSamples<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#57606a>// 调整相关代码
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>createImage<span style=color:#1f2328>(</span>texWidth<span style=color:#1f2328>,</span> texHeight<span style=color:#1f2328>,</span> mipLevels<span style=color:#1f2328>,</span> VK_SAMPLE_COUNT_1_BIT<span style=color:#1f2328>,</span> VK_FORMAT_R8G8B8A8_SRGB<span style=color:#1f2328>,</span> VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> VK_IMAGE_USAGE_TRANSFER_SRC_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_TRANSFER_DST_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_SAMPLED_BIT<span style=color:#1f2328>,</span> VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> textureImage<span style=color:#1f2328>,</span> textureImageMemory<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 深度缓冲，也需要适配MSAA采样。
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>createImage<span style=color:#1f2328>(</span>swapChainExtent<span style=color:#1f2328>.</span>width<span style=color:#1f2328>,</span> swapChainExtent<span style=color:#1f2328>.</span>height<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> msaaSamples<span style=color:#1f2328>,</span> depthFormat<span style=color:#1f2328>,</span> VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT<span style=color:#1f2328>,</span> VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> depthImage<span style=color:#1f2328>,</span> depthImageMemory<span style=color:#1f2328>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 创建渲染目标
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createColorResources<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    VkFormat colorFormat <span style=color:#0550ae>=</span> swapChainImageFormat<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    createImage<span style=color:#1f2328>(</span>swapChainExtent<span style=color:#1f2328>.</span>width<span style=color:#1f2328>,</span> swapChainExtent<span style=color:#1f2328>.</span>height<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>,</span> msaaSamples<span style=color:#1f2328>,</span> colorFormat<span style=color:#1f2328>,</span> VK_IMAGE_TILING_OPTIMAL<span style=color:#1f2328>,</span> VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT <span style=color:#0550ae>|</span> VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT<span style=color:#1f2328>,</span> VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT<span style=color:#1f2328>,</span> colorImage<span style=color:#1f2328>,</span> colorImageMemory<span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    colorImageView <span style=color:#0550ae>=</span> createImageView<span style=color:#1f2328>(</span>colorImage<span style=color:#1f2328>,</span> colorFormat<span style=color:#1f2328>,</span> VK_IMAGE_ASPECT_COLOR_BIT<span style=color:#1f2328>,</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> initVulkan<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    createColorResources<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    createDepthResources<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 清理/重建数据
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> cleanupSwapChain<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    vkDestroyImageView<span style=color:#1f2328>(</span>device<span style=color:#1f2328>,</span> colorImageView<span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    vkDestroyImage<span style=color:#1f2328>(</span>device<span style=color:#1f2328>,</span> colorImage<span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    vkFreeMemory<span style=color:#1f2328>(</span>device<span style=color:#1f2328>,</span> colorImageMemory<span style=color:#1f2328>,</span> <span style=color:#cf222e>nullptr</span><span style=color:#1f2328>);</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> recreateSwapChain<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    createImageViews<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    createColorResources<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    createDepthResources<span style=color:#1f2328>();</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 修改渲染流程：attachment（&#34;槽位&#34;）配置修改
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createRenderPass<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    colorAttachment<span style=color:#1f2328>.</span>samples <span style=color:#0550ae>=</span> msaaSamples<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachment<span style=color:#1f2328>.</span>finalLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    depthAttachment<span style=color:#1f2328>.</span>samples <span style=color:#0550ae>=</span> msaaSamples<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#57606a>// 修改渲染数据
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createFramebuffers<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>        <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>        std<span style=color:#0550ae>::</span>array<span style=color:#0550ae>&lt;</span>VkImageView<span style=color:#1f2328>,</span> <span style=color:#0550ae>3</span><span style=color:#0550ae>&gt;</span> attachments <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>            colorImageView<span style=color:#1f2328>,</span> <span style=color:#57606a>// 这里是渲染目标
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>            depthImageView<span style=color:#1f2328>,</span>
+</span></span><span style=display:flex><span>            <span style=color:#57606a>// 这块会最后resolve上面的渲染结果，因此 createRenderPass 还有需要修改的地方，后面会讲
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>            swapChainImageViews<span style=color:#1f2328>[</span>i<span style=color:#1f2328>]</span>  
+</span></span><span style=display:flex><span>        <span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>        <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#57606a>// 渲染管线中开启MSAA
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>void</span> createGraphicsPipeline<span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    multisampling<span style=color:#1f2328>.</span>rasterizationSamples <span style=color:#0550ae>=</span> msaaSamples<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=添加新color-attachments>添加新Color Attachments</h2><p>现在渲染目标到了一个显存的Image中，我们最终需要渲染到屏幕上。因此MSAA还需要配置一个用来resolve的attachment</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createRenderPass</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    VkAttachmentDescription colorAttachmentResolve<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>format <span style=color:#0550ae>=</span> swapChainImageFormat<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>samples <span style=color:#0550ae>=</span> VK_SAMPLE_COUNT_1_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>loadOp <span style=color:#0550ae>=</span> VK_ATTACHMENT_LOAD_OP_DONT_CARE<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>storeOp <span style=color:#0550ae>=</span> VK_ATTACHMENT_STORE_OP_STORE<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>stencilLoadOp <span style=color:#0550ae>=</span> VK_ATTACHMENT_LOAD_OP_DONT_CARE<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>stencilStoreOp <span style=color:#0550ae>=</span> VK_ATTACHMENT_STORE_OP_DONT_CARE<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>initialLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_UNDEFINED<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolve<span style=color:#1f2328>.</span>finalLayout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    VkAttachmentReference colorAttachmentResolveRef<span style=color:#1f2328>{};</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolveRef<span style=color:#1f2328>.</span>attachment <span style=color:#0550ae>=</span> <span style=color:#0550ae>2</span><span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    colorAttachmentResolveRef<span style=color:#1f2328>.</span>layout <span style=color:#0550ae>=</span> VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    subpass<span style=color:#1f2328>.</span>pResolveAttachments <span style=color:#0550ae>=</span> <span style=color:#0550ae>&amp;</span>colorAttachmentResolveRef<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    <span style=color:#57606a>// 这里是读取前，保证写入；不过和depth buffer的共享使用一样，也有一些问题，可以参见depth buffer笔记中最后一章
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    dependency<span style=color:#1f2328>.</span>srcAccessMask <span style=color:#0550ae>=</span> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT <span style=color:#0550ae>|</span> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT<span style=color:#1f2328>;</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    std<span style=color:#0550ae>::</span>array<span style=color:#0550ae>&lt;</span>VkAttachmentDescription<span style=color:#1f2328>,</span> <span style=color:#0550ae>3</span><span style=color:#0550ae>&gt;</span> attachments <span style=color:#0550ae>=</span> <span style=color:#1f2328>{</span>colorAttachment<span style=color:#1f2328>,</span> depthAttachment<span style=color:#1f2328>,</span> colorAttachmentResolve<span style=color:#1f2328>};</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>    
+</span></span></code></pre></td></tr></table></div></div><h1 id=渲染结果>渲染结果</h1><p><img src=/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765268690445.png loading=lazy alt=Vulkan入门08-Multisampling-1765268690445></p><p>更细节对比：
+<img src=/images/Vulkan%E5%85%A5%E9%97%A808-Multisampling-1765268839864.png loading=lazy alt=Vulkan入门08-Multisampling-1765268839864></p><h1 id=质量提升>质量提升</h1><p>我们当前的 MSAA 实现存在一些局限性，可能会影响在更精细场景中输出图像的质量。例如，我们目前尚未解决由shader aliasing引起的潜在问题，即 MSAA 仅平滑几何体的边缘，而不会平滑内部填充。这可能导致在屏幕上渲染出平滑的多边形，但若纹理包含高对比度颜色，其外观仍会显得 aliased。解决这个问题的一种方法是通过启用 Sample Shading 来进一步提升图像质量，尽管这会带来额外的性能开销：</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createLogicalDevice</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    deviceFeatures<span style=color:#1f2328>.</span>sampleRateShading <span style=color:#0550ae>=</span> VK_TRUE<span style=color:#1f2328>;</span> <span style=color:#57606a>// enable sample shading feature for the device
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>createGraphicsPipeline</span><span style=color:#1f2328>()</span> <span style=color:#1f2328>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span>    multisampling<span style=color:#1f2328>.</span>sampleShadingEnable <span style=color:#0550ae>=</span> VK_TRUE<span style=color:#1f2328>;</span> <span style=color:#57606a>// enable sample shading in the pipeline
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    multisampling<span style=color:#1f2328>.</span>minSampleShading <span style=color:#0550ae>=</span> <span style=color:#0550ae>.2f</span><span style=color:#1f2328>;</span> <span style=color:#57606a>// min fraction for sample shading; closer to one is smoother
+</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>...</span>
+</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>传统MSAA（Multisample Anti-Aliasing）</strong>：</p><ol><li>对每个像素在 <strong>采样位置</strong>（sample points）进行深度/模板测试</li><li>执行fragment shader 1次，得到fragment的颜色。</li><li>在所有 sample 上做 resolve：然后根据采样命中率将fragment颜色和背景融合。</li></ol><p>优缺点：</p><ul><li>优点：减少锯齿，同时 <strong>shader 执行次数少</strong> → 性能较好</li><li>缺点：如果像素内部有多个不同的材质/纹理，需要对每个 sample 的颜色单独计算，MSAA 不能做到 ： 出现 “shader aliasing”</li></ul><p><strong>开启 Sample Shading</strong></p><ul><li>对每个 sample 而不是每个像素执行 fragment shader</li><li>不再只计算一次 fragment color，而是对 MSAA 中的每个 sample 独立计算颜色</li></ul><p>这块的效果目前的场景很难对比出来。不给图例了。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/vulkan/>Vulkan</a>
+<a href=/tags/msaa/>Msaa</a>
+<a href=/tags/sample-shading/>Sample-Shading</a></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css integrity=sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js integrity=sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js integrity=sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05 crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{const e=[".main-article",".widget--toc"];e.forEach(e=>{const t=document.querySelector(e);t&&renderMathInElement(t,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}],ignoredClasses:["gist"]})})})</script></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/2025/12/09/vulkan%E5%85%A5%E9%97%A807-generating-mipmaps/><div class=article-details><h2 class=article-title>Vulkan入门07-Generating Mipmaps</h2></div></a></article><article><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A806-loading-models/><div class=article-details><h2 class=article-title>Vulkan入门06-Loading models</h2></div></a></article><article><a href=/2025/12/08/vulkan%E5%85%A5%E9%97%A805-depth-buffering/><div class=article-details><h2 class=article-title>Vulkan入门05-Depth buffering</h2></div></a></article><article><a href=/2025/12/04/vulkan%E5%85%A5%E9%97%A804-texture-mapping/><div class=article-details><h2 class=article-title>Vulkan入门04-Texture mapping</h2></div></a></article><article><a href=/2025/12/03/vulkan%E5%85%A5%E9%97%A803-uniformbuffers/><div class=article-details><h2 class=article-title>Vulkan入门03-UniformBuffers</h2></div></a></article></div></div></aside><footer class=site-footer><section class=copyright>&copy;
+2025 crackhopper的技术博客</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.32.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.0fcb739c1f88ce461c9640077fd21d8ce903946f1aef209dd01192827d26a90c.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
