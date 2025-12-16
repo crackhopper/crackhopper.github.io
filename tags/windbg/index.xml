@@ -1489,4 +1489,669 @@ tt bm- ntdll.dll - Time travel to the previous instruction that is in ntdll.dll
 &lt;li&gt;脚本：javascript&lt;/li&gt;
 &lt;li&gt;以及更多学习资料： &lt;a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugging-resources" target="_blank" rel="noopener"
 &gt;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugging-resources&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;</description></item></channel></rss>
+&lt;/ol&gt;</description></item><item><title>记录调试Vulkan程序打印奇怪日志的问题</title><link>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</link><pubDate>Mon, 17 Nov 2025 21:52:05 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/11/17/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98/</guid><description>&lt;p&gt;为什么好好的vulkan程序会突然打印神秘的日志？是代码的扭曲，还是SDK的沦丧？且看我慢慢分解。&lt;/p&gt;
+&lt;h2 id="起因"&gt;起因
+&lt;/h2&gt;&lt;p&gt;最近开始学习 &lt;code&gt;Vulkan&lt;/code&gt; 图形接口，依照 &lt;a class="link" href="https://vulkan-tutorial.com/" target="_blank" rel="noopener"
+&gt;https://vulkan-tutorial.com/&lt;/a&gt; 的教程配合ChatGpt, Gemni, DeepSeek，学起来速度飞起，不亦乐乎。最后，在用了2-3天的时候，成功画出了第一个三角形。&lt;/p&gt;
+&lt;p&gt;随后，我发现程序有一个奇怪的地方：&lt;/p&gt;
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387839953.png" alt="记录调试Vulkan程序打印奇怪日志的问题-1763387839953" width="700x416" loading="lazy" /&gt;
+&lt;p&gt;这个文件的全名是： &lt;code&gt;VulkanGLFWDemo.20251117-xxxxxx-xxxx.log&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;我的代码基本上就是照着tutorial复刻的，有改动，但都是在自己理解的情况下做的一些简单改动。绝对没有日志打印的操作。&lt;/p&gt;
+&lt;p&gt;怀着好奇心，我打开这个文件，想看看到底是啥日志。夸张的事情来了：
+&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763387971733.png"
+loading="lazy"
+alt="记录调试Vulkan程序打印奇怪日志的问题-1763387971733"
+&gt;&lt;/p&gt;
+&lt;p&gt;虽然后缀是 &lt;code&gt;.log&lt;/code&gt; 但是是个二进制文件！但二进制文件咱就看不了了么？显然不是，用hex editor插件打开。我要看看二进制中是不是有什么字符串，能让我猜出来到底咋回事。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/%E8%AE%B0%E5%BD%95%E8%B0%83%E8%AF%95Vulkan%E7%A8%8B%E5%BA%8F%E6%89%93%E5%8D%B0%E5%A5%87%E6%80%AA%E6%97%A5%E5%BF%97%E7%9A%84%E9%97%AE%E9%A2%98-1763388065279.png"
+loading="lazy"
+alt="记录调试Vulkan程序打印奇怪日志的问题-1763388065279"
+&gt;&lt;/p&gt;
+&lt;p&gt;WTF？！&lt;/p&gt;
+&lt;h2 id="经过"&gt;经过
+&lt;/h2&gt;&lt;p&gt;鉴于自己新学Vulkan，可能不够熟练，也许是某个编译配置的开关，或者vulkan的一些底层机制我没学到，会有一些默认的打印操作。于是我虚心请教了AI的看法……&lt;/p&gt;
+&lt;p&gt;随后，经历了跟AI的各种狂猜乱试，我发现，完全是“两个臭皮匠”在讨论。&lt;/p&gt;
+&lt;p&gt;AI可以不停的给我提出各种各样没用的方案。&lt;/p&gt;
+&lt;p&gt;看来定位不到核心的原因，我是没办法解决这个问题了。&lt;/p&gt;
+&lt;p&gt;考虑到，程序无非就是二进制在CPU上跑，我直接动态调试二进制程序不就可以了？于是开启了我的WinDbg之路。&lt;/p&gt;
+&lt;h2 id="windbg"&gt;WinDbg
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;关于 WinDbg 的使用，更多参见&lt;/strong&gt; &lt;a class="link" href="https://crackhopper.github.io/2025/11/17/windbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95/" &gt;WinDbg的初级用法&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id="问题定位"&gt;问题定位
+&lt;/h1&gt;&lt;h2 id="增加断点处的行为scripting"&gt;增加断点处的行为(scripting)
+&lt;/h2&gt;&lt;p&gt;首先，我们在创建文件的位置，增加一些脚本，打印一下文件名。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;bp KERNELBASE!CreateFileA &amp;#34;r rcx; da @rcx; k L3; g&amp;#34;
+bp KERNELBASE!CreateFileW &amp;#34;r rcx; du @rcx; k L3; g&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;r rcx&lt;/code&gt; ： 打印 rcx的值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;du rcx&lt;/code&gt; ：以unicode编码解析rcx指向的地址&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;k L3&lt;/code&gt; : 打印3行堆栈&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;g&lt;/code&gt; ： 不停止，继续执行。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;接着让我们运行看下会发生什么，将我们的断点配置如下：
+&lt;img src="https://crackhopper.github.io/images/WinDbg%E7%9A%84%E5%88%9D%E7%BA%A7%E7%94%A8%E6%B3%95-1763438550768.png"
+loading="lazy"
+alt="WinDbg的初级用法-1763438550768"
+&gt;&lt;/p&gt;
+&lt;p&gt;输出很长。可以见有很多文件都被打开。（大大出乎预料）&lt;/p&gt;
+&lt;p&gt;下面一段是摘抄的部分日志：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;rcx=00000073ac18c200
+00000073`ac18c200 &amp;#34;C:\ProgramData\obs-studio-hook\o&amp;#34;
+00000073`ac18c240 &amp;#34;bs-vulkan64.json&amp;#34;
+# Child-SP RetAddr Call Site
+00 00000073`ac18c1b8 00007fff`8b77f6dc KERNEL32!CreateFileW
+01 00000073`ac18c1c0 00007fff`8b77f277 vulkan_1!vkResetEvent+0x4e14c
+02 00000073`ac18c2e0 00007fff`8b776595 vulkan_1!vkResetEvent+0x4dce7
+rcx=00000073ac18c1d0
+00000073`ac18c1d0 &amp;#34;C:\Program Files (x86)\WeGame\ap&amp;#34;
+00000073`ac18c210 &amp;#34;ps\Cross\Core\Stable\CrossVulkan&amp;#34;
+00000073`ac18c250 &amp;#34;Layer64.json&amp;#34;
+# Child-SP RetAddr Call Site
+00 00000073`ac18c188 00007fff`8b77f6dc KERNEL32!CreateFileW
+01 00000073`ac18c190 00007fff`8b77f277 vulkan_1!vkResetEvent+0x4e14c
+02 00000073`ac18c2e0 00007fff`8b776595 vulkan_1!vkResetEvent+0x4dce7
+rcx=00000073ac18c1f0
+00000073`ac18c1f0 &amp;#34;C:\Program Files (x86)\Steam\Ste&amp;#34;
+00000073`ac18c230 &amp;#34;amOverlayVulkanLayer64.json&amp;#34;
+# Child-SP RetAddr Call Site
+00 00000073`ac18c1a8 00007fff`8b77f6dc KERNEL32!CreateFileW
+01 00000073`ac18c1b0 00007fff`8b77f277 vulkan_1!vkResetEvent+0x4e14c
+02 00000073`ac18c2e0 00007fff`8b776595 vulkan_1!vkResetEvent+0x4dce7
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="日志分析"&gt;日志分析
+&lt;/h2&gt;&lt;p&gt;由于文件很长，因此我用AI编写了脚本专门处理上面的日志文件，提取对应的调用函数，以及打开的文件。（特意跳过stack中，系统相关的函数）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 1
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 2
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 3
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 4
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 5
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 6
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 7
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 8
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 9
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 10
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 11
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 12
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 13
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 14
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 15
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 16
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 17
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 18
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 19
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 20
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 21
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 22
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 23
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 24
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 25
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 26
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 27
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 28
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 29
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 30
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 31
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 32
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 33
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 34
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 35
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 36
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 37
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 38
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 39
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 40
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 41
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 42
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 43
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 44
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 45
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 46
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 47
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 48
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 49
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 50
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 51
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 52
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 53
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 54
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 55
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 56
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 57
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 58
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 59
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 60
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 61
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 62
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 63
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 64
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 65
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 66
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 67
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 68
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 69
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 70
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 71
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 72
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 73
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 74
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 75
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 76
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 77
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 78
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 79
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 80
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 81
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 82
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 83
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 84
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 85
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 86
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 87
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 88
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 89
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 90
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 91
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 92
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 93
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 94
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 95
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 96
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 97
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 98
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt; 99
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;100
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;101
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;102
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;103
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;104
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;105
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;106
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;107
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;108
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;109
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;110
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;111
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;112
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;113
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;114
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;115
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;116
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;117
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;118
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;119
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;120
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;121
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;122
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;123
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;124
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;125
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;126
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;127
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;128
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;129
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;130
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;131
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;132
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;133
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;134
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;135
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;136
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;137
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;138
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;139
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;140
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;141
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;142
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;143
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;144
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;145
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;146
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;147
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;148
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;149
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;150
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;151
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;152
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;153
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;154
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;155
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;156
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;157
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;158
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;159
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;160
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;161
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;162
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;163
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;164
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;165
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;166
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;167
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;168
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;169
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;170
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;171
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;172
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;173
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;174
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;175
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;176
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;177
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;178
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;179
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;180
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;181
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;182
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;183
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;184
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;185
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;186
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;187
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;188
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;189
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;190
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;191
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;192
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;193
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;194
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;195
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;196
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;197
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;198
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;199
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;200
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;201
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;202
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;203
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;204
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;205
+&lt;/span&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;206
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-python" data-lang="python"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;在 windbg 调试程序的时候。用如下方法设置断点：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;bp KERNELBASE!CreateFileA &amp;#34;r rcx; da @rcx; k L3; g&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;bp KERNELBASE!CreateFileW &amp;#34;r rcx; du @rcx; k L3; g&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;会在中断的地方打印第一个参数。（这里是文件名字）。本脚本则是为了处理输出的日志，提取对应有效信息。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;import&lt;/span&gt; &lt;span style="color:#24292e"&gt;re&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;import&lt;/span&gt; &lt;span style="color:#24292e"&gt;argparse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;import&lt;/span&gt; &lt;span style="color:#24292e"&gt;sys&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;import&lt;/span&gt; &lt;span style="color:#24292e"&gt;os&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# 定义系统调用函数的前缀（使用更标准的常量命名）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SYSTEM_CALLS_PREFIX &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;KERNEL32!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;ntdll!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;ntoskrnl!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;win32u!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;WOW64!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;WOW64T!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;WOW64CPU!&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;split_blocks&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_text&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 根据 &amp;#39;rcx=&amp;#39; 分隔符将日志文本拆分成独立的块。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 使用 re.split，并保留分隔符&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; blocks &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; re&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;split&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;r&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;(rcx=.*)&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; log_text&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 清理和组合：将分隔符与其后的内容组合成一个块&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; processed_blocks &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; &lt;span style="color:#6639ba"&gt;range&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#6639ba"&gt;len&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;blocks&lt;span style="color:#1f2328"&gt;),&lt;/span&gt; &lt;span style="color:#0550ae"&gt;2&lt;/span&gt;&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; i &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;lt;&lt;/span&gt; &lt;span style="color:#6639ba"&gt;len&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;blocks&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; processed_blocks&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;blocks&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i&lt;span style="color:#1f2328"&gt;]&lt;/span&gt; &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; blocks&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;i &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;])&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[&lt;/span&gt;block&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;strip&lt;span style="color:#1f2328"&gt;()&lt;/span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; block &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; processed_blocks &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; block&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;strip&lt;span style="color:#1f2328"&gt;()]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;extract_string_from_block&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 从一个日志块中提取并拼接双引号内的字符串，形成完整的路径。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 正则表达式匹配行首的地址 (例如 0000022a`1b31a090) 后面的双引号内容&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; path_pattern &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; re&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;compile&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;r&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;^\s*[\da-fA-F]+`[\da-fA-F]+\s+&amp;#34;(.*?)&amp;#34;$&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; re&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;MULTILINE&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 查找所有匹配项&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; path_segments &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; path_pattern&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;findall&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 拼接所有段落&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; string_value &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;join&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;path_segments&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; string_value
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;extract_rcx_id&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 从一个日志块的开头提取 rcx=... 的值作为块的标识。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 正则表达式匹配 &amp;#39;rcx=&amp;#39; 后跟至少一个或多个十六进制字符&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; rcx_pattern &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; re&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;compile&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;r&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;(rcx=[\da-fA-F]+)&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; re&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;IGNORECASE&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; rcx_match &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; rcx_pattern&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;search&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; rcx_match&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; rcx_match&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;group&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;else&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;N/A&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;extract_callsite_info&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 从一个日志块中提取 Call Site 信息，并找到第一个非系统调用函数。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# Call Site 区域通常以 &amp;#39;# Child-SP&amp;#39; 开始&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; callstack_start_marker &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;# Child-SP&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; callstack_start_marker &lt;span style="color:#0550ae"&gt;not&lt;/span&gt; &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; block&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Call Site region not found.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 找到 Call Site 区域的起始位置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; start_index &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; block&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;find&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;callstack_start_marker&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; callstack_section &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; block&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;start_index&lt;span style="color:#1f2328"&gt;:]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 按行分割&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; lines &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; callstack_section&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;split&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;&lt;/span&gt;&lt;span style="color:#0a3069"&gt;\n&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 提取 Call Site&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; call_sites &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 跳过标题行和可能为空的行&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; line &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; lines&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; line &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; line&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;strip&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#0550ae"&gt;not&lt;/span&gt; line &lt;span style="color:#0550ae"&gt;or&lt;/span&gt; line&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;startswith&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;#&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;continue&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 假设 Call Site 是每行最后一个非空的字段（通常是模块!函数名+偏移量）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; parts &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; line&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;split&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#6639ba"&gt;len&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;parts&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#0550ae"&gt;&amp;gt;=&lt;/span&gt; &lt;span style="color:#0550ae"&gt;4&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; call_site &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; parts&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0550ae"&gt;-&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; call_sites&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;call_site&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 查找第一个非系统调用函数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; site &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; call_sites&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; is_system_call &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;False&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 排除地址/偏移量部分，只保留函数名（如 igxelpicd64!DumpRegistryKeyDefinitions）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;!&amp;#39;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;not&lt;/span&gt; &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; site&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;continue&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; sys_call &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; SYSTEM_CALLS_PREFIX&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; site&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;startswith&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;sys_call&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; is_system_call &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#cf222e"&gt;True&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;break&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#0550ae"&gt;not&lt;/span&gt; is_system_call&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; site
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Only system calls or no calls found.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;parse_log&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_text&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 主解析函数，协调所有子函数。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; blocks &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; split_blocks&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_text&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; results &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; block &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; blocks&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; rcx_value &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; extract_rcx_id&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; string_value &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; extract_string_from_block&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; first_non_sys_call &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; extract_callsite_info&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;block&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 检查是否提取到有效的字符串和 Call Site&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; string_value &lt;span style="color:#0550ae"&gt;and&lt;/span&gt; first_non_sys_call &lt;span style="color:#0550ae"&gt;!=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;Only system calls or no calls found.&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; results&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;({&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;rcx_value&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt; rcx_value&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;string_value&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt; string_value&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;first_non_system_call&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt; first_non_sys_call
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;})&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;return&lt;/span&gt; results
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#57606a"&gt;# --- 新增命令行参数和主函数 ---&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;def&lt;/span&gt; &lt;span style="color:#6639ba"&gt;main&lt;/span&gt;&lt;span style="color:#1f2328"&gt;():&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; 程序入口点，处理命令行参数和文件读取。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#0a3069"&gt; &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; parser &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; argparse&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;ArgumentParser&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; description&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;解析 WinDbg 日志文件，提取文件路径和第一个非系统调用 Call Site。&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 定义必须传入的日志文件参数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; parser&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;add_argument&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;log_file&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;type&lt;/span&gt;&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#6639ba"&gt;str&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; help&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;要解析的 WinDbg 日志文件路径。&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 定义可选的输出文件参数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; parser&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;add_argument&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;-o&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;--output&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;type&lt;/span&gt;&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#6639ba"&gt;str&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; help&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;将解析结果写入指定文件（例如 result.txt）。如果未指定，则打印到控制台。&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; args &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; parser&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;parse_args&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; log_file_path &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; args&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;log_file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_file_path &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; args&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;output
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#0550ae"&gt;not&lt;/span&gt; os&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;path&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;exists&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_file_path&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;print&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;错误：文件未找到 -&amp;gt; &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;log_file_path&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; file&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;stderr&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;exit&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;try&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 读取日志文件内容，使用 &amp;#39;utf-8&amp;#39; 或 &amp;#39;latin-1&amp;#39; 应对可能的编码问题&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;with&lt;/span&gt; &lt;span style="color:#6639ba"&gt;open&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_file_path&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;r&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; encoding&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; errors&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;as&lt;/span&gt; f&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; log_content &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; f&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;read&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;except&lt;/span&gt; Exception &lt;span style="color:#cf222e"&gt;as&lt;/span&gt; e&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;print&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;读取文件时发生错误: &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;e&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; file&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;stderr&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;exit&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 执行解析&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; parsed_results &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; parse_log&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;log_content&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 格式化输出结果&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#1f2328"&gt;[]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;for&lt;/span&gt; i&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; result &lt;span style="color:#0550ae"&gt;in&lt;/span&gt; &lt;span style="color:#6639ba"&gt;enumerate&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;parsed_results&lt;span style="color:#1f2328"&gt;):&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;-&amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; &lt;span style="color:#0550ae"&gt;50&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;记录 &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;i &lt;span style="color:#0550ae"&gt;+&lt;/span&gt; &lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt; (&lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;result&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;rcx_value&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;)&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34; 文件路径/字符串: &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;result&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;string_value&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34; 调用点: &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;result&lt;span style="color:#1f2328"&gt;[&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;first_non_system_call&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;]&lt;/span&gt;&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_lines&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;append&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;-&amp;#34;&lt;/span&gt; &lt;span style="color:#0550ae"&gt;*&lt;/span&gt; &lt;span style="color:#0550ae"&gt;50&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output_text &lt;span style="color:#0550ae"&gt;=&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#0a3069"&gt;\n&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;join&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;output_lines&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 处理输出&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;if&lt;/span&gt; output_file_path&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;try&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;with&lt;/span&gt; &lt;span style="color:#6639ba"&gt;open&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;output_file_path&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#39;w&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; encoding&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt; &lt;span style="color:#cf222e"&gt;as&lt;/span&gt; f&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; f&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;write&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;output_text&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;print&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;解析结果已成功写入文件: &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;output_file_path&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;except&lt;/span&gt; Exception &lt;span style="color:#cf222e"&gt;as&lt;/span&gt; e&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;print&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;f&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;写入文件时发生错误: &lt;/span&gt;&lt;span style="color:#0a3069"&gt;{&lt;/span&gt;e&lt;span style="color:#0a3069"&gt;}&lt;/span&gt;&lt;span style="color:#0a3069"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;,&lt;/span&gt; file&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;stderr&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sys&lt;span style="color:#0550ae"&gt;.&lt;/span&gt;exit&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0550ae"&gt;1&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#cf222e"&gt;else&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#57606a"&gt;# 打印到控制台&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#6639ba"&gt;print&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;output_text&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#cf222e"&gt;if&lt;/span&gt; &lt;span style="color:#953800"&gt;__name__&lt;/span&gt; &lt;span style="color:#0550ae"&gt;==&lt;/span&gt; &lt;span style="color:#0a3069"&gt;&amp;#34;__main__&amp;#34;&lt;/span&gt;&lt;span style="color:#1f2328"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; main&lt;span style="color:#1f2328"&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;处理结果（部分摘要）：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;--------------------------------------------------
+记录 1 (rcx=00000073ac18c200)
+文件路径/字符串: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+记录 2 (rcx=00000073ac18c1d0)
+文件路径/字符串: C:\Program Files (x86)\WeGame\apps\Cross\Core\Stable\CrossVulkanLayer64.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+记录 3 (rcx=00000073ac18c1f0)
+文件路径/字符串: C:\Program Files (x86)\Steam\SteamOverlayVulkanLayer64.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+记录 4 (rcx=00000073ac18c1f0)
+文件路径/字符串: C:\Program Files (x86)\Steam\SteamFossilizeVulkanLayer64.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+记录 5 (rcx=00000073ac18c1b0)
+文件路径/字符串: C:\Program Files (x86)\Epic Games\Launcher\Portal\Extras\Overlay\EOSOverlayVkLayer-Win32.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+记录 6 (rcx=00000073ac18c1b0)
+文件路径/字符串: C:\Program Files (x86)\Epic Games\Launcher\Portal\Extras\Overlay\EOSOverlayVkLayer-Win64.json
+调用点: vulkan_1!vkResetEvent+0x4e14c
+--------------------------------------------------
+...
+--------------------------------------------------
+记录 1025 (rcx=0000022a1b31a090)
+文件路径/字符串: C:\Users\develop\AppData\LocalLow\Intel\ShaderCache\fef977ca3300ec0bc2c0cffc3b7876ee20569af48fb97cdc1b368bbc0e5a57f6
+调用点: igxelpicd64!DumpRegistryKeyDefinitions+0xb43aa
+--------------------------------------------------
+记录 1026 (rcx=0000022a1b31a090)
+文件路径/字符串: C:\Users\develop\AppData\LocalLow\Intel\ShaderCache\ff99df07dcd0c6178ee47752e83177aee8f50f71c5e1bf8eaf748c39909b3bb1
+调用点: igxelpicd64!DumpRegistryKeyDefinitions+0xb43aa
+--------------------------------------------------
+记录 1027 (rcx=0000022a1b31a090)
+文件路径/字符串: C:\Users\develop\AppData\LocalLow\Intel\ShaderCache\ffbf928ad5120a2f1efed1a992d0e667884951d6f937bdb98f037eae46cde6e1
+调用点: igxelpicd64!DumpRegistryKeyDefinitions+0xb43aa
+--------------------------------------------------
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="日志问题"&gt;日志问题
+&lt;/h2&gt;&lt;p&gt;首先，居然打开了1027个文件！！大部分都是由 igxelpicd64 和 igvk64 打开的。这两个是什么？&lt;/p&gt;
+&lt;h2 id="原因定位"&gt;原因定位
+&lt;/h2&gt;&lt;h3 id="1-本地打开日志文件"&gt;1. 本地打开日志文件
+&lt;/h3&gt;&lt;p&gt;通过日志，我们可以搜索，找到：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;rcx=0000022a16429dc0
+0000022a`16429dc0 &amp;#34;C:/Program Files (x86)/WeGame/ap&amp;#34;
+0000022a`16429e00 &amp;#34;ps/Cross/Core/Stable/../../Log/V&amp;#34;
+0000022a`16429e40 &amp;#34;ulkanGLFWDemo.20251118-120259-84&amp;#34;
+0000022a`16429e80 &amp;#34;2.log&amp;#34;
+# Child-SP RetAddr Call Site
+00 00000073`ac189e88 00007ff8`499ba227 KERNEL32!CreateFileW
+01 00000073`ac189e90 00007ff8`499b9729 CrossVulkanLayer64!base::BaseTimer::Stop+0xc5297
+02 00000073`ac189f80 00007ff8`499ba53d CrossVulkanLayer64!base::BaseTimer::Stop+0xc4799
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;显然，有个奇怪的模块调用。&lt;/p&gt;
+&lt;p&gt;可以看到 &lt;code&gt;CrossVulkanLayer64&lt;/code&gt; 这个模块是罪魁祸首，我们看看到底这个模块啥来头&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;0:000&amp;gt; lmv m CrossVulkanLayer64
+Browse full module list
+start end module name
+00007fff`8bb10000 00007fff`8bcdf000 CrossVulkanLayer64 (export symbols) CrossVulkanLayer64.dll
+Loaded symbol image file: CrossVulkanLayer64.dll
+Mapped memory image file: C:\Program Files (x86)\WeGame\apps\Cross\Core\Stable\CrossVulkanLayer64.dll
+Image path: C:\Program Files (x86)\WeGame\apps\Cross\Core\Stable\CrossVulkanLayer64.dll
+Image name: CrossVulkanLayer64.dll
+Browse all global symbols functions data Symbol Reload
+Timestamp: Tue Sep 10 20:00:11 2024 (66E034CB)
+CheckSum: 001D4A34
+ImageSize: 001CF000
+Mapping Form: Loaded
+File version: 1.0.0.0
+Product version: 1.0.0.0
+File flags: 0 (Mask 17)
+File OS: 4 Unknown Win32
+File type: 2.0 Dll
+File date: 00000000.00000000
+Translations: 0804.04b0
+Information from resource tables:
+CompanyName: Tencent
+ProductName: Tencent.WeGame.Cross
+InternalName: VulkanLayer
+ProductVersion: 1.0.0.0
+FileVersion: 1.0.0.0
+FileDescription: Tencent.WeGame.Cross.VulkanLayer
+LegalCopyright: Copyright (C) 2017 Tencent.All Rights Reserved
+LegalTrademarks: Tencent
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;原来是你！腾讯，WeGame！&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id="2-igvk64被疯狂调用和操作未解决"&gt;2. igvk64被疯狂调用和操作（未解决）
+&lt;/h3&gt;&lt;p&gt;在我们通过 &lt;code&gt;CreateFileW&lt;/code&gt; 断点，打印所有打开文件的操作的时候。日志里产生了大量 igvk64 和 igxeplicd 的调用。到底是怎么回事？&lt;/p&gt;
+&lt;p&gt;在出问题的时候，手动中断，获取到堆栈信息：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;[0x0] KERNEL32!CreateFileW 0x55168e3588 0x7fff7f6e783a
+[0x1] igvk64!ctlTemperatureGetState+0x751fba 0x55168e3590 0x7fff7f6e67e9
+[0x2] igvk64!ctlTemperatureGetState+0x750f69 0x55168e3760 0x7fff7f6d17f9
+[0x3] igvk64!ctlTemperatureGetState+0x73bf79 0x55168e3800 0x7fff7f6cecfb
+[0x4] igvk64!ctlTemperatureGetState+0x73947b 0x55168e39a0 0x7fff7f6ce00b
+[0x5] igvk64!ctlTemperatureGetState+0x73878b 0x55168e39e0 0x7fff7f6c4276
+[0x6] igvk64!ctlTemperatureGetState+0x72e9f6 0x55168e3a30 0x7fff7ee7040f
+[0x7] igvk64!DumpRegistryKeyDefinitions+0x1c605f 0x55168e3ba0 0x7fff7ee607fb
+[0x8] igvk64!DumpRegistryKeyDefinitions+0x1b644b 0x55168e41a0 0x7fff7ee476a4
+[0x9] igvk64!DumpRegistryKeyDefinitions+0x19d2f4 0x55168e4310 0x7fff7ee31bd5
+[0xa] igvk64!DumpRegistryKeyDefinitions+0x187825 0x55168e43c0 0x7fff7eda31e6
+[0xb] igvk64!DumpRegistryKeyDefinitions+0xf8e36 0x55168e4410 0x7fff7ed87534
+[0xc] igvk64!DumpRegistryKeyDefinitions+0xdd184 0x55168fb620 0x7fff7ed5ec7d
+[0xd] igvk64!DumpRegistryKeyDefinitions+0xb48cd 0x55168fb690 0x7fff7ece0ca5
+[0xe] igvk64!DumpRegistryKeyDefinitions+0x368f5 0x55168fb6e0 0x7fffbd89c6dc
+[0xf] vulkan_1!vkResetEvent+0x4b14c 0x55168fb7b0 0x7fff810205e7
+[0x10] VkLayer_khronos_validation!vulkan_layer_chassis::CreateInstance+0x217
+[0x11] CrossVulkanLayer64!vkCreateInstance+0x180 0x55168fbad0 0x7ff8498fcacb
+[0x12] graphics_hook64!dummy_debug_proc+0x294b 0x55168fbbe0 0x7fff741fc952
+[0x13] nvoglv64!DrvPresentBuffers+0x3698d2 0x55168fbca0 0x7fffbd883652
+[0x14] vulkan_1!vkResetEvent+0x320c2 0x55168fbcd0 0x7fffbd8a751e
+[0x15] vulkan_1!vkResetEvent+0x55f8e 0x55168fc000 0x7ff717220f44
+[0x16] VulkanGLFWDemo!HelloTriangleApplication::createInstance+0x244 0x55168ff410 0x7ff717224b64
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;关于 igxeplicd 产生的大量文件创建。&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt; # Child-SP RetAddr Call Site
+00 00000055`168fd778 00007fff`f46ce16a KERNEL32!CreateFileW
+01 00000055`168fd780 00007fff`f46cb720 igxelpicd64!DumpRegistryKeyDefinitions+0xb43aa
+02 00000055`168fdb70 00007fff`f46c8cfb igxelpicd64!DumpRegistryKeyDefinitions+0xb1960
+03 00000055`168fdd10 00007fff`f46c800b igxelpicd64!DumpRegistryKeyDefinitions+0xaef3b
+04 00000055`168fdd50 00007fff`f46bbe16 igxelpicd64!DumpRegistryKeyDefinitions+0xae24b
+05 00000055`168fdda0 00007fff`f457ce7c igxelpicd64!DumpRegistryKeyDefinitions+0xa2056
+06 00000055`168fdf10 00007fff`f457b59e igxelpicd64!DrvValidateVersion+0x13c57c
+07 00000055`168fe4e0 00007fff`f456e572 igxelpicd64!DrvValidateVersion+0x13ac9e
+08 00000055`168fe520 00007fff`f443f6aa igxelpicd64!DrvValidateVersion+0x12dc72
+09 00000055`168fe560 00007fff`f53bacfe igxelpicd64!DrvDescribePixelFormat+0x3a
+0a 00000055`168fe5b0 00007fff`f53fd7e9 OpenGL32!_DescribeDriverPixelFormat+0x5a
+0b 00000055`168fe5f0 00007fff`f5396e9f OpenGL32!LoadAvailableDrivers+0x3d9
+0c 00000055`168fec50 00007fff`7422005c OpenGL32!wglDescribePixelFormat+0xdf
+0d 00000055`168fed90 00007fff`74223622 nvoglv64!vk_optimusGetInstanceProcAddr+0x230ec
+0e 00000055`168fedc0 00007fff`7421cfd7 nvoglv64!vk_optimusGetInstanceProcAddr+0x266b2
+0f 00000055`168fee10 00007fff`bd8ad9cc nvoglv64!vk_optimusGetInstanceProcAddr+0x20067
+10 00000055`168fee40 00007fff`812b4934 vulkan_1!vkResetEvent+0x5c43c
+11 (Inline Function) --------`-------- VkLayer_khronos_validation!vvl::dispatch::Device::CreateSwapchainKHR+0xc1 [C:\SDKBuild\build-X64-1.4.328.1\Vulkan-ValidationLayers\layers\vulkan\generated\dispatch_object.cpp @ 3153]
+12 00000055`168fef30 00007fff`8bb1af8a VkLayer_khronos_validation!vulkan_layer_chassis::CreateSwapchainKHR+0x2c4 [C:\SDKBuild\build-X64-1.4.328.1\Vulkan-ValidationLayers\layers\vulkan\generated\chassis.cpp @ 10385]
+13 00000055`168ff140 00007ff8`498fdda0 CrossVulkanLayer64!vkCreateSwapchainKHR+0x182
+14 00000055`168ff270 00007fff`bd8af465 graphics_hook64!dummy_debug_proc+0x3c20
+15 00000055`168ff340 00007ff7`17221c0d vulkan_1!vkResetEvent+0x5ded5
+16 00000055`168ff380 00007ff7`17224b96 VulkanGLFWDemo!HelloTriangleApplication::createSwapChain+0x27d [C:\Users\develop\game-dev\renderer\src\main.cpp @ 985]
+17 00000055`168ff5d0 00007ff7`172286de VulkanGLFWDemo!HelloTriangleApplication::initVulkan+0x46 [C:\Users\develop\game-dev\renderer\src\main.cpp @ 800]
+18 00000055`168ff600 00007ff7`171f878f VulkanGLFWDemo!HelloTriangleApplication::run+0x1e [C:\Users\develop\game-dev\renderer\src\main.cpp @ 63]
+19 00000055`168ff630 00007ff7`17256919 VulkanGLFWDemo!main+0x2f [C:\Users\develop\game-dev\renderer\src\main.cpp @ 1431]
+1a 00000055`168ff8a0 00007ff7`172567c2 VulkanGLFWDemo!invoke_main+0x39 [D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl @ 79]
+1b 00000055`168ff8f0 00007ff7`1725667e VulkanGLFWDemo!__scrt_common_main_seh+0x132 [D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl @ 288]
+1c 00000055`168ff960 00007ff7`172569ae VulkanGLFWDemo!__scrt_common_main+0xe [D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl @ 331]
+1d 00000055`168ff990 00007ff8`93b6e8d7 VulkanGLFWDemo!mainCRTStartup+0xe [D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp @ 17]
+1e 00000055`168ff9c0 00007ff8`94fac53c KERNEL32!BaseThreadInitThunk+0x17
+1f 00000055`168ff9f0 00000000`00000000 ntdll!RtlUserThreadStart+0x2c
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;实际上，虽然可以看到validation layer的影子。但无法确定是由其导致的。( &lt;strong&gt;因为validation layer有可能仅仅是转发一下调用&lt;/strong&gt; )&lt;/p&gt;
+&lt;h2 id="为什么会这样vulkan为什么加载其他的dll"&gt;为什么会这样？Vulkan为什么加载其他的dll？
+&lt;/h2&gt;&lt;p&gt;在 &lt;strong&gt;Vulkan 的设计机制中&lt;/strong&gt;，&lt;code&gt;vkCreateInstance&lt;/code&gt; 会根据调用时指定的 &lt;strong&gt;Layer 列表&lt;/strong&gt; 去加载对应 Layer（包括第三方 Validation Layer）的动态库（Windows 下为 &lt;code&gt;.dll&lt;/code&gt;，Linux 下为 &lt;code&gt;.so&lt;/code&gt;）。&lt;br&gt;
+这是 Vulkan &lt;strong&gt;Layer 机制&lt;/strong&gt;的正常行为，而不是驱动“偷偷加载”。&lt;/p&gt;
+&lt;h3 id="原因"&gt;原因
+&lt;/h3&gt;&lt;p&gt;vulkan初始化的时候，会检查注册表，加载所有 &lt;code&gt;Implicit Layer&lt;/code&gt; 的配置（manifest）。这样同样也会加载对应的dll。这就是为什么 WeGame 的Layer被加载了。（vulkan的这个功能似乎很有安全问题啊！）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;关于validation layer发现机制，更多参见&lt;/strong&gt;： &lt;a class="link" href="https://crackhopper.github.io/2025/11/19/vulkan%E7%9A%84layer%E5%8F%91%E7%8E%B0%E6%9C%BA%E5%88%B6/" &gt;Vulkan的Layer发现机制和debug&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id="神秘日志问题解决"&gt;神秘日志问题解决！
+&lt;/h1&gt;&lt;h2 id="方法一"&gt;方法一
+&lt;/h2&gt;&lt;p&gt;仅把我使用的layer，对应的json和dll，存放到项目目录中。用 &lt;code&gt;VK_LAYER_PATH&lt;/code&gt; 指定程序仅加载我指定的layer。&lt;/p&gt;
+&lt;p&gt;（暂时方法二更容易，采用方法二）&lt;/p&gt;
+&lt;h2 id="方法二"&gt;方法二
+&lt;/h2&gt;&lt;p&gt;设定环境变量：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#953800"&gt;VK_LOADER_LAYERS_DISABLE&lt;/span&gt;&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;~implicit~
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;或&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;"&gt;&lt;tr&gt;&lt;td style="vertical-align:top;padding:0;margin:0;border:0;"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code&gt;&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%"&gt;
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#953800"&gt;VK_LOADER_LAYERS_DISABLE&lt;/span&gt;&lt;span style="color:#0550ae"&gt;=&lt;/span&gt;*wegame*
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id="遗留问题未解决intel驱动总被调用"&gt;遗留问题未解决！intel驱动总被调用
+&lt;/h1&gt;&lt;p&gt;由于内容比较多，单独开了一个帖子来记录。这个问题当前没找到解决方案。&lt;/p&gt;
+&lt;p&gt;&lt;a class="link" href="https://crackhopper.github.io/2025/11/21/vulkan%E7%A8%8B%E5%BA%8F%E4%B8%ADintel%E9%A9%B1%E5%8A%A8%E6%80%BB%E6%98%AF%E8%A2%AB%E8%B0%83%E7%94%A8%E6%9C%AA%E8%A7%A3%E5%86%B3/" &gt;Vulkan程序中Intel驱动总是被调用（未解决）&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>
