@@ -1,8 +1,13 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 01 Apr 2026 12:54:09 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>LXEngine架构 v0.1.0</title><link>https://crackhopper.github.io/2026/04/01/lxengine%E6%9E%B6%E6%9E%84-v0.1.0/</link><pubDate>Wed, 01 Apr 2026 12:54:09 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2026/04/01/lxengine%E6%9E%B6%E6%9E%84-v0.1.0/</guid><description>&lt;p&gt;本文主要讲解我的AI渲染器项目 LXEngine 的第一个版本：从 vulkan tutorial 一个巨大的cpp文件出发，理解和识别里面的概念，以面向对象和领域驱动的方式，将整个项目重新组织。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/LXEngine%E6%9E%B6%E6%9E%84%20v0.1.0-1775026831788.png"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on crackhopper的技术博客</title><link>https://crackhopper.github.io/posts/</link><description>Recent content in Posts on crackhopper的技术博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>crackhopper@gmail.com (crackhopper)</managingEditor><webMaster>crackhopper@gmail.com (crackhopper)</webMaster><lastBuildDate>Wed, 01 Apr 2026 12:54:09 +0800</lastBuildDate><atom:link href="https://crackhopper.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>LXEngine架构 v0.1.0</title><link>https://crackhopper.github.io/2026/04/01/lxengine%E6%9E%B6%E6%9E%84-v0.1.0/</link><pubDate>Wed, 01 Apr 2026 12:54:09 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2026/04/01/lxengine%E6%9E%B6%E6%9E%84-v0.1.0/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/LXEngine%E6%9E%B6%E6%9E%84%20v0.1.0-1775027663263.png"
 loading="lazy"
-alt="LXEngine架构 v0.1.0-1775026831788"
+alt="LXEngine架构 v0.1.0-1775027663263"
 &gt;&lt;/p&gt;
+&lt;p&gt;本文主要讲解我的渲染器项目 LXEngine：从 vulkan tutorial 出发&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;理解和识别里面的概念&lt;/li&gt;
+&lt;li&gt;以面向对象和领域驱动的方式&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;彻底重构，建立了引擎的四大核心模块。&lt;/p&gt;
 &lt;h1 id="v010-说明"&gt;v0.1.0 说明
 &lt;/h1&gt;&lt;p&gt;核心目标：&lt;/p&gt;
 &lt;ul&gt;
@@ -1233,7 +1238,11 @@ alt="LXEngine架构 v0.1.0-1775026689487"
 &lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;CRUD 为主的简单系统&lt;/li&gt;
 &lt;li&gt;生命周期极短的项目&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>SDL入门</title><link>https://crackhopper.github.io/2025/12/22/sdl%E5%85%A5%E9%97%A8/</link><pubDate>Mon, 22 Dec 2025 19:42:32 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/22/sdl%E5%85%A5%E9%97%A8/</guid><description>&lt;p&gt;SDL (Simple DirectMedia Layer) 是一个非常经典且强大的跨平台开发库，主要用于通过 C/C++ 提供对音频、键盘、鼠标、摇杆以及图形硬件（通过 OpenGL 或 Direct3D）的低级访问。&lt;/p&gt;
+&lt;/ul&gt;</description></item><item><title>SDL入门</title><link>https://crackhopper.github.io/2025/12/22/sdl%E5%85%A5%E9%97%A8/</link><pubDate>Mon, 22 Dec 2025 19:42:32 +0800</pubDate><author>crackhopper@gmail.com (crackhopper)</author><guid>https://crackhopper.github.io/2025/12/22/sdl%E5%85%A5%E9%97%A8/</guid><description>&lt;p&gt;&lt;img src="https://crackhopper.github.io/images/SDL%E5%85%A5%E9%97%A8-1775027212273.png"
+loading="lazy"
+alt="SDL入门-1775027212273"
+&gt;&lt;/p&gt;
+&lt;p&gt;SDL (Simple DirectMedia Layer) 是一个非常经典且强大的跨平台开发库，主要用于通过 C/C++ 提供对音频、键盘、鼠标、摇杆以及图形硬件（通过 OpenGL 或 Direct3D）的低级访问。&lt;/p&gt;
 &lt;p&gt;我们的AI Native渲染器项目（LXEngine），背后使用的窗口系统和输入输出系统，会直接使用SDL库。&lt;/p&gt;
 &lt;h1 id="入门"&gt;入门
 &lt;/h1&gt;&lt;h2 id="sdl2-vs-sdl3"&gt;SDL2 v.s. SDL3
