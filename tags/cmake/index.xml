@@ -2412,4 +2412,107 @@ alt="opencv-cmake-s"
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;&lt;/span&gt;&lt;span style="color:#6639ba"&gt;target_link_libraries&lt;/span&gt;&lt;span style="color:#1f2328"&gt;(&lt;/span&gt;&lt;span style="color:#0a3069"&gt;hellocv&lt;/span&gt; &lt;span style="color:#0550ae"&gt;${&lt;/span&gt;&lt;span style="color:#953800"&gt;OpenCV_LIBS&lt;/span&gt;&lt;span style="color:#0550ae"&gt;}&lt;/span&gt;&lt;span style="color:#1f2328"&gt;)&lt;/span&gt;&lt;span style="color:#f6f8fa;background-color:#82071e"&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;这样即保证了跨平台，又很简单。赶快试一下吧！&lt;/p&gt;</description></item></channel></rss>
+&lt;/div&gt;&lt;p&gt;这样即保证了跨平台，又很简单。赶快试一下吧！&lt;/p&gt;
+&lt;h2 id="深入-find_package"&gt;深入 &lt;code&gt;find_package&lt;/code&gt;
+&lt;/h2&gt;&lt;p&gt;cmake提供了 &lt;code&gt;find_package&lt;/code&gt; 功能。可以方便自动查找一些外部依赖库。&lt;/p&gt;
+&lt;p&gt;用法：&lt;/p&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;find_package(&amp;lt;PackageName&amp;gt; [version] [REQUIRED] [QUIET] [COMPONENTS &amp;lt;component1&amp;gt; &amp;lt;component2&amp;gt;...] [NO_MODULE])
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;分为两种模式：module模式和config模式&lt;/p&gt;
+&lt;h3 id="module-模式-老模式cmake负责"&gt;Module 模式 （老模式，cmake负责）
+&lt;/h3&gt;&lt;p&gt;通过 &lt;code&gt;Find&amp;lt;PackageName&amp;gt;.cmake&lt;/code&gt; 文件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;查找文件：&lt;/strong&gt; CMake 会尝试在特定的目录（包括 CMake 自己的安装目录和用户指定的目录）中寻找一个名为 &lt;code&gt;Find&amp;lt;PackageName&amp;gt;.cmake&lt;/code&gt; 的文件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;执行逻辑：&lt;/strong&gt; 如果找到，CMake 会执行这个文件中的脚本逻辑。这个脚本通常包含了一系列平台特定的命令（如 &lt;code&gt;find_path&lt;/code&gt;、&lt;code&gt;find_library&lt;/code&gt;、&lt;code&gt;find_program&lt;/code&gt;）来定位库的头文件、库文件和可执行程序。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;设置变量：&lt;/strong&gt; 成功定位后，&lt;code&gt;Find&amp;lt;PackageName&amp;gt;.cmake&lt;/code&gt; 脚本会设置一组标准的 CMake 变量供项目使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;查找成功后，会有如下变量：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;变量名称&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;描述&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;_FOUND&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;布尔值，表示是否成功找到库。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;_INCLUDE_DIRS&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;包含头文件的目录列表。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;_LIBRARIES&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;要链接的库文件路径或名称列表。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;_DEFINITIONS&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;编译所需的预处理器定义。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;需要分别用 &lt;code&gt;target_link_library&lt;/code&gt; ， &lt;code&gt;target_include_directories&lt;/code&gt; ， &lt;code&gt;target_compile_definitions&lt;/code&gt; 来引入库文件、头文件和编译选项&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="config-模式-新模式库提供者负责"&gt;Config 模式 (新模式，库提供者负责)
+&lt;/h3&gt;&lt;p&gt;通过 &lt;code&gt;&amp;lt;PackageName&amp;gt;Config.cmake&lt;/code&gt; 或 &lt;code&gt;&amp;lt;PackageName&amp;gt;-config.cmake&lt;/code&gt; 文件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;查找文件：&lt;/strong&gt; CMake 会尝试在系统路径（如 &lt;code&gt;/usr/local/lib/cmake/&lt;/code&gt; 或自定义路径）中寻找一个名为 &lt;code&gt;&amp;lt;PackageName&amp;gt;Config.cmake&lt;/code&gt; 或 &lt;code&gt;&amp;lt;PackageName&amp;gt;-config.cmake&lt;/code&gt; 的配置文件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;执行逻辑：&lt;/strong&gt; 这种配置文件是由&lt;strong&gt;库的开发者&lt;/strong&gt;在库的安装过程中生成的。它包含了库的绝对路径信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;设置目标：&lt;/strong&gt; Config 模式的配置文件通常会使用 &lt;code&gt;IMPORTED&lt;/code&gt; 目标（如 &lt;code&gt;add_library(&amp;lt;PackageName&amp;gt;::&amp;lt;component&amp;gt; IMPORTED)&lt;/code&gt;）来封装库的信息。这是 CMake 推荐的现代用法，允许用户直接使用库名称作为链接目标，例如： &lt;code&gt;target_link_libraries(MyExecutable PRIVATE &amp;lt;PackageName&amp;gt;::&amp;lt;component&amp;gt;)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;一体化导入，将：库文件、头文件、编译选项，都包装到 &lt;code&gt;Package::Component&lt;/code&gt; 中了&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;查找成功后，会有如下变量/符号：(其他变量也有，但通常不推荐使用)&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;strong&gt;变量/符号&lt;/strong&gt;&lt;/th&gt;
+&lt;th&gt;&lt;strong&gt;描述&lt;/strong&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;_FOUND&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;布尔值，表示是否成功找到库。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;::&amp;lt;PackageName&amp;gt;&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;通常可以直接用来链接的符号&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;&amp;lt;PackageName&amp;gt;::&amp;lt;Component&amp;gt;&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;只使用库的一部分&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;如何确定都有哪些 &lt;code&gt;&amp;lt;PackageName&amp;gt;::xxx&lt;/code&gt; ？
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;翻阅 &lt;code&gt;XXXConfig.cmake&lt;/code&gt; 文件：&lt;/strong&gt; 搜索文件中的 &lt;code&gt;add_library(... IMPORTED ...)&lt;/code&gt; ， &lt;code&gt;add_header_only_library(...)&lt;/code&gt; 以及 &lt;code&gt;&amp;lt;PackageName&amp;gt;::&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="config模式-packagename_dir-路径"&gt;Config模式-&lt;code&gt;&amp;lt;PackageName&amp;gt;_DIR&lt;/code&gt; 路径
+&lt;/h3&gt;&lt;p&gt;当我们调用 &lt;code&gt;find_package&lt;/code&gt; 命令的时候，CMAKE会自动根据 对应的模块名字参数 &lt;code&gt;&amp;lt;PackageName&amp;gt;&lt;/code&gt; ，拼接 &lt;code&gt;&amp;lt;PackageName&amp;gt;_DIR&lt;/code&gt; ，看是否存在这个变量。如果存在，则在这个路径下按照 &lt;code&gt;Config&lt;/code&gt; 模式查找对应的配置文件 &lt;code&gt;&amp;lt;PackageName&amp;gt;Config.cmake&lt;/code&gt; 或 &lt;code&gt;&amp;lt;PackageName&amp;gt;-config.cmake&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;变量如何定义？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;可以是CMAKE变量。
+&lt;ul&gt;
+&lt;li&gt;代码中 &lt;code&gt;set(&amp;lt;PackageName&amp;gt;_DIR ...)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;命令行 &lt;code&gt;-D&amp;lt;PackageName&amp;gt;_DIR=...&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;可以是环境变量（当CMAKE变量不存在的时候）
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;export &amp;lt;PackageName&amp;gt;_DIR=&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;查找过程：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;&amp;lt;PackageName&amp;gt;_DIR&amp;gt;/&lt;/code&gt; (根目录)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;&amp;lt;PackageName&amp;gt;_DIR&amp;gt;/(lib/|share/)cmake/&amp;lt;PackageName&amp;gt;/&lt;/code&gt; (标准的安装路径)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;&amp;lt;PackageName&amp;gt;_DIR&amp;gt;/(lib/|share/)&amp;lt;PackageName&amp;gt;/&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
